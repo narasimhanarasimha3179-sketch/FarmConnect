@@ -3,6 +3,12 @@ import { StyleSheet, View, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useApp } from '../services/AppContext';
 import BottomNav from '../components/BottomNav';
 import SplashScreen from '../screens/auth/SplashScreen';
+import OnboardingScreen from '../screens/auth/OnboardingScreen';
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import CameraScannerScreen from '../screens/camera/CameraScannerScreen';
+import MandiIntelligenceScreen from '../screens/dashboard/MandiIntelligenceScreen';
 import { COLORS } from '../constants/theme';
 
 function ScreenPlaceholder({ title, subtitle, icon }) {
@@ -18,43 +24,35 @@ function ScreenPlaceholder({ title, subtitle, icon }) {
 export default function RootNavigator() {
   const { currentScreen, activeTab } = useApp();
 
-  // Handle splash state first
+  // 1. Initial splash / bootstrap check
   if (currentScreen === 'Splash') {
     return <SplashScreen />;
   }
 
-  // Handle temporary placeholder for Onboarding/Auth steps
-  if (currentScreen === 'Onboarding' || currentScreen === 'Login' || currentScreen === 'Register') {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
-        <View style={styles.placeholderContainer}>
-          <Text style={styles.placeholderIcon}>🔐</Text>
-          <Text style={styles.placeholderTitle}>Authentication Gateway</Text>
-          <Text style={styles.placeholderSubtitle}>Preparing Step 15: Onboarding & Auth Modules</Text>
-        </View>
-      </SafeAreaView>
-    );
+  // 2. Authentication flow screens
+  if (currentScreen === 'Onboarding') {
+    return <OnboardingScreen />;
   }
 
+  if (currentScreen === 'Login') {
+    return <LoginScreen />;
+  }
+
+  if (currentScreen === 'Register') {
+    return <RegisterScreen />;
+  }
+
+  if (currentScreen === 'ForgotPassword') {
+    return <ForgotPasswordScreen />;
+  }
+
+  // 3. Main tab-based views
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'Home':
-        return (
-          <ScreenPlaceholder
-            icon="🌾"
-            title="FarmConnect Dashboard"
-            subtitle="Weather advisories, Mandi trends, and farm alerts"
-          />
-        );
+        return <MandiIntelligenceScreen />;
       case 'Scanner':
-        return (
-          <ScreenPlaceholder
-            icon="📷"
-            title="AI Crop Disease Scanner"
-            subtitle="Center infected leaf to receive instant diagnosis & treatments"
-          />
-        );
+        return <CameraScannerScreen />;
       case 'Marketplace':
         return (
           <ScreenPlaceholder
