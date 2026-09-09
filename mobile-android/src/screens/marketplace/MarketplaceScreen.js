@@ -9,6 +9,8 @@ import {
   FlatList,
   StatusBar,
 } from 'react-native';
+import BiddingModal from '../../components/BiddingModal';
+import CreateListingModal from '../../components/CreateListingModal';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
 const MARKETPLACE_CATEGORIES = ['All', 'Cereals', 'Vegetables', 'Pulses', 'Oilseeds', 'Commercial'];
@@ -76,12 +78,17 @@ export default function MarketplaceScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [listings, setListings] = useState(INITIAL_LISTINGS);
+  const [selectedLot, setSelectedLot] = useState(null);
+  const [biddingModalVisible, setBiddingModalVisible] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
 
   const filteredListings = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
+    const query = searchQuery ? searchQuery.trim().toLowerCase() : '';
     return listings.filter((item) => {
       const matchesCategory =
-        selectedCategory === 'All' || item.category.toLowerCase() === selectedCategory.toLowerCase();
+        !selectedCategory ||
+        selectedCategory === 'All' ||
+        item.category.toLowerCase() === selectedCategory.toLowerCase();
       const matchesSearch =
         !query ||
         item.commodity.toLowerCase().includes(query) ||
@@ -132,7 +139,10 @@ export default function MarketplaceScreen() {
       <TouchableOpacity
         style={styles.bidActionBtn}
         activeOpacity={0.8}
-        onPress={() => {}}
+        onPress={() => {
+          setSelectedLot(item);
+          setBiddingModalVisible(true);
+        }}
       >
         <Text style={styles.bidActionBtnText}>Inspect Lot & Place Bid</Text>
       </TouchableOpacity>
@@ -149,7 +159,11 @@ export default function MarketplaceScreen() {
           <Text style={styles.headerTitle}>🌾 Direct Farmer Market</Text>
           <Text style={styles.headerSubtitle}>Verified harvest lots with live transparent bidding</Text>
         </View>
-        <TouchableOpacity style={styles.createListingBtn} activeOpacity={0.8}>
+        <TouchableOpacity
+          style={styles.createListingBtn}
+          activeOpacity={0.8}
+          onPress={() => setCreateModalVisible(true)}
+        >
           <Text style={styles.createListingBtnText}>+ Sell</Text>
         </TouchableOpacity>
       </View>
@@ -166,7 +180,10 @@ export default function MarketplaceScreen() {
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
               <Text style={styles.clearSearch}>✕</Text>
             </TouchableOpacity>
           )}
@@ -214,6 +231,38 @@ export default function MarketplaceScreen() {
             </Text>
           </View>
         }
+      />
+
+      {/* Bidding Modal */}
+      <BiddingModal
+        visible={biddingModalVisible}
+        lot={selectedLot}
+        onClose={() => setBiddingModalVisible(false)}
+        onPlaceBid={(bidData) => {
+          setListings((prevListings) =>
+            prevListings.map((item) => {
+              if (item.id === bidData.lotId) {
+                return {
+                  ...item,
+                  currentBid: bidData.formattedBid,
+                  totalBids: item.totalBids + 1,
+                };
+              }
+              return item;
+            })
+          );
+          setBiddingModalVisible(false);
+        }}
+      />
+
+      {/* Create Listing Modal */}
+      <CreateListingModal
+        visible={createModalVisible}
+        onClose={() => setCreateModalVisible(false)}
+        onListingCreated={(newLot) => {
+          setListings((prev) => [newLot, ...prev]);
+          setCreateModalVisible(false);
+        }}
       />
     </SafeAreaView>
   );
@@ -324,6 +373,10 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     padding: SPACING.md,
     elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
   cardTop: {
     flexDirection: 'row',

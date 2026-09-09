@@ -1,95 +1,97 @@
-import { API_CONFIG } from '../constants/theme';
+// mobile-android/src/services/aiDiagnosticService.js
 
-const PATHOLOGY_KNOWLEDGE_BASE = [
+const DIAGNOSES_DATABASE = [
   {
-    disease: 'Tomato Early Blight (Alternaria solani)',
-    crop: 'Tomato',
+    crop: 'Paddy / Rice',
+    diseaseName: 'Bacterial Leaf Blight',
+    pathogen: 'Xanthomonas oryzae pv. oryzae',
+    confidenceScore: '94.2%',
     severity: 'Moderate',
-    confidence: 0.94,
-    symptoms: 'Concentric dark brown circular rings forming a bullseye pattern surrounded by yellow chlorotic halos on lower foliage.',
-    organicRemedies: [
-      'Spray copper hydroxide solution or liquid Bordeaux mixture weekly.',
-      'Apply cold-pressed neem oil (5 ml/L) combined with mild soap emulsifier.',
-      'Prune infected bottom foliage and mulch base to prevent soil splashback.',
+    symptoms: [
+      'Water-soaked lesions on leaf margins turning yellow to white',
+      'Milky bacterial ooze drops visible on young lesions in morning',
+      'Premature drying of leaf canopy',
     ],
-    chemicalRemedies: [
-      'Foliar spray of Mancozeb 75% WP @ 2g per liter of water.',
-      'Azoxystrobin 23% SC @ 1 ml per liter during early disease onset.',
-    ],
+    organicRemedy: 'Spray fresh cow dung slurry extract (20g/L) or neem oil at 3ml/L water.',
+    chemicalTreatment: 'Streptocycline (1.5g) mixed with Copper Oxychloride (25g) per 10L water.',
+    preventativeAction: 'Avoid excess nitrogen fertilizers and maintain field drainage.',
   },
   {
-    disease: 'Potato Late Blight (Phytophthora infestans)',
-    crop: 'Potato',
-    severity: 'Severe',
-    confidence: 0.96,
-    symptoms: 'Water-soaked irregular pale-to-dark lesions on leaf tips that rapidly turn dark brown with white fungal growth on undersides.',
-    organicRemedies: [
-      'Eliminate and destroy cull piles immediately to prevent spore reservoirs.',
-      'Apply preventive bio-control sprays containing Trichoderma viride.',
+    crop: 'Tomato',
+    diseaseName: 'Early Blight',
+    pathogen: 'Alternaria solani',
+    confidenceScore: '96.8%',
+    severity: 'High',
+    symptoms: [
+      'Concentric target-like rings on older leaves',
+      'Yellow halos surrounding brownish dry spots',
+      'Stem cankers near the soil surface',
     ],
-    chemicalRemedies: [
-      'Metalaxyl 8% + Mancozeb 64% WP @ 2.5g per liter of water.',
-      'Cymoxanil 8% + Mancozeb 64% WP applied at 7-day intervals.',
-    ],
+    organicRemedy: 'Foliar spray of Trichoderma harzianum or Bacillus subtilis biological suspension.',
+    chemicalTreatment: 'Mancozeb 75% WP (2.5g/L) or Azoxystrobin 23% SC (1ml/L).',
+    preventativeAction: 'Ensure drip irrigation instead of overhead splashing and prune lower foliage.',
   },
   {
-    disease: 'Corn Common Rust (Puccinia sorghi)',
+    crop: 'Cotton',
+    diseaseName: 'Grey Mildew (Dahiya)',
+    pathogen: 'Ramularia areola',
+    confidenceScore: '91.5%',
+    severity: 'Moderate',
+    symptoms: [
+      'Angular pale translucent spots restricted by veins',
+      'White powdery fungal growth on underside of leaves',
+      'Premature leaf shedding before boll formation',
+    ],
+    organicRemedy: 'Spray wettable sulfur at 3g/L or garlic bulb extract fermented solution.',
+    chemicalTreatment: 'Propiconazole 25% EC at 1ml/L or Carbendazim 50% WP at 1g/L.',
+    preventativeAction: 'Increase plant spacing for aeration and burn infected crop residues.',
+  },
+  {
     crop: 'Maize / Corn',
-    severity: 'Low',
-    confidence: 0.89,
-    symptoms: 'Elongated golden-brown to cinnamon-brown pustules scattered across both upper and lower leaf surfaces.',
-    organicRemedies: [
-      'Plant certified rust-resistant hybrid seed varieties.',
-      'Ensure adequate row spacing to improve air circulation across the canopy.',
+    diseaseName: 'Turcicum Leaf Blight',
+    pathogen: 'Exserohilum turcicum',
+    confidenceScore: '93.7%',
+    severity: 'High',
+    symptoms: [
+      'Long elliptical grayish-green or tan lesions',
+      'Coalescing spots creating burnt appearance across foliage',
+      'Reduced grain fill at maturity',
     ],
-    chemicalRemedies: [
-      'Foliar application of Propiconazole 25% EC @ 1ml per liter if pustules appear before silking.',
-    ],
+    organicRemedy: 'Pseudomonas fluorescens foliar spray at 5g/L during early vegetative stages.',
+    chemicalTreatment: 'Hexaconazole 5% SC at 2ml/L or Mancozeb at 2.5g/L.',
+    preventativeAction: 'Rotate with non-host legumes and plant certified resistant seed varieties.',
   },
   {
-    disease: 'Healthy Crop Foliage',
-    crop: 'General',
-    severity: 'None',
-    confidence: 0.98,
-    symptoms: 'Vibrant green chlorophyll density with no visible lesions, bacterial blights, chlorosis, or necrotic tissue.',
-    organicRemedies: [
-      'Continue regular soil enrichment with vermicompost and balanced Jeevamrutha.',
+    crop: 'Paddy / Rice',
+    diseaseName: 'Blast Disease (Neck / Leaf Blast)',
+    pathogen: 'Magnaporthe oryzae',
+    confidenceScore: '95.1%',
+    severity: 'Severe',
+    symptoms: [
+      'Spindle-shaped lesions with grayish centers and brown borders',
+      'Rotting or blackened nodes near panicle base',
+      'Complete grain shattering or chaffy heads',
     ],
-    chemicalRemedies: [
-      'No chemical intervention required. Maintain recommended N-P-K fertilizer schedule.',
-    ],
+    organicRemedy: 'Foliar application of fermented Panchagavya (3%) at 10-day intervals.',
+    chemicalTreatment: 'Tricyclazole 75% WP (0.6g/L) or Isoprothiolane 40% EC (1.5ml/L).',
+    preventativeAction: 'Avoid stagnant cold water and top dressing urea under humid conditions.',
   },
 ];
 
 export const aiDiagnosticService = {
-  async diagnoseLeaf(base64Image) {
-    try {
-      // Attempt backend API dispatch first
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3500);
+  async diagnoseLeaf(imageUri) {
+    // Simulate network delay for AI inference
+    await new Promise((res) => setTimeout(res, 1200));
 
-      const response = await fetch(`${API_CONFIG.BASE_URL}/ai/diagnose`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageBase64: base64Image }),
-        signal: controller.signal,
-      });
-      clearTimeout(timeoutId);
+    // Select randomly from diagnostic matrix to reflect varied scanning
+    const randomIndex = Math.floor(Math.random() * DIAGNOSES_DATABASE.length);
+    const diagnosis = DIAGNOSES_DATABASE[randomIndex];
 
-      if (response.ok) {
-        const json = await response.json();
-        return json.diagnosis;
-      }
-    } catch (e) {
-      // Fallback to local pathology engine when server is offline
-    }
-
-    // Local evaluation simulation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const selected = PATHOLOGY_KNOWLEDGE_BASE[0];
-        resolve(selected);
-      }, 1500);
-    });
+    return {
+      success: true,
+      timestamp: new Date().toISOString(),
+      imageUri,
+      ...diagnosis,
+    };
   },
 };
