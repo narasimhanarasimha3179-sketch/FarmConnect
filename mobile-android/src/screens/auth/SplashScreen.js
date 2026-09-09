@@ -4,20 +4,21 @@ import { useApp } from '../../services/AppContext';
 import { COLORS, SPACING } from '../../constants/theme';
 
 export default function SplashScreen() {
-  const { setCurrentScreen, user } = useApp();
+  const { setCurrentScreen, user, isReady } = useApp();
 
   useEffect(() => {
+    if (!isReady) return;
+
     const timer = setTimeout(() => {
-      // If user session exists, route to Main; otherwise prompt Onboarding/Login
       if (user) {
         setCurrentScreen('Main');
       } else {
         setCurrentScreen('Onboarding');
       }
-    }, 2000);
+    }, 1500);
 
     return () => clearTimeout(timer);
-  }, [user]);
+  }, [user, isReady]);
 
   return (
     <View style={styles.container}>

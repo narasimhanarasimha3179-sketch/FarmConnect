@@ -1,20 +1,35 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { storageService } from './storageService';
 
 const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
-  // Authentication & session state
-  const [user, setUser] = useState(null); // null = unauthenticated
-  const [currentScreen, setCurrentScreen] = useState('Splash'); // Splash, Login, Register, Main
-  const [activeTab, setActiveTab] = useState('Home'); // Home, Scanner, Marketplace, Profile
+  const [user, setUser] = useState(null);
+  const [currentScreen, setCurrentScreen] = useState('Splash');
+  const [activeTab, setActiveTab] = useState('Home');
+  const [isReady, setIsReady] = useState(false);
 
-  const login = (userData) => {
+  // Restore stored session on app launch
+  useEffect(() => {
+    const hydrateSession = async () => {
+      const savedUser = await storageService.getUser();
+      if (savedUser) {
+        setUser(savedUser);
+      }
+      setIsReady(true);
+    };
+    hydrateSession();
+  }, []);
+
+  const login = async (userData) => {
     setUser(userData);
+    await storageService.saveUser(userData);
     setCurrentScreen('Main');
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
+    await storageService.clearUser();
     setCurrentScreen('Login');
   };
 
@@ -22,6 +37,7 @@ export const AppProvider = ({ children }) => {
     <AppContext.Provider
       value={{
         user,
+        isReady,
         currentScreen,
         setCurrentScreen,
         activeTab,
