@@ -10,9 +10,9 @@ import {
   StatusBar,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 import { aiDiagnosticService } from '../../services/aiDiagnosticService';
+import { scanStorage } from '../../services/scanStorage';
 import DiagnosisModal from '../../components/DiagnosisModal';
 
 export default function CameraScannerScreen() {
@@ -68,8 +68,9 @@ export default function CameraScannerScreen() {
 
     try {
       setIsProcessing(true);
+      // Limit resolution and skip base64/heavy native processing to avoid Android memory exhaustion crashes
       const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
+        quality: 0.3,
         skipProcessing: true,
       });
 
@@ -77,14 +78,9 @@ export default function CameraScannerScreen() {
         throw new Error('No frame data received from sensor.');
       }
 
-      const manipResult = await ImageManipulator.manipulateAsync(
-        photo.uri,
-        [{ resize: { width: 800 } }],
-        { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true }
-      );
-
-      const diagnosis = await aiDiagnosticService.diagnoseLeaf(manipResult.base64);
+      const diagnosis = await aiDiagnosticService.diagnoseLeaf(photo.uri);
       setActiveDiagnosis(diagnosis);
+      await scanStorage.saveScan(diagnosis);
       setModalVisible(true);
     } catch (err) {
       Alert.alert('Analysis Error', err.message || 'Failed to analyze foliage frame.');

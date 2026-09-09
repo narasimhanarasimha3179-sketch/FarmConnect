@@ -18,6 +18,18 @@ import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
 const COMMODITY_TAGS = ['All', 'Paddy (Dhan)', 'Tomato', 'Cotton', 'Onion', 'Maize', 'Soyabean'];
 
+const getCommodityEmoji = (commodity = '') => {
+  const lower = commodity.toLowerCase();
+  if (lower.includes('tomato')) return '🍅';
+  if (lower.includes('cotton')) return '☁️';
+  if (lower.includes('onion')) return '🧅';
+  if (lower.includes('maize') || lower.includes('corn')) return '🌽';
+  if (lower.includes('soyabean') || lower.includes('pulse') || lower.includes('dal')) return '🌱';
+  if (lower.includes('chilli') || lower.includes('chili')) return '🌶️';
+  if (lower.includes('paddy') || lower.includes('rice') || lower.includes('dhan')) return '🌾';
+  return '📦';
+};
+
 const MANDI_DATA = [
   {
     id: 'm1',
@@ -131,7 +143,9 @@ export default function MandiIntelligenceScreen() {
 
         <View style={styles.commodityRow}>
           <View style={styles.badgePill}>
-            <Text style={styles.badgePillText}>🌾 {item.commodity}</Text>
+            <Text style={styles.badgePillText}>
+              {getCommodityEmoji(item.commodity)} {item.commodity}
+            </Text>
           </View>
           <Text style={styles.varietyText}>Var: {item.variety}</Text>
         </View>
@@ -174,7 +188,7 @@ export default function MandiIntelligenceScreen() {
             onChangeText={setSearchQuery}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
               <Text style={styles.clearSearch}>✕</Text>
             </TouchableOpacity>
           )}
