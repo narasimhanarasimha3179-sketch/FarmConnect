@@ -2,9 +2,9 @@ import React from 'react';
 import { StyleSheet, View, Text, SafeAreaView, StatusBar } from 'react-native';
 import { useApp } from '../services/AppContext';
 import BottomNav from '../components/BottomNav';
+import SplashScreen from '../screens/auth/SplashScreen';
 import { COLORS } from '../constants/theme';
 
-// Placeholder screen renders until each full phase step is wired
 function ScreenPlaceholder({ title, subtitle, icon }) {
   return (
     <View style={styles.placeholderContainer}>
@@ -17,6 +17,25 @@ function ScreenPlaceholder({ title, subtitle, icon }) {
 
 export default function RootNavigator() {
   const { currentScreen, activeTab } = useApp();
+
+  // Handle splash state first
+  if (currentScreen === 'Splash') {
+    return <SplashScreen />;
+  }
+
+  // Handle temporary placeholder for Onboarding/Auth steps
+  if (currentScreen === 'Onboarding' || currentScreen === 'Login' || currentScreen === 'Register') {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
+        <View style={styles.placeholderContainer}>
+          <Text style={styles.placeholderIcon}>🔐</Text>
+          <Text style={styles.placeholderTitle}>Authentication Gateway</Text>
+          <Text style={styles.placeholderSubtitle}>Preparing Step 15: Onboarding & Auth Modules</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const renderActiveScreen = () => {
     switch (activeTab) {
@@ -95,6 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
+    backgroundColor: COLORS.background,
   },
   placeholderIcon: {
     fontSize: 48,
