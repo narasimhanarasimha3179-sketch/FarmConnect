@@ -9,9 +9,12 @@ import {
   SafeAreaView,
   FlatList,
   StatusBar,
+  Alert,
 } from 'react-native';
+import MandiDetailModal from '../../components/MandiDetailModal';
+import PriceAlertModal from '../../components/PriceAlertModal';
+import { alertStorage } from '../../services/alertStorage';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
-import MandiIntelligenceScreen from '../screens/dashboard/MandiIntelligenceScreen';
 
 const COMMODITY_TAGS = ['All', 'Paddy (Dhan)', 'Tomato', 'Cotton', 'Onion', 'Maize', 'Soyabean'];
 
@@ -86,6 +89,9 @@ const MANDI_DATA = [
 export default function MandiIntelligenceScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [alertModalVisible, setAlertModalVisible] = useState(false);
 
   const filteredData = MANDI_DATA.filter((item) => {
     const matchesTag =
@@ -101,8 +107,14 @@ export default function MandiIntelligenceScreen() {
     const isUp = item.trendDirection === 'up';
 
     return (
-      <View style={styles.card}>
-        {/* Top Header */}
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => {
+          setSelectedRecord(item);
+          setModalVisible(true);
+        }}
+        activeOpacity={0.8}
+      >
         <View style={styles.cardTop}>
           <View>
             <Text style={styles.marketTitle}>{item.market}</Text>
@@ -117,7 +129,6 @@ export default function MandiIntelligenceScreen() {
           </View>
         </View>
 
-        {/* Commodity & Variety */}
         <View style={styles.commodityRow}>
           <View style={styles.badgePill}>
             <Text style={styles.badgePillText}>🌾 {item.commodity}</Text>
@@ -125,7 +136,6 @@ export default function MandiIntelligenceScreen() {
           <Text style={styles.varietyText}>Var: {item.variety}</Text>
         </View>
 
-        {/* Price Table Matrix */}
         <View style={styles.priceContainer}>
           <View style={styles.priceColumn}>
             <Text style={styles.priceLabel}>Min Rate</Text>
@@ -140,7 +150,7 @@ export default function MandiIntelligenceScreen() {
             <Text style={styles.priceValueSub}>{item.maxPrice}</Text>
           </View>
         </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -148,13 +158,11 @@ export default function MandiIntelligenceScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary} />
 
-      {/* Header Bar */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>📊 APMC Mandi Intelligence</Text>
         <Text style={styles.headerSubtitle}>Real-time agricultural market benchmark rates</Text>
       </View>
 
-      {/* Search Input */}
       <View style={styles.searchWrapper}>
         <View style={styles.searchBar}>
           <Text style={styles.searchIcon}>🔍</Text>
@@ -173,7 +181,6 @@ export default function MandiIntelligenceScreen() {
         </View>
       </View>
 
-      {/* Commodity Filters */}
       <View style={styles.filterWrapper}>
         <ScrollView
           horizontal
@@ -196,7 +203,6 @@ export default function MandiIntelligenceScreen() {
         </ScrollView>
       </View>
 
-      {/* Price Cards List */}
       <FlatList
         data={filteredData}
         keyExtractor={(item) => item.id}
@@ -212,6 +218,30 @@ export default function MandiIntelligenceScreen() {
             </Text>
           </View>
         }
+      />
+
+      <MandiDetailModal
+        visible={modalVisible}
+        record={selectedRecord}
+        onClose={() => setModalVisible(false)}
+        onSetAlert={() => {
+          setModalVisible(false);
+          setAlertModalVisible(true);
+        }}
+      />
+
+      <PriceAlertModal
+        visible={alertModalVisible}
+        record={selectedRecord}
+        onClose={() => setAlertModalVisible(false)}
+        onAlertSaved={async (alertData) => {
+          await alertStorage.saveAlert(alertData);
+          setAlertModalVisible(false);
+          Alert.alert(
+            'Alert Activated',
+            `Push notification armed for ${alertData.commodity} when rate is ${alertData.condition} ₹${alertData.targetPrice}/Qtl.`
+          );
+        }}
       />
     </SafeAreaView>
   );
