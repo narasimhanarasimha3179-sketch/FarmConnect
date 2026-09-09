@@ -12,6 +12,7 @@ import MandiIntelligenceScreen from '../screens/dashboard/MandiIntelligenceScree
 import MarketplaceScreen from '../screens/marketplace/MarketplaceScreen';
 import ProfileScreen from '../screens/profile/ProfileScreen';
 import { COLORS } from '../constants/theme';
+import AgriStoreScreen from '../screens/store/AgriStoreScreen';
 
 export default function RootNavigator() {
   const { currentScreen, activeTab } = useApp();
@@ -51,6 +52,8 @@ export default function RootNavigator() {
         return <ProfileScreen />;
       default:
         return <MandiIntelligenceScreen />;
+        case 'Store':
+        return <AgriStoreScreen />;
     }
   };
 
