@@ -4,10 +4,8 @@
     "slug": "farmconnect",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#1b5e20"
     },
@@ -18,20 +16,14 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1b5e20"
-      },
       "package": "com.farmconnect.app",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "INTERNET"
+        "INTERNET",
+        "RECORD_AUDIO"
       ]
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "plugins": [
       [
@@ -40,6 +32,12 @@
           "cameraPermission": "FarmConnect needs camera access to diagnose crop diseases."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "6c40debd-5a3e-4f5d-914a-4d9a86b6dd59"
+      }
+    },
+    "owner": "narasimha3179"
   }
 }
