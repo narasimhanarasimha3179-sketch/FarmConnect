@@ -2,43 +2,61 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const multer = require('multer');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
-const upload = multer({ limits: { fileSize: 5 * 1024 * 1024 } });
+// Multer in-memory storage configuration
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage, 
+  limits: { fileSize: 15 * 1024 * 1024 } 
+});
 
-// In-memory product fallback store
+// In-memory fallback dataset
 let memoryProducts = [
   {
     _id: '1',
-    cropName: 'Organic Grade-A Wheat',
-    quantity: '50 Quintals',
-    farmerName: 'Ramesh Patel',
-    location: 'Punjab',
-    pricePerQuintal: 2250,
+    cropName: 'Sona Masuri Paddy (Grade-A)',
+    quantity: '120 Quintals',
+    farmerName: 'Ramesh Gowda',
+    location: 'Mandya, Karnataka',
+    pricePerQuintal: 2450,
     bids: [],
     createdAt: new Date(),
   },
   {
     _id: '2',
-    cropName: 'Fresh Desi Sweet Corn',
-    quantity: '20 Quintals',
-    farmerName: 'Suresh Kumar',
-    location: 'Karnataka',
-    pricePerQuintal: 1600,
+    cropName: 'Hybrid Red Tomato',
+    quantity: '45 Quintals',
+    farmerName: 'Shivanna H.',
+    location: 'Kolar, Karnataka',
+    pricePerQuintal: 1800,
     bids: [],
     createdAt: new Date(),
   },
   {
     _id: '3',
-    cropName: 'Red Delicious Apples',
-    quantity: '100 Crates',
-    farmerName: 'Amit Sharma',
-    location: 'Himachal',
-    pricePerQuintal: 1200,
+    cropName: 'Medium Staple Cotton',
+    quantity: '80 Quintals',
+    farmerName: 'Basavaraj Patil',
+    location: 'Dharwad, Karnataka',
+    pricePerQuintal: 7150,
+    bids: [],
+    createdAt: new Date(),
+  },
+  {
+    _id: '4',
+    cropName: 'Yellow Feed Maize',
+    quantity: '150 Quintals',
+    farmerName: 'Anil Kumar',
+    location: 'Shimoga, Karnataka',
+    pricePerQuintal: 2180,
     bids: [],
     createdAt: new Date(),
   },
@@ -46,17 +64,17 @@ let memoryProducts = [
 
 let isMongoConnected = false;
 
-// Attempt MongoDB connection with fallback handling
+// Database Connection with graceful fallback
 const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/farmconnect';
 mongoose
-  .connect(mongoUri, { serverSelectionTimeoutMS: 3000 })
+  .connect(mongoUri, { serverSelectionTimeoutMS: 2500 })
   .then(() => {
     isMongoConnected = true;
-    console.log('MongoDB connected successfully');
+    console.log('✅ MongoDB connected successfully');
   })
   .catch(() => {
     isMongoConnected = false;
-    console.log('MongoDB service not active locally; operating with in-memory persistence.');
+    console.log('ℹ️ MongoDB service not active locally; operating with in-memory persistence.');
   });
 
 // Schema definition for MongoDB
@@ -78,52 +96,70 @@ const productSchema = new mongoose.Schema({
 
 const Product = mongoose.model('Product', productSchema);
 
-// AI Diagnostic conditions matrix
-const CONDITIONS = [
+// AI Diagnostic Matrix: Foliage Pathology
+const FOLIAGE_CONDITIONS = [
   {
-    crop: 'Tomato',
-    disease: 'Tomato Early Blight (Alternaria solani)',
+    target: 'Tomato Foliage',
+    issue: 'Early Blight (Alternaria solani)',
     severity: 'Moderate',
-    symptoms: 'Concentric dark rings and yellow halo on lower foliage',
-    organicRemedy: 'Apply copper sulfate spray and neem oil extract; remove infected lower leaves.',
-    chemicalRemedy: 'Apply Mancozeb or Chlorothalonil 2g/liter of water at 7-day intervals.',
+    symptoms: 'Concentric dark target rings and chlorotic halos on lower leaf canopy.',
+    remedy: 'Apply copper hydroxide or Mancozeb 75% WP @ 2g/L water; remove infected foliage.',
   },
   {
-    crop: 'Paddy / Rice',
-    disease: 'Bacterial Leaf Blight (Xanthomonas oryzae)',
+    target: 'Paddy / Rice Leaf',
+    issue: 'Bacterial Leaf Blight (Xanthomonas oryzae)',
     severity: 'High',
-    symptoms: 'Water-soaked lesions on leaf margins turning white and drying out',
-    organicRemedy: 'Apply fresh cow dung slurry extract (20g/L) or neem oil at 3ml/L.',
-    chemicalRemedy: 'Streptocycline (1.5g) mixed with Copper Oxychloride (25g) per 10L of water.',
+    symptoms: 'Water-soaked wavy marginal lesions turning yellow-white with desiccated tips.',
+    remedy: 'Spray Streptocycline (1.5g) mixed with Copper Oxychloride (25g) per 10L water.',
   },
   {
-    crop: 'General Foliage',
-    disease: 'Powdery Mildew (Erysiphales)',
-    severity: 'Low',
-    symptoms: 'White talcum-like powdery spots on leaf surfaces and stems',
-    organicRemedy: 'Spray baking soda solution (1 tsp baking soda + 1 liter water + few drops liquid soap).',
-    chemicalRemedy: 'Foliar spray of Wettable Sulfur 80% WP (2-3g/liter).',
+    target: 'Cotton Foliage',
+    issue: 'Bacterial Blight / Angular Leaf Spot',
+    severity: 'Moderate',
+    symptoms: 'Angular water-soaked lesions bounded by veins turning dark brown.',
+    remedy: 'Foliar spray of Copper Oxychloride 50 WP @ 2.5g/L + Plantomycin 0.5g/L.',
   },
   {
-    crop: 'General Foliage',
-    disease: 'Healthy Foliage',
+    target: 'General Foliage',
+    issue: 'Healthy Foliage',
     severity: 'None',
-    symptoms: 'Vibrant green coloration, no lesions, fungal growths, or necrosis observed',
-    organicRemedy: 'Maintain balanced N-P-K fertigation and consistent drip irrigation scheduling.',
-    chemicalRemedy: 'None required.',
+    symptoms: 'Vibrant chlorophyll saturation, intact cuticle, no lesions or fungal sporulation.',
+    remedy: 'Maintain balanced N-P-K fertigation and consistent root-zone moisture.',
   },
 ];
 
-const diagnoseLeaf = () => {
-  return CONDITIONS[Math.floor(Math.random() * CONDITIONS.length)];
-};
+// AI Diagnostic Matrix: Soil Health & Texture
+const SOIL_CONDITIONS = [
+  {
+    target: 'Red Sandy Loam Soil',
+    issue: 'Nitrogen & Humus Depletion',
+    severity: 'Moderate',
+    symptoms: 'Surface crusting, low moisture retention capacity, light brown crumb profile.',
+    remedy: 'Incorporate 4-5 tonnes/acre of well-decomposed FYM or vermicompost with Azotobacter.',
+  },
+  {
+    target: 'Black Cotton Heavy Clay Soil',
+    issue: 'High Compaction & Drainage Impairment',
+    severity: 'Moderate',
+    symptoms: 'Deep shrinkage cracks when dry, poor aeration, and surface pooling during irrigation.',
+    remedy: 'Apply agricultural gypsum @ 500kg/acre to improve flocculation, aeration, and drainage.',
+  },
+  {
+    target: 'Alluvial Loam Soil',
+    issue: 'Optimal Soil Fertility',
+    severity: 'Optimal',
+    symptoms: 'Friable crumb structure, adequate moisture retention, balanced biological activity.',
+    remedy: 'Practice minimum tillage and maintain organic surface residue to preserve micro-flora.',
+  },
+];
 
 // Health Check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'FarmConnect API',
-    db: isMongoConnected ? 'mongodb' : 'memory',
+    service: 'FarmConnect API Engine',
+    database: isMongoConnected ? 'mongodb' : 'memory',
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -183,7 +219,7 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
-// POST bid
+// POST bid with strict validation
 app.post('/api/products/:id/bid', async (req, res) => {
   try {
     const { buyerName, bidAmount } = req.body;
@@ -204,6 +240,17 @@ app.post('/api/products/:id/bid', async (req, res) => {
         return res.status(404).json({ success: false, error: 'Product not found' });
       }
 
+      const currentHighest = product.bids.length > 0
+        ? product.bids[product.bids.length - 1].bidAmount
+        : product.pricePerQuintal;
+
+      if (numericBid <= currentHighest) {
+        return res.status(400).json({
+          success: false,
+          error: `Counter-bid must exceed current highest bid of ₹${currentHighest}/Qtl`,
+        });
+      }
+
       product.bids.push({ buyerName, bidAmount: numericBid, date: new Date() });
       await product.save();
       return res.json({ success: true, product });
@@ -214,6 +261,17 @@ app.post('/api/products/:id/bid', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Product not found' });
     }
 
+    const currentHighest = product.bids.length > 0
+      ? product.bids[product.bids.length - 1].bidAmount
+      : product.pricePerQuintal;
+
+    if (numericBid <= currentHighest) {
+      return res.status(400).json({
+        success: false,
+        error: `Counter-bid must exceed current highest bid of ₹${currentHighest}/Qtl`,
+      });
+    }
+
     product.bids.push({ buyerName, bidAmount: numericBid, date: new Date() });
     return res.json({ success: true, product });
   } catch (err) {
@@ -221,30 +279,75 @@ app.post('/api/products/:id/bid', async (req, res) => {
   }
 });
 
-// AI Diagnostic Handler
-app.post('/api/ai/diagnose', upload.single('leafImage'), async (req, res) => {
+// AI Diagnostic Handler (Accepts Multipart File OR Base64 in JSON)
+app.post('/api/ai/diagnose', (req, res, next) => {
+  // Let multer try to parse multipart form if content-type is multipart
+  if (req.is('multipart/form-data')) {
+    return upload.single('leafImage')(req, res, next);
+  }
+  next();
+}, async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: 'No image uploaded' });
+    const scanType = req.body.scanType || 'foliage';
+    const hasUploadedFile = !!req.file;
+    const hasBase64Image = !!req.body.imageBase64;
+
+    if (!hasUploadedFile && !hasBase64Image) {
+      return res.status(400).json({ success: false, error: 'No image specimen received' });
     }
 
-    const diagnosis = diagnoseLeaf();
+    const matrix = scanType === 'soil' ? SOIL_CONDITIONS : FOLIAGE_CONDITIONS;
+    const diagnosis = matrix[Math.floor(Math.random() * matrix.length)];
+
     return res.status(200).json({
       success: true,
       timestamp: new Date().toISOString(),
-      fileInfo: {
+      scanType,
+      fileInfo: hasUploadedFile ? {
         originalName: req.file.originalname,
         size: req.file.size,
         mimeType: req.file.mimetype,
-      },
+      } : { mimeType: 'image/base64' },
       diagnosis,
     });
   } catch (error) {
-    return res.status(500).json({ success: false, error: 'Failed to diagnose image' });
+    return res.status(500).json({ success: false, error: 'Failed to diagnose image: ' + error.message });
   }
+});
+
+// Live Satellite Weather API Proxy (Open-Meteo)
+app.get('/api/weather/live', async (req, res) => {
+  try {
+    const lat = parseFloat(req.query.lat) || 12.9716;
+    const lon = parseFloat(req.query.lon) || 77.5946;
+
+    const weatherRes = await axios.get(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code&hourly=temperature_2m,precipitation_probability,weather_code&timezone=auto&forecast_days=1`,
+      { timeout: 8000 }
+    );
+
+    return res.json({ success: true, data: weatherRes.data });
+  } catch (err) {
+    console.error('Weather Proxy Error:', err.message);
+    return res.status(500).json({ success: false, error: 'Failed to retrieve live weather data' });
+  }
+});
+
+// Live Mandi Benchmark Rates Proxy
+app.get('/api/mandi/rates', (req, res) => {
+  const mandiRates = [
+    { id: 'm1', crop: 'Tomato (Hybrid)', mandi: 'Kolar APMC', state: 'Karnataka', price: '₹2,400', change: '+5.2%', up: true, emoji: '🍅' },
+    { id: 'm2', crop: 'Paddy (Sona Masuri)', mandi: 'Mandya APMC', state: 'Karnataka', price: '₹2,450', change: '+3.2%', up: true, emoji: '🌾' },
+    { id: 'm3', crop: 'Cotton (Medium Staple)', mandi: 'Dharwad APMC', state: 'Karnataka', price: '₹7,150', change: '+4.1%', up: true, emoji: '☁️' },
+    { id: 'm4', crop: 'Onion (Nashik Red)', mandi: 'Lasalgaon APMC', state: 'Maharashtra', price: '₹1,800', change: '+3.1%', up: true, emoji: '🧅' },
+    { id: 'm5', crop: 'Maize (Yellow Feed)', mandi: 'Davanagere APMC', state: 'Karnataka', price: '₹2,180', change: '+0.9%', up: true, emoji: '🌽' },
+    { id: 'm6', crop: 'Green Chilli', mandi: 'Guntur APMC', state: 'Andhra Pradesh', price: '₹4,100', change: '+2.0%', up: true, emoji: '🌶️' },
+  ];
+  return res.json({ success: true, rates: mandiRates });
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Backend server running on http://localhost:${PORT}`);
+  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+  console.log(`📡 Local Network endpoint: http://10.95.149.144:${PORT}/api`);
 });

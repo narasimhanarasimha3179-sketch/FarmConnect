@@ -1,4 +1,3 @@
-Set-Content -Path seed.js -Value @'
 const http = require('http');
 
 const lots = [
@@ -57,4 +56,3 @@ function postItem(item) {
 }
 
 lots.forEach((lot) => postItem(lot));
-'@
