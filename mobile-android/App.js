@@ -1,6 +1,8 @@
 // FarmConnect Enterprise Connected Agriculture & Trade OS
-// Complete source code bundling all 32 verified modules
-// PHASE 1: Professional Project Foundation – Design System, Reusable Components, & Error Infrastructure
+// Complete source code bundling all verified modules
+// PHASE 0: Baseline & Forensic System Architecture
+// PHASE 1: Professional Project Foundation – Design Tokens, Reusable UI & Error Context
+// PHASE 2: Authentication & Role Management – 4 Real Roles (Farmer, Buyer, Seller, Admin)
 
 import React, { useState } from 'react';
 import {
@@ -27,14 +29,25 @@ import {
   Header,
 } from './src/components/common';
 import { NotificationProvider, useNotification } from './src/context/NotificationContext';
+import { AuthProvider, useAuth } from './src/context/AuthContext';
 import validators from './src/utils/validation';
 import env from './src/config/env';
 import logger from './src/services/logger';
 
-function FoundationShowcase() {
+// Auth & Role Screens
+import LoginScreen from './src/screens/auth/LoginScreen';
+import RegisterScreen from './src/screens/auth/RegisterScreen';
+import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
+import FarmerDashboardScreen from './src/screens/farmer/FarmerDashboardScreen';
+import BuyerDashboardScreen from './src/screens/buyer/BuyerDashboardScreen';
+import SellerDashboardScreen from './src/screens/seller/SellerDashboardScreen';
+import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
+import ProfileScreen from './src/screens/common/ProfileScreen';
+
+// Phase 1 Foundation Showcase Component (Preserved & Accessible)
+function FoundationShowcase({ onBackToAuth }) {
   const { showSuccess, showError, showWarning, showInfo } = useNotification();
 
-  // Interactive Form State for validation testing
   const [phone, setPhone] = useState('');
   const [phoneError, setPhoneError] = useState(null);
   const [email, setEmail] = useState('');
@@ -43,37 +56,25 @@ function FoundationShowcase() {
 
   const handlePhoneChange = (val) => {
     setPhone(val);
-    if (!val) {
-      setPhoneError(null);
-    } else if (!validators.isValidIndianPhone(val)) {
+    if (!val) setPhoneError(null);
+    else if (!validators.isValidIndianPhone(val)) {
       setPhoneError('Please enter a valid 10-digit Indian phone (starts with 6-9)');
-    } else {
-      setPhoneError(null);
-    }
+    } else setPhoneError(null);
   };
 
   const handleEmailChange = (val) => {
     setEmail(val);
-    if (!val) {
-      setEmailError(null);
-    } else if (!validators.isValidEmail(val)) {
+    if (!val) setEmailError(null);
+    else if (!validators.isValidEmail(val)) {
       setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError(null);
-    }
+    } else setEmailError(null);
   };
 
   const handleTestNotifications = (type) => {
-    logger.info('FoundationShowcase', `Testing notification of type: ${type}`);
-    if (type === 'success') {
-      showSuccess('Profile updated successfully!', 'Farmer Verified');
-    } else if (type === 'error') {
-      showError('Unable to sync mandi prices. Please retry.', 'Network Alert');
-    } else if (type === 'warning') {
-      showWarning('Rain expected in your taluk within 24 hours.', 'Weather Advisory');
-    } else {
-      showInfo('New MSP rates announced for Rabi season.', 'Government Update');
-    }
+    if (type === 'success') showSuccess('Profile updated successfully!', 'Farmer Verified');
+    else if (type === 'error') showError('Unable to sync mandi prices. Please retry.', 'Network Alert');
+    else if (type === 'warning') showWarning('Rain expected in your taluk within 24 hours.', 'Weather Advisory');
+    else showInfo('New MSP rates announced for Rabi season.', 'Government Update');
   };
 
   const toggleLoadingDemo = () => {
@@ -81,27 +82,23 @@ function FoundationShowcase() {
     setTimeout(() => {
       setIsLoadingDemo(false);
       showSuccess('Data loaded cleanly through normalized API service!', 'Connected');
-    }, 1500);
+    }, 1200);
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       <Header
-        title="FarmConnect"
+        title="Foundation Showcase"
         subtitle={`Smart Agri OS • ${env.ENVIRONMENT_NAME.toUpperCase()} • ${env.APP_VERSION}`}
+        onBack={onBackToAuth}
         rightAction={<Badge label="PHASE 1" variant="farmer" size="sm" />}
       />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Preserved Baseline Anchor */}
+      <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         <Card style={styles.baselineCard}>
           <Text style={styles.baselineText}>🌱 FarmConnect Operational OS Loaded</Text>
           <Text style={styles.baselineSubtext}>
-            Phase 1 Foundation active: Design tokens, accessible components, and error pipeline established.
+            Preserved baseline statement. Foundation design tokens, 4-role authentication, and database active.
           </Text>
           <View style={styles.rolesRow}>
             <Badge label="Farmer" variant="farmer" />
@@ -111,13 +108,8 @@ function FoundationShowcase() {
           </View>
         </Card>
 
-        {/* Reusable Form Validation Section */}
         <Card>
           <Text style={styles.sectionTitle}>📋 Form Validation & Input System</Text>
-          <Text style={styles.sectionSubtitle}>
-            Accessible 48dp+ touch inputs with real-time field validation for farmers and traders.
-          </Text>
-
           <Input
             label="Mobile Number (India)"
             placeholder="e.g. 9876543210"
@@ -127,7 +119,6 @@ function FoundationShowcase() {
             error={phoneError}
             helperText="10-digit Indian mobile number for OTP login"
           />
-
           <Input
             label="Email Address"
             placeholder="farmer@farmconnect.org"
@@ -135,71 +126,27 @@ function FoundationShowcase() {
             onChangeText={handleEmailChange}
             keyboardType="email-address"
             error={emailError}
-            helperText="Used for digital invoices and market reports"
           />
         </Card>
 
-        {/* Global Notification & Error Infrastructure */}
         <Card>
           <Text style={styles.sectionTitle}>🔔 Notification & Alert Engine</Text>
-          <Text style={styles.sectionSubtitle}>
-            Global toast / banner infrastructure with auto-dismiss and accessibility labels.
-          </Text>
           <View style={styles.buttonGrid}>
-            <Button
-              title="✓ Success Alert"
-              variant="primary"
-              size="sm"
-              onPress={() => handleTestNotifications('success')}
-              style={styles.gridBtn}
-            />
-            <Button
-              title="⚠ Weather Alert"
-              variant="secondary"
-              size="sm"
-              onPress={() => handleTestNotifications('warning')}
-              style={styles.gridBtn}
-            />
-            <Button
-              title="✕ Error Alert"
-              variant="danger"
-              size="sm"
-              onPress={() => handleTestNotifications('error')}
-              style={styles.gridBtn}
-            />
-            <Button
-              title="ℹ Mandi Info"
-              variant="outline"
-              size="sm"
-              onPress={() => handleTestNotifications('info')}
-              style={styles.gridBtn}
-            />
+            <Button title="✓ Success" variant="primary" size="sm" onPress={() => handleTestNotifications('success')} style={styles.gridBtn} />
+            <Button title="⚠ Weather" variant="secondary" size="sm" onPress={() => handleTestNotifications('warning')} style={styles.gridBtn} />
+            <Button title="✕ Error" variant="danger" size="sm" onPress={() => handleTestNotifications('error')} style={styles.gridBtn} />
+            <Button title="ℹ Mandi" variant="outline" size="sm" onPress={() => handleTestNotifications('info')} style={styles.gridBtn} />
           </View>
         </Card>
 
-        {/* Loading Indicator & Async Operations */}
         <Card>
           <Text style={styles.sectionTitle}>⏳ Loading Indicators & Empty States</Text>
           {isLoadingDemo ? (
-            <LoadingIndicator
-              message="Connecting to Agricultural Data Gateway..."
-              subtext="Simulating secure API client request with timeout handling"
-            />
+            <LoadingIndicator message="Connecting to Agricultural Data Gateway..." />
           ) : (
             <View>
-              <Button
-                title="Simulate API Data Fetching"
-                variant="primary"
-                onPress={toggleLoadingDemo}
-                style={styles.demoBtn}
-              />
-              <EmptyState
-                icon="🌾"
-                title="Marketplace Awaiting Phase 2"
-                description="Authentication and multi-role dashboards will be unlocked in upcoming roadmap phases."
-                actionTitle="Test Network Notification"
-                onAction={() => handleTestNotifications('info')}
-              />
+              <Button title="Simulate Network Request" variant="primary" onPress={toggleLoadingDemo} style={styles.demoBtn} />
+              <EmptyState icon="🌾" title="Phase 1 Foundation Active" description="Phase 2 Authentication is ready to explore." />
             </View>
           )}
         </Card>
@@ -208,10 +155,72 @@ function FoundationShowcase() {
   );
 }
 
+// Master Application Routing Controller
+function MainApp() {
+  const { isAuthenticated, role, user } = useAuth();
+  const [authView, setAuthView] = useState('login'); // 'login' | 'register' | 'forgot' | 'showcase'
+  const [inProfile, setInProfile] = useState(false);
+
+  // If user is authenticated, route to their role dashboard
+  if (isAuthenticated && user) {
+    if (inProfile) {
+      return <ProfileScreen onBack={() => setInProfile(false)} />;
+    }
+
+    switch (role) {
+      case 'FARMER':
+        return <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+      case 'BUYER':
+        return <BuyerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+      case 'SELLER':
+        return <SellerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+      case 'ADMIN':
+        return <AdminDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+      default:
+        return <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+    }
+  }
+
+  // If user is viewing the Phase 1 Foundation Showcase
+  if (authView === 'showcase') {
+    return <FoundationShowcase onBackToAuth={() => setAuthView('login')} />;
+  }
+
+  // Unauthenticated Navigation Stack
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+      <View style={styles.topBar}>
+        <Text style={styles.topBarTitle}>🌱 FarmConnect OS</Text>
+        <TouchableOpacity onPress={() => setAuthView('showcase')} style={styles.showcaseBtn}>
+          <Text style={styles.showcaseText}>Design System</Text>
+        </TouchableOpacity>
+      </View>
+
+      {authView === 'login' && (
+        <LoginScreen
+          onNavigateRegister={() => setAuthView('register')}
+          onNavigateForgot={() => setAuthView('forgot')}
+        />
+      )}
+
+      {authView === 'register' && (
+        <RegisterScreen onNavigateLogin={() => setAuthView('login')} />
+      )}
+
+      {authView === 'forgot' && (
+        <ForgotPasswordScreen onNavigateLogin={() => setAuthView('login')} />
+      )}
+    </SafeAreaView>
+  );
+}
+
 export default function App() {
   return (
     <NotificationProvider>
-      <FoundationShowcase />
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
     </NotificationProvider>
   );
 }
@@ -220,6 +229,31 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 4 : spacing.sm,
+  },
+  topBarTitle: {
+    color: colors.textInverse,
+    fontWeight: typography.weights.bold,
+    fontSize: typography.sizes.sm,
+  },
+  showcaseBtn: {
+    backgroundColor: colors.primaryLight,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  showcaseText: {
+    color: colors.textInverse,
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semiBold,
   },
   scrollContainer: {
     padding: spacing.md,
@@ -252,12 +286,6 @@ const styles = StyleSheet.create({
     fontWeight: typography.weights.bold,
     color: colors.textPrimary,
     marginBottom: spacing.xs,
-  },
-  sectionSubtitle: {
-    fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    marginBottom: spacing.md,
-    lineHeight: typography.lineHeights.tight,
   },
   buttonGrid: {
     flexDirection: 'row',

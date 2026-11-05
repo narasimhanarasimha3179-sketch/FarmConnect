@@ -5,6 +5,46 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 2] - Authentication & Role Management - 2026-11-05
+
+### Added
+- **Backend Architecture & Database:**
+  - Initialized Express/Node.js backend in `backend/` with standard production dependencies (`bcryptjs`, `cors`, `dotenv`, `express`, `jsonwebtoken`).
+  - Implemented persistent ACID SQLite relational database (`backend/data/farmconnect.db`) with tables: `users`, `farmer_profiles`, `buyer_profiles`, `seller_profiles`, `password_resets`, and `audit_logs` with WAL mode and indexing.
+- **Real Cryptography & Security:**
+  - Standard `bcryptjs` password hashing with 10 salt rounds.
+  - HMAC-SHA256 signed JWT session tokens with 7-day expiration.
+  - Role-Based Access Control (RBAC) middleware supporting all 4 roles: `FARMER`, `BUYER`, `SELLER`, and `ADMIN`.
+- **API Endpoints:**
+  - `POST /api/auth/register` (registers user and associated role profile).
+  - `POST /api/auth/login` (authenticates via phone or email + password).
+  - `GET /api/auth/me` (retrieves current authenticated profile).
+  - `PUT /api/auth/profile` (updates user and role-specific details).
+  - `POST /api/auth/forgot-password` (generates 6-digit recovery OTP with 15-min expiry).
+  - `POST /api/auth/reset-password` (verifies OTP and updates password hash).
+  - `GET /api/auth/farmer-only`, `/buyer-only`, `/seller-only`, `/admin-only` (RBAC test guards).
+- **Automated Backend Test Suite:**
+  - `backend/tests/auth.test.js` validating all 11 auth criteria (health check, farmer registration, duplicate prevention, phone/email login, invalid password rejection, protected `/me`, RBAC permission guards, buyer/seller/admin registration, and forgot/reset password).
+- **Mobile Authentication & Session Engine:**
+  - `mobile-android/src/context/AuthContext.js` managing real user sessions, JWT tokens, and login/register/logout handlers.
+- **Mobile Auth Screens:**
+  - `mobile-android/src/screens/auth/LoginScreen.js` with instant test shortcuts for verified SQLite roles.
+  - `mobile-android/src/screens/auth/RegisterScreen.js` with role selector pills and dynamic profile inputs.
+  - `mobile-android/src/screens/auth/ForgotPasswordScreen.js` with 6-digit recovery OTP workflow.
+- **Role-Specific Dashboards:**
+  - `mobile-android/src/screens/farmer/FarmerDashboardScreen.js`
+  - `mobile-android/src/screens/buyer/BuyerDashboardScreen.js`
+  - `mobile-android/src/screens/seller/SellerDashboardScreen.js`
+  - `mobile-android/src/screens/admin/AdminDashboardScreen.js`
+  - `mobile-android/src/screens/common/ProfileScreen.js`
+- **Mobile & Backend Integration Tests:**
+  - `mobile-android/__tests__/phase2.test.js` validating file integrity, baseline text preservation, and 4-role routing.
+
+### Changed
+- `mobile-android/App.js`: Integrated `AuthProvider` with automatic role-based routing to custom dashboards while preserving Phase 0 baseline statement and Phase 1 Foundation showcase.
+
+---
+
 ## [Phase 1] - Professional Project Foundation - 2026-11-05
 
 ### Added
