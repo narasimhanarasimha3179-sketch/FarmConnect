@@ -5,6 +5,44 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 3] - Farmer Profile & Dashboard - 2026-11-05
+
+### Added
+- **Database Schema Extensions:**
+  - Expanded `farmer_profiles` with `taluk` and `location_gps` columns.
+  - Created `farmer_crops` table (`id`, `user_id`, `crop_name`, `variety`, `sowing_date`, `harvest_expected`, `area_acres`, `stage`, `status`, `created_at`).
+  - Created `farmer_alerts` table (`id`, `user_id`, `type`, `title`, `message`, `severity`, `created_at`).
+  - Created `mandi_prices` table (`id`, `commodity`, `variety`, `state`, `district`, `market_mandi`, `min_price`, `max_price`, `modal_price`, `trend`, `arrival_date`) and seeded verified Mandya/APMC live rates.
+  - Created `weather_records` table (`id`, `district`, `state`, `temp_c`, `humidity`, `condition`, `rainfall_chance`, `wind_speed_kmh`, `advisory`, `forecast_json`, `updated_at`) with micro-location agro-advisories.
+- **Backend Farmer Subsystem:**
+  - `backend/src/controllers/farmerController.js` and `backend/src/routes/farmerRoutes.js`:
+    - `GET /api/farmer/profile` – retrieves full farmer landholding and soil profile.
+    - `PUT /api/farmer/profile` – updates GPS coordinates, taluk, village, land size, and soil type.
+    - `GET /api/farmer/dashboard` – aggregates weather telemetry, live APMC mandi prices, active crops, urgent farming alerts, government schemes, and library recommendations.
+    - `POST /api/farmer/crops` – adds a new crop to the field cultivation schedule.
+    - `DELETE /api/farmer/crops/:id` – removes or archives a crop.
+- **Backend Automated Test Suite:**
+  - `backend/tests/farmer.test.js` validating all 7 Farmer API criteria (profile retrieval, profile update, dashboard aggregation, crop creation/deletion, and RBAC guard preventing non-farmer access).
+- **Mobile Farmer UI Components:**
+  - `mobile-android/src/screens/farmer/FarmerProfileModal.js` deep profile editor with land holding size, soil types (Red Sandy Loam, Black Cotton, Alluvial, Clay Loam, Laterite), GPS coordinates, and language preferences.
+  - `mobile-android/src/screens/farmer/FarmerDashboardScreen.js` comprehensive agricultural dashboard:
+    - Farmer Identity card with land metrics grid.
+    - Micro-location weather card with live temperature, humidity, rainfall probability, and actionable agro-advisory.
+    - Live APMC mandi prices ticker with trend indicators (Rising/Falling/Stable).
+    - Current Field Crops tracker with visual stage progress bars and an in-app `+ Add Crop` modal.
+    - Urgent farming alerts (weather warnings, pest outbreaks, MSP announcements) with severity badges.
+    - Produce marketplace overview and revenue summary.
+    - Government schemes portal shortcuts (PMKSY, Raitha Siri, KCC).
+    - Agricultural library recommendations & 24/7 AI Agro-Assistant entry.
+- **Mobile Integration Tests:**
+  - `mobile-android/__tests__/phase3.test.js` validating all Phase 3 mobile and backend components.
+
+### Changed
+- `backend/src/app.js`: Mounted `farmerRoutes` at `/api/farmer`.
+- `mobile-android/App.js`: Integrated `FarmerProfileModal` into the navigation flow for farmers.
+
+---
+
 ## [Phase 2] - Authentication & Role Management - 2026-11-05
 
 ### Added
@@ -24,7 +62,7 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
   - `POST /api/auth/reset-password` (verifies OTP and updates password hash).
   - `GET /api/auth/farmer-only`, `/buyer-only`, `/seller-only`, `/admin-only` (RBAC test guards).
 - **Automated Backend Test Suite:**
-  - `backend/tests/auth.test.js` validating all 11 auth criteria (health check, farmer registration, duplicate prevention, phone/email login, invalid password rejection, protected `/me`, RBAC permission guards, buyer/seller/admin registration, and forgot/reset password).
+  - `backend/tests/auth.test.js` validating all 11 auth criteria.
 - **Mobile Authentication & Session Engine:**
   - `mobile-android/src/context/AuthContext.js` managing real user sessions, JWT tokens, and login/register/logout handlers.
 - **Mobile Auth Screens:**

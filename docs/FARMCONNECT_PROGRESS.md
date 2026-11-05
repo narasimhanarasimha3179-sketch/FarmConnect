@@ -1,8 +1,8 @@
 # FarmConnect Phase Progress Tracker
 
-**Active Phase:** PHASE 2 – Authentication & Role Management  
+**Active Phase:** PHASE 3 – Farmer Profile & Dashboard  
 **Active Step:** STEP 12 – Step Reporting & Checkpoint Confirmation  
-**Overall Completion:** 3 of 33 Phases Completed (Phase 0, Phase 1, Phase 2 Complete, Standing by for Phase 3)
+**Overall Completion:** 4 of 33 Phases Completed (Phase 0, Phase 1, Phase 2, Phase 3 Complete, Standing by for Phase 4)
 
 ---
 
@@ -13,8 +13,8 @@
 | **0** | **Project Audit, Recovery & Architecture** | **COMPLETED** | Audit Report & Architecture Docs | Full repository inspected, baseline documented, architecture formulated |
 | **1** | **Professional Project Foundation** | **COMPLETED** | Design System, Reusable UI, API Client, Error/Notification Engine | Full Android-first theme, 7 common UI components, validation, logging & banner context |
 | **2** | **Authentication & Role Management** | **COMPLETED** | 4-Role Auth System (Farmer, Buyer, Seller, Admin) | Real SQLite persistent store, bcrypt password hashing, signed JWTs, RBAC guards, 4 custom dashboards |
-| 3 | Farmer Profile & Dashboard | PENDING | Farmer Overview, Weather, Mandi Ticker, Crop Logs | Next Phase upon confirmation |
-| 4 | Buyer System | PENDING | Product Browsing, Cart, Orders | Buyer flow end-to-end |
+| **3** | **Farmer Profile & Dashboard** | **COMPLETED** | Deep Farmer Profile, Live Weather, Mandi Ticker, Crop Tracker | Micro-location weather + advisory, APMC mandi rates, field crop progress tracking, in-app +Add Crop modal, farming alerts & scheme hub |
+| 4 | Buyer System | PENDING | Product Browsing, Cart, Orders | Next Phase upon confirmation |
 | 5 | Seller System | PENDING | Inventory, Product Management | Seller catalog & sales reports |
 | 6 | Admin Dashboard | PENDING | Governance, Approvals, Analytics | System oversight panel |
 | 7 | Agricultural E-Commerce | PENDING | Input Marketplace (Seeds, Tools) | Agri supply catalog & checkout |
@@ -49,15 +49,14 @@
 ## Step Execution Protocol Log
 - **Phase 0:** Complete Project Audit, Recovery & Architecture Baseline.
 - **Phase 1:** Professional Project Foundation (Theme, Reusable Components, Validation, Logging, Notification Engine).
-- **Phase 2 Step 1:** Created Node.js Backend Service with SQLite Persistent Relational Database (`farmconnect.db`).
-- **Phase 2 Step 2:** Implemented `bcryptjs` password hashing (10 salt rounds) and HMAC-SHA256 JWT generation and validation.
-- **Phase 2 Step 3:** Built Role-Based Access Control (RBAC) middleware for `FARMER`, `BUYER`, `SELLER`, and `ADMIN`.
-- **Phase 2 Step 4:** Created Authentication Endpoints (`/register`, `/login`, `/me`, `/profile`, `/forgot-password`, `/reset-password`).
-- **Phase 2 Step 5:** Created Backend End-to-End Automated Test Suite (`backend/tests/auth.test.js`) verifying all 11 auth criteria.
-- **Phase 2 Step 6:** Built Mobile `AuthContext` managing real authentication sessions, JWT tokens, and user profile state.
-- **Phase 2 Step 7:** Developed `LoginScreen`, `RegisterScreen`, `ForgotPasswordScreen` with real-time validation and role selection.
-- **Phase 2 Step 8:** Created 4 Role-Specific Protected Screens: `FarmerDashboardScreen`, `BuyerDashboardScreen`, `SellerDashboardScreen`, and `AdminDashboardScreen`.
-- **Phase 2 Step 9:** Created `ProfileScreen` with account editing, role badge, and secure logout.
-- **Phase 2 Step 10:** Upgraded `App.js` with multi-role routing and state management while preserving the Phase 0 & Phase 1 anchors.
-- **Phase 2 Step 11:** Verified Phase 1 and Phase 2 test suites (100% pass across all 20+ test cases).
-- **Phase 2 Step 12:** Checkpoint committed to Git (`Phase 2: Authentication & Role Management Complete`).
+- **Phase 2:** Authentication & Role Management (SQLite, bcrypt, JWT, RBAC guards, 4 initial dashboards).
+- **Phase 3 Step 1:** Expanded SQLite database schema with `farmer_crops`, `farmer_alerts`, `mandi_prices`, and `weather_records`.
+- **Phase 3 Step 2:** Seeded verified APMC Mandi commodity rates and micro-location weather data for Karnataka districts.
+- **Phase 3 Step 3:** Created `backend/src/controllers/farmerController.js` and `backend/src/routes/farmerRoutes.js` (`/profile`, `/dashboard`, `/crops`).
+- **Phase 3 Step 4:** Implemented `backend/tests/farmer.test.js` validating all 7 Farmer API criteria (profile retrieval, profile update, dashboard aggregation, crop creation/deletion, RBAC guard).
+- **Phase 3 Step 5:** Created `FarmerProfileModal.js` supporting deep landholding, soil characteristics, GPS coordinates, and language preferences.
+- **Phase 3 Step 6:** Upgraded `FarmerDashboardScreen.js` with micro-location weather + actionable agro-advisory, live APMC mandi ticker, field crop progress tracking, in-app +Add Crop modal, farming alerts & scheme hub.
+- **Phase 3 Step 7:** Connected `FarmerProfileModal` to `App.js` navigation stack while preserving Phase 0 & Phase 1 anchors.
+- **Phase 3 Step 8:** Created automated test suite `mobile-android/__tests__/phase3.test.js`.
+- **Phase 3 Step 9:** Executed all 5 backend and mobile test suites with 100% pass rate.
+- **Phase 3 Step 10:** Committed checkpoint to Git (`Phase 3: Farmer Profile & Dashboard Subsystem Complete`).

@@ -39,6 +39,7 @@ import LoginScreen from './src/screens/auth/LoginScreen';
 import RegisterScreen from './src/screens/auth/RegisterScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
 import FarmerDashboardScreen from './src/screens/farmer/FarmerDashboardScreen';
+import FarmerProfileModal from './src/screens/farmer/FarmerProfileModal';
 import BuyerDashboardScreen from './src/screens/buyer/BuyerDashboardScreen';
 import SellerDashboardScreen from './src/screens/seller/SellerDashboardScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
@@ -164,6 +165,9 @@ function MainApp() {
   // If user is authenticated, route to their role dashboard
   if (isAuthenticated && user) {
     if (inProfile) {
+      if (role === 'FARMER') {
+        return <FarmerProfileModal onBack={() => setInProfile(false)} />;
+      }
       return <ProfileScreen onBack={() => setInProfile(false)} />;
     }
 
