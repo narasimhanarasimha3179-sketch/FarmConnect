@@ -5,6 +5,34 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 5] - Seller System - 2026-11-05
+
+### Added
+- **Backend Seller Subsystem:**
+  - `backend/src/controllers/sellerController.js` and `backend/src/routes/sellerRoutes.js`:
+    - `GET /api/seller/dashboard` – Merchant stats (gross revenue, pending dispatches, active items, low stock alerts) and customer orders.
+    - `GET /api/seller/products` – Inventory catalog for the merchant.
+    - `POST /api/seller/products` – Creates new agricultural product in SQLite.
+    - `PUT /api/seller/products/:id` – Updates product pricing, stock quantity, description, and category.
+    - `DELETE /api/seller/products/:id` – Removes item from store inventory.
+    - `GET /api/seller/orders` – Lists all customer consignments to fulfill.
+    - `PUT /api/seller/orders/:id/status` – Updates order lifecycle state (`PACKED`, `SHIPPED`, `DELIVERED`).
+    - `GET /api/seller/reports` – Sales analytics & revenue reports broken down by product category.
+- **Backend Automated Test Suite:**
+  - `backend/tests/seller.test.js` validating all 8 criteria (dashboard retrieval, product creation, update, deletion, order status transition, sales reports, and RBAC guard).
+- **Mobile Seller UI:**
+  - `mobile-android/src/screens/seller/SellerDashboardScreen.js` complete merchant cockpit:
+    - Verified Merchant header with license number and address.
+    - 4-metric revenue and order dispatch cards.
+    - Store Inventory manager with category pills, live stock counts, and delete actions.
+    - Customer Orders queue with one-tap status updates ("Mark as Packed", "Mark as Shipped").
+    - Category-wise sales analytics breakdown.
+  - `mobile-android/src/screens/seller/AddProductModal.js` in-app product creator supporting category pills, unit definitions, and stock levels.
+- **Mobile Integration Tests:**
+  - `mobile-android/__tests__/phase5.test.js` validating all Phase 5 mobile and backend components.
+
+---
+
 ## [Phase 4] - Buyer System - 2026-11-05
 
 ### Added
@@ -25,7 +53,7 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
     - `GET /api/buyer/orders` & `GET /api/buyer/orders/:id` – Order history and 4-step tracking timeline.
     - `POST /api/buyer/reviews` – Customer rating and feedback recording.
 - **Automated Backend Test Suite:**
-  - `backend/tests/buyer.test.js` validating all 9 criteria (dashboard, catalog search, cart operations, wishlist toggle, checkout pipeline, order tracking, review submission, and RBAC guard).
+  - `backend/tests/buyer.test.js` validating all 9 criteria.
 - **Mobile Buyer UI:**
   - `mobile-android/src/screens/buyer/BuyerDashboardScreen.js` with instant search, category chips, stock info, and floating cart icon badge.
   - `mobile-android/src/screens/buyer/CartModal.js` with dynamic item quantities, subtotal calculation, delivery fee handling, and checkout form.
