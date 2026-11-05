@@ -5,6 +5,36 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 4] - Buyer System - 2026-11-05
+
+### Added
+- **Database Schema Extensions:**
+  - `products`: Product catalog for verified agricultural inputs (Seeds, Fertilizers, Tools, Equipment).
+  - `crops_market`: Direct farm harvest listings from verified farmers.
+  - `cart_items`: User-specific shopping cart supporting quantities, pricing, and item types.
+  - `wishlist_items`: Saved crops and products for buyers.
+  - `orders` & `order_items`: Complete order ledger tracking consignment numbers, shipping addresses, payment status, and fulfilment states.
+  - `reviews`: Customer quality reviews and 1-5 star ratings.
+- **Backend Buyer Subsystem:**
+  - `backend/src/controllers/buyerController.js` and `backend/src/routes/buyerRoutes.js`:
+    - `GET /api/buyer/dashboard` – Buyer dashboard stats, active orders, featured crops and products.
+    - `GET /api/buyer/catalog` – Unified multi-category search with filtering (`type`, `category`) and sorting (`price_asc`, `price_desc`, `rating`).
+    - `GET /api/buyer/cart`, `POST /api/buyer/cart`, `DELETE /api/buyer/cart/:id` – Full cart management.
+    - `GET /api/buyer/wishlist`, `POST /api/buyer/wishlist` – Wishlist persistence.
+    - `POST /api/buyer/checkout` – Order creation pipeline converting cart to confirmed orders with invoice numbering.
+    - `GET /api/buyer/orders` & `GET /api/buyer/orders/:id` – Order history and 4-step tracking timeline.
+    - `POST /api/buyer/reviews` – Customer rating and feedback recording.
+- **Automated Backend Test Suite:**
+  - `backend/tests/buyer.test.js` validating all 9 criteria (dashboard, catalog search, cart operations, wishlist toggle, checkout pipeline, order tracking, review submission, and RBAC guard).
+- **Mobile Buyer UI:**
+  - `mobile-android/src/screens/buyer/BuyerDashboardScreen.js` with instant search, category chips, stock info, and floating cart icon badge.
+  - `mobile-android/src/screens/buyer/CartModal.js` with dynamic item quantities, subtotal calculation, delivery fee handling, and checkout form.
+  - `mobile-android/src/screens/buyer/OrderTrackingModal.js` with 4-step fulfilment stepper and customer rating submission.
+- **Mobile Integration Tests:**
+  - `mobile-android/__tests__/phase4.test.js` validating all Phase 4 mobile and backend components.
+
+---
+
 ## [Phase 3] - Farmer Profile & Dashboard - 2026-11-05
 
 ### Added
@@ -22,18 +52,10 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
     - `POST /api/farmer/crops` – adds a new crop to the field cultivation schedule.
     - `DELETE /api/farmer/crops/:id` – removes or archives a crop.
 - **Backend Automated Test Suite:**
-  - `backend/tests/farmer.test.js` validating all 7 Farmer API criteria (profile retrieval, profile update, dashboard aggregation, crop creation/deletion, and RBAC guard preventing non-farmer access).
+  - `backend/tests/farmer.test.js` validating all 7 Farmer API criteria.
 - **Mobile Farmer UI Components:**
-  - `mobile-android/src/screens/farmer/FarmerProfileModal.js` deep profile editor with land holding size, soil types (Red Sandy Loam, Black Cotton, Alluvial, Clay Loam, Laterite), GPS coordinates, and language preferences.
-  - `mobile-android/src/screens/farmer/FarmerDashboardScreen.js` comprehensive agricultural dashboard:
-    - Farmer Identity card with land metrics grid.
-    - Micro-location weather card with live temperature, humidity, rainfall probability, and actionable agro-advisory.
-    - Live APMC mandi prices ticker with trend indicators (Rising/Falling/Stable).
-    - Current Field Crops tracker with visual stage progress bars and an in-app `+ Add Crop` modal.
-    - Urgent farming alerts (weather warnings, pest outbreaks, MSP announcements) with severity badges.
-    - Produce marketplace overview and revenue summary.
-    - Government schemes portal shortcuts (PMKSY, Raitha Siri, KCC).
-    - Agricultural library recommendations & 24/7 AI Agro-Assistant entry.
+  - `mobile-android/src/screens/farmer/FarmerProfileModal.js` deep profile editor.
+  - `mobile-android/src/screens/farmer/FarmerDashboardScreen.js` comprehensive agricultural dashboard.
 - **Mobile Integration Tests:**
   - `mobile-android/__tests__/phase3.test.js` validating all Phase 3 mobile and backend components.
 

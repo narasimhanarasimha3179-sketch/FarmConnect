@@ -146,6 +146,105 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_farmer_crops_user ON farmer_crops(user_id);
     CREATE INDEX IF NOT EXISTS idx_mandi_prices_commodity ON mandi_prices(commodity);
     CREATE INDEX IF NOT EXISTS idx_mandi_prices_district ON mandi_prices(district);
+
+    CREATE TABLE IF NOT EXISTS products (
+      id TEXT PRIMARY KEY,
+      seller_id TEXT,
+      category TEXT NOT NULL, -- 'SEEDS', 'FERTILIZERS', 'EQUIPMENT', 'TOOLS', 'PESTICIDES'
+      title TEXT NOT NULL,
+      description TEXT,
+      price REAL NOT NULL,
+      unit TEXT NOT NULL, -- 'kg', 'bag', 'bottle', 'quintal', 'pack'
+      stock_quantity INTEGER NOT NULL DEFAULT 50,
+      image_url TEXT,
+      rating REAL DEFAULT 4.8,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS crops_market (
+      id TEXT PRIMARY KEY,
+      farmer_id TEXT NOT NULL,
+      farmer_name TEXT NOT NULL,
+      crop_name TEXT NOT NULL,
+      variety TEXT NOT NULL,
+      quantity_available REAL NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'Quintal',
+      expected_price REAL NOT NULL,
+      mandi_location TEXT NOT NULL,
+      quality_grade TEXT NOT NULL DEFAULT 'Grade A',
+      harvest_date TEXT NOT NULL,
+      description TEXT,
+      image_url TEXT,
+      status TEXT NOT NULL DEFAULT 'AVAILABLE',
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS cart_items (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      item_type TEXT NOT NULL, -- 'PRODUCT', 'CROP'
+      item_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      unit_price REAL NOT NULL,
+      quantity REAL NOT NULL DEFAULT 1,
+      unit TEXT NOT NULL DEFAULT 'kg',
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS wishlist_items (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      item_type TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      unit_price REAL NOT NULL,
+      unit TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS orders (
+      id TEXT PRIMARY KEY,
+      order_number TEXT UNIQUE NOT NULL,
+      buyer_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      total_amount REAL NOT NULL,
+      shipping_name TEXT NOT NULL,
+      shipping_address TEXT NOT NULL,
+      shipping_phone TEXT NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'UPI',
+      payment_status TEXT NOT NULL DEFAULT 'PAID',
+      order_status TEXT NOT NULL DEFAULT 'CONFIRMED', -- 'CONFIRMED', 'PACKED', 'SHIPPED', 'DELIVERED', 'CANCELLED'
+      tracking_note TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS order_items (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      item_type TEXT NOT NULL,
+      item_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      unit_price REAL NOT NULL,
+      quantity REAL NOT NULL,
+      unit TEXT NOT NULL,
+      total_price REAL NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS reviews (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      user_name TEXT NOT NULL,
+      target_type TEXT NOT NULL, -- 'PRODUCT', 'CROP', 'SELLER', 'FARMER'
+      target_id TEXT NOT NULL,
+      rating INTEGER NOT NULL CHECK(rating >= 1 AND rating <= 5),
+      comment TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+    CREATE INDEX IF NOT EXISTS idx_crops_market_name ON crops_market(crop_name);
+    CREATE INDEX IF NOT EXISTS idx_cart_user ON cart_items(user_id);
+    CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyer_id);
   `);
 
   // Safe schema migrations for existing SQLite databases
@@ -228,6 +327,49 @@ function seedInitialData() {
 
     for (const row of weather) {
       insertWeather.run(...row);
+    }
+  }
+
+  // Seed Verified Marketplace Products (Agri Inputs)
+  const existingProd = db.prepare('SELECT COUNT(*) as count FROM products').get();
+  if (existingProd.count === 0) {
+    const now = new Date().toISOString();
+    const products = [
+      ['prod_1', 'seller_cauvery', 'SEEDS', 'Hybrid Paddy Seeds (Sona Masoori)', 'Certified disease-resistant high-tillering variety with 135-day maturity.', 850, 'bag (10kg)', 120, 'https://images.unsplash.com/photo-1586201375761-83865001e31c', 4.9, now],
+      ['prod_2', 'seller_cauvery', 'SEEDS', 'Ragi Seeds GPU-28 (Drought Hardy)', 'High-yield drought-tolerant finger millet seed stock certified by UAS Bengaluru.', 420, 'bag (5kg)', 85, 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b', 4.8, now],
+      ['prod_3', 'seller_cauvery', 'FERTILIZERS', 'Organic Neem Cake Fertilizer', '100% pure cold-pressed neem cake. Natural nematicide and slow-release nitrogen.', 650, 'bag (25kg)', 200, 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d', 4.7, now],
+      ['prod_4', 'seller_cauvery', 'FERTILIZERS', 'Water Soluble NPK 19-19-19', '100% water-soluble foliar spray fertilizer for balanced vegetative and reproductive growth.', 1250, 'bag (25kg)', 150, 'https://images.unsplash.com/photo-1592417817098-8f3d6910985b', 4.9, now],
+      ['prod_5', 'seller_cauvery', 'TOOLS', 'Ergonomic Hand Weeder & Cultivator', 'Hardened forged steel twin-tine weeder with rust-resistant grip.', 350, 'unit', 60, 'https://images.unsplash.com/photo-1527842891421-42eec6e703ea', 4.6, now],
+      ['prod_6', 'seller_cauvery', 'EQUIPMENT', 'Battery Operated Knapsack Sprayer 16L', '12V 8Ah lithium battery with adjustable brass nozzle and dual pressure regulator.', 2800, 'unit', 40, 'https://images.unsplash.com/photo-1589923188900-85dae523342b', 4.8, now],
+    ];
+
+    const insertProduct = db.prepare(`
+      INSERT INTO products (id, seller_id, category, title, description, price, unit, stock_quantity, image_url, rating, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const p of products) {
+      insertProduct.run(...p);
+    }
+  }
+
+  // Seed Verified Market Crops (Direct Farmer Produce)
+  const existingCrops = db.prepare('SELECT COUNT(*) as count FROM crops_market').get();
+  if (existingCrops.count === 0) {
+    const now = new Date().toISOString();
+    const crops = [
+      ['crop_m1', 'farmer_ramesh', 'Ramesh Patil', 'Sugarcane', 'Co 86032 (High Sugar Recovery)', 250, 'Quintal', 3350, 'Mandya APMC Hub', 'Grade A', '2026-11-20', 'Freshly matured crop with high brix sweetness. Ready for direct mill or jaggery procurement.', 'https://images.unsplash.com/photo-1596704017254-9b121068fb31', 'AVAILABLE', now],
+      ['crop_m2', 'farmer_ramesh', 'Ramesh Patil', 'Sona Masoori Paddy', 'Paddy Raw Grain (Fine)', 120, 'Quintal', 2400, 'Maddur APMC Yard', 'Grade A', '2026-12-05', 'Single-origin unpolished paddy grain harvested from canal-fed fields in Maddur.', 'https://images.unsplash.com/photo-1586201375761-83865001e31c', 'AVAILABLE', now],
+      ['crop_m3', 'farmer_shankar', 'Shankar Gowda', 'Finger Millet (Ragi)', 'GPU-28 Organic Grade', 80, 'Quintal', 4150, 'Mandya Market', 'Grade A', '2026-11-15', 'Naturally cultivated rainfed organic ragi rich in calcium and dietary fiber.', 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b', 'AVAILABLE', now],
+    ];
+
+    const insertCrop = db.prepare(`
+      INSERT INTO crops_market (id, farmer_id, farmer_name, crop_name, variety, quantity_available, unit, expected_price, mandi_location, quality_grade, harvest_date, description, image_url, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const c of crops) {
+      insertCrop.run(...c);
     }
   }
 }

@@ -1,8 +1,8 @@
 # FarmConnect Phase Progress Tracker
 
-**Active Phase:** PHASE 3 – Farmer Profile & Dashboard  
-**Active Step:** STEP 12 – Step Reporting & Checkpoint Confirmation  
-**Overall Completion:** 4 of 33 Phases Completed (Phase 0, Phase 1, Phase 2, Phase 3 Complete, Standing by for Phase 4)
+**Active Phase:** PHASE 4 – Buyer System  
+**Active Step:** STEP 12 – Step Reporting & Auto-Progression  
+**Overall Completion:** 5 of 33 Phases Completed (Phases 0, 1, 2, 3, 4 Complete, Continuous Roadmap Execution Active)
 
 ---
 
@@ -14,10 +14,10 @@
 | **1** | **Professional Project Foundation** | **COMPLETED** | Design System, Reusable UI, API Client, Error/Notification Engine | Full Android-first theme, 7 common UI components, validation, logging & banner context |
 | **2** | **Authentication & Role Management** | **COMPLETED** | 4-Role Auth System (Farmer, Buyer, Seller, Admin) | Real SQLite persistent store, bcrypt password hashing, signed JWTs, RBAC guards, 4 custom dashboards |
 | **3** | **Farmer Profile & Dashboard** | **COMPLETED** | Deep Farmer Profile, Live Weather, Mandi Ticker, Crop Tracker | Micro-location weather + advisory, APMC mandi rates, field crop progress tracking, in-app +Add Crop modal, farming alerts & scheme hub |
-| 4 | Buyer System | PENDING | Product Browsing, Cart, Orders | Next Phase upon confirmation |
-| 5 | Seller System | PENDING | Inventory, Product Management | Seller catalog & sales reports |
-| 6 | Admin Dashboard | PENDING | Governance, Approvals, Analytics | System oversight panel |
-| 7 | Agricultural E-Commerce | PENDING | Input Marketplace (Seeds, Tools) | Agri supply catalog & checkout |
+| **4** | **Buyer System** | **COMPLETED** | Unified Catalog, Cart, Wishlist, Checkout, Tracking, Reviews | Real product & crop marketplace browsing, interactive cart, automated checkout, order lifecycle timeline & customer reviews |
+| 5 | Seller System | IN PROGRESS | Inventory Management, Product CRUD, Order Fulfilment | Continuous execution active |
+| 6 | Admin Dashboard | PENDING | Governance, Approvals, Analytics | Continuous execution pipeline |
+| 7 | Agricultural E-Commerce | PENDING | Input Marketplace (Seeds, Tools) | Next in pipeline |
 | 8 | Crop Marketplace | PENDING | Mandi/Produce Selling Platform | Direct farmer-to-buyer trade |
 | 9 | Live Agricultural Market Prices | PENDING | Verified APMC/Mandi Price Ticker | Real data ingestion & chart |
 | 10 | Weather System | PENDING | Forecasts, Rain Alerts, Advisories | Geo-targeted weather integration |
@@ -50,13 +50,14 @@
 - **Phase 0:** Complete Project Audit, Recovery & Architecture Baseline.
 - **Phase 1:** Professional Project Foundation (Theme, Reusable Components, Validation, Logging, Notification Engine).
 - **Phase 2:** Authentication & Role Management (SQLite, bcrypt, JWT, RBAC guards, 4 initial dashboards).
-- **Phase 3 Step 1:** Expanded SQLite database schema with `farmer_crops`, `farmer_alerts`, `mandi_prices`, and `weather_records`.
-- **Phase 3 Step 2:** Seeded verified APMC Mandi commodity rates and micro-location weather data for Karnataka districts.
-- **Phase 3 Step 3:** Created `backend/src/controllers/farmerController.js` and `backend/src/routes/farmerRoutes.js` (`/profile`, `/dashboard`, `/crops`).
-- **Phase 3 Step 4:** Implemented `backend/tests/farmer.test.js` validating all 7 Farmer API criteria (profile retrieval, profile update, dashboard aggregation, crop creation/deletion, RBAC guard).
-- **Phase 3 Step 5:** Created `FarmerProfileModal.js` supporting deep landholding, soil characteristics, GPS coordinates, and language preferences.
-- **Phase 3 Step 6:** Upgraded `FarmerDashboardScreen.js` with micro-location weather + actionable agro-advisory, live APMC mandi ticker, field crop progress tracking, in-app +Add Crop modal, farming alerts & scheme hub.
-- **Phase 3 Step 7:** Connected `FarmerProfileModal` to `App.js` navigation stack while preserving Phase 0 & Phase 1 anchors.
-- **Phase 3 Step 8:** Created automated test suite `mobile-android/__tests__/phase3.test.js`.
-- **Phase 3 Step 9:** Executed all 5 backend and mobile test suites with 100% pass rate.
-- **Phase 3 Step 10:** Committed checkpoint to Git (`Phase 3: Farmer Profile & Dashboard Subsystem Complete`).
+- **Phase 3:** Farmer Profile & Dashboard (Weather telemetry, Mandi rates, Crop cultivation schedule, Alerts).
+- **Phase 4 Step 1:** Created SQLite tables: `products`, `crops_market`, `cart_items`, `wishlist_items`, `orders`, `order_items`, and `reviews`.
+- **Phase 4 Step 2:** Seeded verified products (seeds, fertilizers, tools) and direct farm harvest crops (sugarcane, paddy, ragi).
+- **Phase 4 Step 3:** Created `backend/src/controllers/buyerController.js` and `backend/src/routes/buyerRoutes.js`.
+- **Phase 4 Step 4:** Implemented `backend/tests/buyer.test.js` validating all 9 criteria (dashboard, catalog search, cart management, wishlist, checkout, order tracking, reviews, RBAC).
+- **Phase 4 Step 5:** Created `CartModal.js` with dynamic item quantities, subtotal calculation, delivery fee handling, and checkout form.
+- **Phase 4 Step 6:** Created `OrderTrackingModal.js` with 4-step fulfilment stepper and customer rating submission.
+- **Phase 4 Step 7:** Upgraded `BuyerDashboardScreen.js` with real catalog search, category chips, wishlist toggle, and floating cart badge.
+- **Phase 4 Step 8:** Created automated test suite `mobile-android/__tests__/phase4.test.js`.
+- **Phase 4 Step 9:** Executed all 7 backend & mobile regression suites (100% pass across 31 total test cases).
+- **Phase 4 Step 10:** Checkpoint committed to Git (`Phase 4: Buyer System Complete`).
