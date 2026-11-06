@@ -5,6 +5,31 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 6] - Admin Dashboard & Platform Governance - 2026-11-06
+
+### Added
+- **Backend Admin Governance Subsystem:**
+  - `backend/src/controllers/adminController.js` and `backend/src/routes/adminRoutes.js`:
+    - `GET /api/admin/dashboard` – Real-time aggregated platform telemetry (total GMV, completed orders, multi-role user counts, pending KYCs, active products, open disputes).
+    - `GET /api/admin/users` & `PUT /api/admin/users/:id/status` – Multi-role user governance directory with filtering, search, and one-tap account suspension/reactivation.
+    - `GET /api/admin/sellers` & `PUT /api/admin/sellers/:id/verify` – Merchant KYC verification queue with license audits and status toggling (`VERIFIED`, `REJECTED`, `PENDING`).
+    - `GET /api/admin/complaints` & `PUT /api/admin/complaints/:id` – Farmer/Buyer grievance resolution log with dispute resolution notes.
+    - `GET /api/admin/audit-logs` – Immutable system audit trail logging actions, actors, targets, and timestamps.
+    - `GET /api/admin/mandi-prices` & `POST /api/admin/mandi-prices` – Mandi commodity price administration and real-time APMC updates.
+- **Backend Automated Test Suite:**
+  - `backend/tests/admin.test.js` validating all 17 criteria (admin login, dashboard stats, RBAC 403 guard for non-admins, user directory, suspension/reactivation, seller verification, complaint resolution, mandi price creation, and audit trail).
+- **Mobile Admin UI:**
+  - `mobile-android/src/screens/admin/AdminDashboardScreen.js` upgraded with 5 tabs:
+    - Overview Tab: 4 KPI metric cards (Total GMV, Orders, Registered Users, Pending KYC), Ecosystem participant breakdown, Quick operations, and recent audit events.
+    - Seller KYC Queue Tab: Merchant registry cards displaying store name, proprietor contact, license number, GSTIN, and one-tap "Approve KYC" / "Reject KYC" controls.
+    - User Governance Directory Tab: Role filter chips (`ALL`, `FARMER`, `BUYER`, `SELLER`, `ADMIN`), text search, and Suspend/Reactivate action buttons.
+    - Grievance & Dispute Resolution Tab: Detailed complaint cards with status badges and an interactive "Resolve Dispute" modal capturing APMC arbitration notes.
+    - Platform Audit Trail Tab: Last 50 immutable system events with action badges, timestamps, and actor identifiers.
+- **Mobile Integration Tests:**
+  - `mobile-android/__tests__/phase6.test.js` verifying integration and baseline preservation.
+
+---
+
 ## [Phase 5] - Seller System - 2026-11-05
 
 ### Added

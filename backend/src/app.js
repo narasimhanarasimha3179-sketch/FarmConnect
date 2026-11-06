@@ -5,6 +5,7 @@ const authRoutes = require('./routes/authRoutes');
 const farmerRoutes = require('./routes/farmerRoutes');
 const buyerRoutes = require('./routes/buyerRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/buyer', buyerRoutes);
 app.use('/api/seller', sellerRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 Handler
 app.use((req, res) => {

@@ -140,6 +140,33 @@ function initSchema() {
       timestamp TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS complaints (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      user_name TEXT NOT NULL,
+      user_role TEXT NOT NULL,
+      subject TEXT NOT NULL,
+      description TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'OPEN', -- 'OPEN', 'RESOLVED', 'REJECTED'
+      resolution_notes TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS schemes (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      state TEXT NOT NULL DEFAULT 'Karnataka',
+      category TEXT NOT NULL,
+      eligibility TEXT NOT NULL,
+      benefits TEXT NOT NULL,
+      required_documents TEXT,
+      application_url TEXT,
+      deadline TEXT,
+      status TEXT NOT NULL DEFAULT 'ACTIVE',
+      created_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -250,6 +277,16 @@ function initSchema() {
   // Safe schema migrations for existing SQLite databases
   try { db.exec('ALTER TABLE farmer_profiles ADD COLUMN taluk TEXT;'); } catch {}
   try { db.exec('ALTER TABLE farmer_profiles ADD COLUMN location_gps TEXT;'); } catch {}
+  try { db.exec("ALTER TABLE seller_profiles ADD COLUMN verification_status TEXT DEFAULT 'PENDING';"); } catch {}
+  try { db.exec("ALTER TABLE seller_profiles ADD COLUMN business_name TEXT;"); } catch {}
+  try { db.exec("ALTER TABLE seller_profiles ADD COLUMN gstin TEXT;"); } catch {}
+  try { db.exec("ALTER TABLE seller_profiles ADD COLUMN total_orders INTEGER DEFAULT 0;"); } catch {}
+  try { db.exec("ALTER TABLE seller_profiles ADD COLUMN total_revenue REAL DEFAULT 0.0;"); } catch {}
+  try { db.exec("ALTER TABLE products ADD COLUMN is_active INTEGER DEFAULT 1;"); } catch {}
+  try { db.exec('ALTER TABLE audit_logs ADD COLUMN target_type TEXT;'); } catch {}
+  try { db.exec('ALTER TABLE audit_logs ADD COLUMN target_id TEXT;'); } catch {}
+  try { db.exec("UPDATE seller_profiles SET business_name = shop_name WHERE business_name IS NULL;"); } catch {}
+  try { db.exec("UPDATE seller_profiles SET verification_status = 'VERIFIED' WHERE is_verified = 1;"); } catch {}
 
   // Seed Initial Verified Mandi Data & Weather Data for testing and real reference
   seedInitialData();
@@ -372,8 +409,29 @@ function seedInitialData() {
       insertCrop.run(...c);
     }
   }
+
+  // Seed Initial Complaints / Disputes
+  const existingComplaints = db.prepare('SELECT COUNT(*) as count FROM complaints').get();
+  if (existingComplaints.count === 0) {
+    const now = new Date().toISOString();
+    const complaints = [
+      ['cmp_1', 'buyer_kiran', 'Kiran Wholesales', 'BUYER', 'Consignment moisture verification', 'Requested moisture certificate for paddy shipment #FC-ORD-2026-48679.', 'OPEN', null, now, now],
+      ['cmp_2', 'farmer_ramesh', 'Ramesh Patil', 'FARMER', 'Mandi arrival weighing report', 'Maddur APMC weighbridge sync delayed by 2 hours.', 'RESOLVED', 'Resolved with APMC digital slip integration.', now, now],
+    ];
+
+    const insertCmp = db.prepare(`
+      INSERT INTO complaints (id, user_id, user_name, user_role, subject, description, status, resolution_notes, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const c of complaints) {
+      insertCmp.run(...c);
+    }
+  }
 }
 
 initSchema();
+
+db.getDb = () => db;
 
 module.exports = db;
