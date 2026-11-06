@@ -17,10 +17,22 @@ import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import apiClient from '../../services/apiClient';
 
+// Smart Agricultural Subsystem Modules (Phases 9 - 24)
+import CameraAiScreen from '../camera/CameraAiScreen';
+import AiAssistantScreen from '../ai/AiAssistantScreen';
+import AgriScienceScreen from '../knowledge/AgriScienceScreen';
+import MandiPriceScreen from '../mandi/MandiPriceScreen';
+import WeatherScreen from '../weather/WeatherScreen';
+import GovernmentSchemesScreen from '../schemes/GovernmentSchemesScreen';
+import CommunityScreen from '../community/CommunityScreen';
+import LibraryScreen from '../library/LibraryScreen';
+import GlobalSearchScreen from '../search/GlobalSearchScreen';
+
 export default function FarmerDashboardScreen({ onOpenProfile }) {
   const { user, logout } = useAuth();
   const { showSuccess, showError, showInfo } = useNotification();
 
+  const [activeView, setActiveView] = useState('dashboard');
   const [dashboardData, setDashboardData] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddCropModal, setShowAddCropModal] = useState(false);
@@ -115,6 +127,40 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
     total_harvest_revenue: '₹1,42,800',
   };
 
+  if (activeView === 'camera') {
+    return <CameraAiScreen onBack={() => setActiveView('dashboard')} />;
+  }
+  if (activeView === 'ai') {
+    return <AiAssistantScreen onBack={() => setActiveView('dashboard')} />;
+  }
+  if (activeView === 'soil') {
+    return <AgriScienceScreen onBack={() => setActiveView('dashboard')} initialTab="soil" />;
+  }
+  if (activeView === 'pests') {
+    return <AgriScienceScreen onBack={() => setActiveView('dashboard')} initialTab="pests" />;
+  }
+  if (activeView === 'guides') {
+    return <AgriScienceScreen onBack={() => setActiveView('dashboard')} initialTab="guides" />;
+  }
+  if (activeView === 'schemes') {
+    return <GovernmentSchemesScreen onBack={() => setActiveView('dashboard')} />;
+  }
+  if (activeView === 'mandi') {
+    return <MandiPriceScreen onBack={() => setActiveView('dashboard')} />;
+  }
+  if (activeView === 'weather') {
+    return <WeatherScreen onBack={() => setActiveView('dashboard')} />;
+  }
+  if (activeView === 'community') {
+    return <CommunityScreen navigation={{ goBack: () => setActiveView('dashboard') }} />;
+  }
+  if (activeView === 'library') {
+    return <LibraryScreen navigation={{ goBack: () => setActiveView('dashboard') }} />;
+  }
+  if (activeView === 'search') {
+    return <GlobalSearchScreen navigation={{ goBack: () => setActiveView('dashboard') }} />;
+  }
+
   return (
     <View style={styles.container}>
       <Header
@@ -128,6 +174,199 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
       >
+        {/* Quick Launch Action Strip */}
+        <View style={styles.quickLaunchBar}>
+          <TouchableOpacity style={styles.quickLaunchChipPrimary} onPress={() => setActiveView('camera')}>
+            <Text style={styles.quickLaunchIcon}>📸</Text>
+            <Text style={styles.quickLaunchTextPrimary}>Camera Disease Scanner</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('ai')}>
+            <Text style={styles.quickLaunchIcon}>🤖</Text>
+            <Text style={styles.quickLaunchText}>AI Assistant</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('soil')}>
+            <Text style={styles.quickLaunchIcon}>🧪</Text>
+            <Text style={styles.quickLaunchText}>NPK Calculator</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('schemes')}>
+            <Text style={styles.quickLaunchIcon}>🏛️</Text>
+            <Text style={styles.quickLaunchText}>Govt Schemes</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Krishi Smart AI Tools & Services Card Grid */}
+        <Card style={styles.toolsCard}>
+          <View style={styles.toolsHeader}>
+            <View>
+              <Text style={styles.toolsTitle}>✨ Krishi Smart AI Tools & Services</Text>
+              <Text style={styles.toolsSubtitle}>Tap any tool below to launch AI diagnostics, roadmaps & advisory</Text>
+            </View>
+            <Badge label="10 AI TOOLS ACTIVE" variant="success" size="sm" />
+          </View>
+
+          <View style={styles.toolsGrid}>
+            <TouchableOpacity style={styles.toolItemPrimary} onPress={() => setActiveView('camera')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 28 }}>📸</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="CAMERA AI VISION" variant="success" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Plant Disease Pathology Scanner</Text>
+                <Text style={styles.toolItemDesc}>
+                  Point camera or upload leaf/stem/fruit photo to predict plant disease with confidence % & ICAR certified treatment.
+                </Text>
+                <Text style={styles.toolActionLink}>Launch Camera Scanner →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('ai')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🤖</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="MULTILINGUAL AI" variant="primary" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>FarmConnect Agricultural AI Assistant</Text>
+                <Text style={styles.toolItemDesc}>
+                  Conversational assistant with voice audio support in English, Kannada (ಕನ್ನಡ), and Hindi (हिन्दी).
+                </Text>
+                <Text style={styles.toolActionLink}>Start AI Chat →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('soil')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🧪</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="PRECISION AGRI" variant="warning" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Soil Health & Precision NPK Calculator</Text>
+                <Text style={styles.toolItemDesc}>
+                  Lab reports analysis (pH, N, P, K, Carbon) with exact commercial fertilizer 50kg bags computation (Urea, DAP, MOP).
+                </Text>
+                <Text style={styles.toolActionLink}>Calculate NPK Dosage →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('pests')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🐛</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="IPM PROTOCOLS" variant="danger" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Pest & Disease Diagnosis Rule Engine</Text>
+                <Text style={styles.toolItemDesc}>
+                  Symptom matching for stem borer, blast & blight with Trichogramma biological controls and CIBRC chemical remedies.
+                </Text>
+                <Text style={styles.toolActionLink}>Diagnose Field Symptoms →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('schemes')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🏛️</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="GOVT SUBSIDIES" variant="primary" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Central & Karnataka Welfare Schemes</Text>
+                <Text style={styles.toolItemDesc}>
+                  PM-KISAN ₹6,000, PMFBY Crop Insurance, Raitha Siri ₹10,000/ha millet subsidy & Krishi Bhagya 90% farm ponds.
+                </Text>
+                <Text style={styles.toolActionLink}>Browse & Apply Schemes →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('mandi')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>📈</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="MARKET INTELLIGENCE" variant="info" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Live APMC Mandi Rates & 7-Day Charts</Text>
+                <Text style={styles.toolItemDesc}>
+                  Verified modal rates across Mandya, Maddur, Mysuru, Hubli & Kolar with multi-day chronological price trend bar charts.
+                </Text>
+                <Text style={styles.toolActionLink}>Explore APMC Trends →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('weather')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🌦️</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="METEOROLOGICAL" variant="neutral" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Detailed Agro-Weather & Spray Advisories</Text>
+                <Text style={styles.toolItemDesc}>
+                  4-Day precipitation predictions, humidity index, and actionable field spraying/irrigation scheduling advice.
+                </Text>
+                <Text style={styles.toolActionLink}>View Micro-Climate Telemetry →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('community')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>👥</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="PEER NETWORK" variant="success" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Krishi Community Peer Discussions</Text>
+                <Text style={styles.toolItemDesc}>
+                  Share trash mulching results, seed emergence photos, ask questions, and upvote peer farmer solutions.
+                </Text>
+                <Text style={styles.toolActionLink}>Open Community Feed →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('guides')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>📖</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="CULTIVATION ROADMAPS" variant="primary" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Crop Cultivation Roadmaps & Guides</Text>
+                <Text style={styles.toolItemDesc}>
+                  Stage-by-stage agronomic guides for Sugarcane (Co 86032), Paddy (Sona Masoori), and Ragi (GPU-28).
+                </Text>
+                <Text style={styles.toolActionLink}>Read Roadmaps →</Text>
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.toolItem} onPress={() => setActiveView('search')} activeOpacity={0.7}>
+              <View style={styles.toolIconCircle}>
+                <Text style={{ fontSize: 24 }}>🔍</Text>
+              </View>
+              <View style={styles.toolContent}>
+                <View style={styles.toolBadgeRow}>
+                  <Badge label="UNIVERSAL SEARCH" variant="neutral" size="sm" />
+                </View>
+                <Text style={styles.toolItemTitle}>Universal Global Search Engine</Text>
+                <Text style={styles.toolItemDesc}>
+                  Instant multi-domain search across crops, seeds, fertilizers, mandis, schemes, and digital articles.
+                </Text>
+                <Text style={styles.toolActionLink}>Search Everything →</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Card>
+
         {/* 1. Farmer Land & Soil Profile Header Card */}
         <Card style={styles.farmerIdentityCard}>
           <View style={styles.identityRow}>
@@ -171,58 +410,64 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
 
         {/* 2. Live Agricultural Weather & Agro-Advisory Widget */}
         <Card style={styles.weatherCard}>
-          <View style={styles.weatherHeader}>
-            <View>
-              <Text style={styles.weatherSectionTitle}>⛅ Micro-Location Weather</Text>
-              <Text style={styles.weatherLocation}>{weather.district}, {weather.state || 'Karnataka'}</Text>
+          <TouchableOpacity onPress={() => setActiveView('weather')} activeOpacity={0.8}>
+            <View style={styles.weatherHeader}>
+              <View>
+                <Text style={styles.weatherSectionTitle}>⛅ Micro-Location Weather</Text>
+                <Text style={styles.weatherLocation}>{weather.district}, {weather.state || 'Karnataka'}</Text>
+              </View>
+              <Badge label="LIVE TELEMETRY" variant="success" size="sm" />
             </View>
-            <Badge label="LIVE TELEMETRY" variant="success" size="sm" />
-          </View>
 
-          <View style={styles.weatherMainRow}>
-            <Text style={styles.weatherTemp}>{weather.temp_c}°C</Text>
-            <View style={styles.weatherConditionBox}>
-              <Text style={styles.weatherCondition}>{weather.condition}</Text>
-              <Text style={styles.weatherRainProb}>🌧 Rain: {weather.rainfall_chance}% probability</Text>
+            <View style={styles.weatherMainRow}>
+              <Text style={styles.weatherTemp}>{weather.temp_c}°C</Text>
+              <View style={styles.weatherConditionBox}>
+                <Text style={styles.weatherCondition}>{weather.condition}</Text>
+                <Text style={styles.weatherRainProb}>🌧 Rain: {weather.rainfall_chance}% probability</Text>
+              </View>
             </View>
-          </View>
 
-          <View style={styles.weatherStatsRow}>
-            <Text style={styles.weatherStatText}>💧 Humidity: {weather.humidity}%</Text>
-            <Text style={styles.weatherStatText}>💨 Wind: {weather.wind_speed_kmh} km/h</Text>
-          </View>
-
-          {/* Actionable Agro-Advisory */}
-          <View style={styles.advisoryBox}>
-            <Text style={styles.advisoryTitle}>🌱 Actionable Farming Advisory:</Text>
-            <Text style={styles.advisoryText}>{weather.advisory}</Text>
-          </View>
-
-          {/* 4-Day Forecast Pills */}
-          {weather.forecast && weather.forecast.length > 0 ? (
-            <View style={styles.forecastRow}>
-              {weather.forecast.map((f, i) => (
-                <View key={i} style={styles.forecastPill}>
-                  <Text style={styles.forecastDay}>{f.day}</Text>
-                  <Text style={styles.forecastTemp}>{f.temp}°C</Text>
-                  <Text style={styles.forecastRain}>{f.rain}% rain</Text>
-                </View>
-              ))}
+            <View style={styles.weatherStatsRow}>
+              <Text style={styles.weatherStatText}>💧 Humidity: {weather.humidity}%</Text>
+              <Text style={styles.weatherStatText}>💨 Wind: {weather.wind_speed_kmh} km/h</Text>
             </View>
-          ) : null}
+
+            {/* Actionable Agro-Advisory */}
+            <View style={styles.advisoryBox}>
+              <Text style={styles.advisoryTitle}>🌱 Actionable Farming Advisory:</Text>
+              <Text style={styles.advisoryText}>{weather.advisory}</Text>
+            </View>
+
+            {/* 4-Day Forecast Pills */}
+            {weather.forecast && weather.forecast.length > 0 ? (
+              <View style={styles.forecastRow}>
+                {weather.forecast.map((f, i) => (
+                  <View key={i} style={styles.forecastPill}>
+                    <Text style={styles.forecastDay}>{f.day}</Text>
+                    <Text style={styles.forecastTemp}>{f.temp}°C</Text>
+                    <Text style={styles.forecastRain}>{f.rain}% rain</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+
+            <Text style={[styles.toolActionLink, { marginTop: spacing.sm, textAlign: 'right' }]}>
+              Open Full 7-Day Forecast & Spray Planner →
+            </Text>
+          </TouchableOpacity>
         </Card>
 
         {/* 3. Live APMC Mandi Ticker Widget */}
         <Card style={styles.mandiCard}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>📈 Live APMC Mandi Rates</Text>
-            <TouchableOpacity onPress={() => showInfo('APMC Mandi directory sync active', 'Mandi')}>
-              <Text style={styles.seeAllText}>Filter Mandis →</Text>
+            <TouchableOpacity onPress={() => setActiveView('mandi')}>
+              <Text style={styles.seeAllText}>View All Mandis & Trends →</Text>
             </TouchableOpacity>
           </View>
 
           {mandiPrices.map((item) => (
-            <View key={item.id} style={styles.mandiRow}>
+            <TouchableOpacity key={item.id} style={styles.mandiRow} onPress={() => setActiveView('mandi')} activeOpacity={0.7}>
               <View style={styles.mandiCropCol}>
                 <Text style={styles.mandiCropName}>{item.commodity}</Text>
                 <Text style={styles.mandiVariety}>{item.variety} • {item.market_mandi}</Text>
@@ -238,7 +483,7 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
                   {item.trend === 'UP' ? '▲ Rising' : item.trend === 'DOWN' ? '▼ Falling' : '▬ Stable'}
                 </Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </Card>
 
@@ -349,12 +594,18 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
 
         {/* 7. Government Schemes & Agricultural Library Hub */}
         <Card style={styles.knowledgeCard}>
-          <Text style={styles.sectionTitle}>🏛 Government Schemes & Subsidies</Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>🏛 Government Schemes & Subsidies</Text>
+            <TouchableOpacity onPress={() => setActiveView('schemes')}>
+              <Text style={styles.seeAllText}>Browse All Schemes →</Text>
+            </TouchableOpacity>
+          </View>
           {schemes.map((sch) => (
             <TouchableOpacity
               key={sch.id}
               style={styles.schemeItem}
-              onPress={() => showInfo(sch.subsidy, sch.title)}
+              onPress={() => setActiveView('schemes')}
+              activeOpacity={0.7}
             >
               <View style={styles.schemeHeader}>
                 <Text style={styles.schemeTitle}>{sch.title}</Text>
@@ -364,12 +615,18 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
             </TouchableOpacity>
           ))}
 
-          <Text style={[styles.sectionTitle, { marginTop: spacing.md }]}>📚 Agricultural Library Guides</Text>
+          <View style={[styles.sectionHeaderRow, { marginTop: spacing.md }]}>
+            <Text style={styles.sectionTitle}>📚 Agricultural Library Guides</Text>
+            <TouchableOpacity onPress={() => setActiveView('library')}>
+              <Text style={styles.seeAllText}>Open Library →</Text>
+            </TouchableOpacity>
+          </View>
           {guides.map((g) => (
             <TouchableOpacity
               key={g.id}
               style={styles.guideItem}
-              onPress={() => showInfo(`Opening complete guide for: ${g.title}`, 'Agri Library')}
+              onPress={() => setActiveView('library')}
+              activeOpacity={0.7}
             >
               <Text style={styles.guideEmoji}>📖</Text>
               <View style={styles.guideTextCol}>
@@ -387,13 +644,13 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
             <Badge label="24/7 HELPLINE" variant="farmer" size="sm" />
           </View>
           <Text style={styles.aiDesc}>
-            Have questions about crop diseases, pest symptoms, fertilizer dosages, or weather changes?
+            Have questions about crop diseases, pest symptoms, fertilizer dosages, or weather changes? Chat in English, Kannada, or Hindi with instant voice audio.
           </Text>
           <Button
-            title="Ask FarmConnect AI Assistant"
-            variant="secondary"
+            title="Launch Krishi AI Assistant"
+            variant="primary"
             size="md"
-            onPress={() => showInfo('Phase 15 connects the full conversational Gemini AI model', 'AI Assistant')}
+            onPress={() => setActiveView('ai')}
             style={styles.aiBtn}
           />
         </Card>
@@ -441,6 +698,137 @@ const styles = StyleSheet.create({
   scroll: {
     padding: spacing.md,
     paddingBottom: spacing.xxxl,
+  },
+  // Quick Launch Action Strip
+  quickLaunchBar: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  quickLaunchChipPrimary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+    elevation: 2,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+  },
+  quickLaunchChipSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: borderRadius.full,
+  },
+  quickLaunchIcon: {
+    fontSize: 16,
+    marginRight: 6,
+  },
+  quickLaunchTextPrimary: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: '#ffffff',
+  },
+  quickLaunchText: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semiBold,
+    color: colors.textPrimary,
+  },
+
+  // Krishi Smart AI Tools & Services Card Grid
+  toolsCard: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderWidth: 1.5,
+    borderColor: colors.primaryLight,
+    backgroundColor: '#F7FCF8',
+  },
+  toolsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    paddingBottom: spacing.sm,
+  },
+  toolsTitle: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+  },
+  toolsSubtitle: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  toolsGrid: {
+    gap: spacing.sm,
+  },
+  toolItemPrimary: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  toolItem: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    alignItems: 'center',
+  },
+  toolIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceMuted,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.md,
+  },
+  toolContent: {
+    flex: 1,
+  },
+  toolBadgeRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+  },
+  toolItemTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+    marginBottom: 2,
+  },
+  toolItemDesc: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    lineHeight: typography.lineHeights.tight,
+    marginBottom: 6,
+  },
+  toolActionLink: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
   },
   // 1. Farmer Identity Card
   farmerIdentityCard: {

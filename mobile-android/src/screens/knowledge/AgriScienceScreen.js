@@ -16,10 +16,10 @@ import { Card, Badge, Button, Header, LoadingIndicator, EmptyState } from '../..
 import { useNotification } from '../../context/NotificationContext';
 import { apiClient } from '../../services/apiClient';
 
-export default function AgriScienceScreen({ onBack }) {
+export default function AgriScienceScreen({ onBack, initialTab = 'guides' }) {
   const { showSuccess, showError } = useNotification();
 
-  const [activeTab, setActiveTab] = useState('guides'); // 'guides' | 'soil' | 'pests'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'guides' | 'soil' | 'pests'
   const [loading, setLoading] = useState(false);
 
   // Tab 1: Cultivation Guides
