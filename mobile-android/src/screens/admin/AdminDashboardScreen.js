@@ -17,11 +17,13 @@ import { colors, typography, spacing } from '../../theme';
 import { Card, Badge, Button, Header, LoadingIndicator, EmptyState } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import { apiClient } from '../../services/apiClient';
 
 export default function AdminDashboardScreen({ onOpenProfile }) {
   const { user, logout } = useAuth();
   const { showSuccess, showError, showInfo } = useNotification();
+  const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sellers' | 'users' | 'complaints' | 'audit' | 'compliance'
   const [loading, setLoading] = useState(true);

@@ -6,6 +6,7 @@ import LoadingIndicator from './LoadingIndicator';
 import EmptyState from './EmptyState';
 import Badge from './Badge';
 import Header from './Header';
+import LanguageSelector from './LanguageSelector';
 
 export {
   Button,
@@ -15,6 +16,7 @@ export {
   EmptyState,
   Badge,
   Header,
+  LanguageSelector,
 };
 
 export default {
@@ -25,4 +27,5 @@ export default {
   EmptyState,
   Badge,
   Header,
+  LanguageSelector,
 };

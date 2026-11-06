@@ -7,11 +7,13 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Button, Input, Card, Badge } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import validators from '../../utils/validation';
 
 export default function RegisterScreen({ onNavigateLogin }) {
   const { register, isLoading, authError } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useLanguage();
 
   const [role, setRole] = useState('FARMER'); // FARMER, BUYER, SELLER, ADMIN
   const [name, setName] = useState('');
@@ -133,12 +135,12 @@ export default function RegisterScreen({ onNavigateLogin }) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <Card style={styles.formCard}>
-        <Text style={styles.title}>Create FarmConnect Account</Text>
+        <Text style={styles.title}>{t('register')}</Text>
         <Text style={styles.subtitle}>Select your agricultural role and enter your details</Text>
 
         {/* Role Selection Tabs */}
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionLabel}>Select Your Role</Text>
+          <Text style={styles.sectionLabel}>{t('select_role')}</Text>
           <TouchableOpacity style={styles.autoFillPill} onPress={handleAutoFillSample}>
             <Text style={styles.autoFillText}>⚡ Auto-Fill Sample</Text>
           </TouchableOpacity>

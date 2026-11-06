@@ -27,9 +27,11 @@ import {
   EmptyState,
   Badge,
   Header,
+  LanguageSelector,
 } from './src/components/common';
 import { NotificationProvider, useNotification } from './src/context/NotificationContext';
 import { AuthProvider, useAuth } from './src/context/AuthContext';
+import { LanguageProvider, useLanguage } from './src/context/LanguageContext';
 import validators from './src/utils/validation';
 import env from './src/config/env';
 import logger from './src/services/logger';
@@ -159,30 +161,53 @@ function FoundationShowcase({ onBackToAuth }) {
 // Master Application Routing Controller
 function MainApp() {
   const { isAuthenticated, role, user } = useAuth();
+  const { t } = useLanguage();
   const [authView, setAuthView] = useState('login'); // 'login' | 'register' | 'forgot' | 'showcase'
   const [inProfile, setInProfile] = useState(false);
 
   // If user is authenticated, route to their role dashboard
   if (isAuthenticated && user) {
+    let dashboardContent = null;
     if (inProfile) {
       if (role === 'FARMER') {
-        return <FarmerProfileModal onBack={() => setInProfile(false)} />;
+        dashboardContent = <FarmerProfileModal onBack={() => setInProfile(false)} />;
+      } else {
+        dashboardContent = <ProfileScreen onBack={() => setInProfile(false)} />;
       }
-      return <ProfileScreen onBack={() => setInProfile(false)} />;
+    } else {
+      switch (role) {
+        case 'FARMER':
+          dashboardContent = <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+          break;
+        case 'BUYER':
+          dashboardContent = <BuyerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+          break;
+        case 'SELLER':
+          dashboardContent = <SellerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+          break;
+        case 'ADMIN':
+          dashboardContent = <AdminDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+          break;
+        default:
+          dashboardContent = <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
+      }
     }
 
-    switch (role) {
-      case 'FARMER':
-        return <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
-      case 'BUYER':
-        return <BuyerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
-      case 'SELLER':
-        return <SellerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
-      case 'ADMIN':
-        return <AdminDashboardScreen onOpenProfile={() => setInProfile(true)} />;
-      default:
-        return <FarmerDashboardScreen onOpenProfile={() => setInProfile(true)} />;
-    }
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+        <View style={styles.authTopBar}>
+          <View style={styles.authTopLeft}>
+            <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
+            <Badge label={role} variant={role.toLowerCase()} size="sm" />
+          </View>
+          <LanguageSelector compact />
+        </View>
+        <View style={{ flex: 1 }}>
+          {dashboardContent}
+        </View>
+      </SafeAreaView>
+    );
   }
 
   // If user is viewing the Phase 1 Foundation Showcase
@@ -195,10 +220,13 @@ function MainApp() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
       <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>🌱 FarmConnect OS</Text>
-        <TouchableOpacity onPress={() => setAuthView('showcase')} style={styles.showcaseBtn}>
-          <Text style={styles.showcaseText}>Design System</Text>
-        </TouchableOpacity>
+        <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
+        <View style={styles.topBarRight}>
+          <LanguageSelector compact />
+          <TouchableOpacity onPress={() => setAuthView('showcase')} style={styles.showcaseBtn}>
+            <Text style={styles.showcaseText}>Design System</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {authView === 'login' && (
@@ -221,11 +249,13 @@ function MainApp() {
 
 export default function App() {
   return (
-    <NotificationProvider>
-      <AuthProvider>
-        <MainApp />
-      </AuthProvider>
-    </NotificationProvider>
+    <LanguageProvider>
+      <NotificationProvider>
+        <AuthProvider>
+          <MainApp />
+        </AuthProvider>
+      </NotificationProvider>
+    </LanguageProvider>
   );
 }
 
@@ -242,6 +272,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 4 : spacing.sm,
+  },
+  topBarRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  authTopBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 6,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 2 : 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.1)',
+  },
+  authTopLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   topBarTitle: {
     color: colors.textInverse,

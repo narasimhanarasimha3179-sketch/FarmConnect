@@ -15,6 +15,7 @@ import { colors, typography, spacing, borderRadius, shadows } from '../../theme'
 import { Card, Badge, Button, Input, Header, LoadingIndicator } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import apiClient from '../../services/apiClient';
 
 // Smart Agricultural Subsystem Modules (Phases 9 - 24)
@@ -27,15 +28,18 @@ import GovernmentSchemesScreen from '../schemes/GovernmentSchemesScreen';
 import CommunityScreen from '../community/CommunityScreen';
 import LibraryScreen from '../library/LibraryScreen';
 import GlobalSearchScreen from '../search/GlobalSearchScreen';
+import CartModal from '../buyer/CartModal';
 
 export default function FarmerDashboardScreen({ onOpenProfile }) {
   const { user, logout } = useAuth();
   const { showSuccess, showError, showInfo } = useNotification();
+  const { t } = useLanguage();
 
   const [activeView, setActiveView] = useState('dashboard');
   const [dashboardData, setDashboardData] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [showAddCropModal, setShowAddCropModal] = useState(false);
+  const [showCartModal, setShowCartModal] = useState(false);
 
   // Add Crop Form State
   const [cropName, setCropName] = useState('');
@@ -285,19 +289,23 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
         <View style={styles.quickLaunchBar}>
           <TouchableOpacity style={styles.quickLaunchChipPrimary} onPress={() => setActiveView('camera')}>
             <Text style={styles.quickLaunchIcon}>📸</Text>
-            <Text style={styles.quickLaunchTextPrimary}>Camera Disease Scanner</Text>
+            <Text style={styles.quickLaunchTextPrimary}>{t('scan_leaf')}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setShowCartModal(true)}>
+            <Text style={styles.quickLaunchIcon}>🛒</Text>
+            <Text style={styles.quickLaunchText}>{t('cart')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('ai')}>
             <Text style={styles.quickLaunchIcon}>🤖</Text>
-            <Text style={styles.quickLaunchText}>AI Assistant</Text>
+            <Text style={styles.quickLaunchText}>{t('ai_assistant')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('soil')}>
             <Text style={styles.quickLaunchIcon}>🧪</Text>
-            <Text style={styles.quickLaunchText}>NPK Calculator</Text>
+            <Text style={styles.quickLaunchText}>{t('soil_health')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.quickLaunchChipSecondary} onPress={() => setActiveView('schemes')}>
             <Text style={styles.quickLaunchIcon}>🏛️</Text>
-            <Text style={styles.quickLaunchText}>Govt Schemes</Text>
+            <Text style={styles.quickLaunchText}>{t('schemes')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -972,6 +980,16 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
           </Card>
         </View>
       </Modal>
+
+      {/* Farmer Agri Input Cart & Multi-Payment Checkout Modal */}
+      <CartModal
+        visible={showCartModal}
+        onClose={() => setShowCartModal(false)}
+        onOrderPlaced={() => {
+          showSuccess('Order confirmed! Input supplies will be dispatched.', 'Order Placed');
+          setShowCartModal(false);
+        }}
+      />
     </View>
   );
 }

@@ -1,25 +1,31 @@
-// FarmConnect Buyer Cart & Checkout Modal
-// Full in-app checkout pipeline with real address verification, payment selection, and order placement
+// FarmConnect Buyer Cart & Complete Multi-Process Checkout Modal
+// Full in-app checkout pipeline with real address verification, multi-payment selection, and order placement
 
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, Modal, TouchableOpacity } from 'react-native';
-import { colors, typography, spacing, borderRadius, shadows } from '../../theme';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Card, Badge, Button, Input, Header } from '../../components/common';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import apiClient from '../../services/apiClient';
+import PaymentModal from '../payments/PaymentModal';
 
-export default function CartModal({ visible, onClose, onOrderPlaced }) {
+export default function CartModal({ visible, onClose, onOrderPlaced, onOpenTracking }) {
   const { showSuccess, showError } = useNotification();
+  const { t } = useLanguage();
 
   const [cart, setCart] = useState({ items: [], subtotal: 0, delivery_fee: 0, total: 0 });
   const [isLoading, setIsLoading] = useState(false);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
+  // Active Payment Modal state for post-checkout processing & tax invoice
+  const [activePaymentOrder, setActivePaymentOrder] = useState(null);
+
   // Checkout inputs
   const [shippingName, setShippingName] = useState('Kiran Wholesales Hub');
   const [shippingAddress, setShippingAddress] = useState('Plot 48, APMC Industrial Yard, Mysuru, Karnataka');
   const [shippingPhone, setShippingPhone] = useState('9845012346');
-  const [paymentMethod, setPaymentMethod] = useState('UPI'); // UPI, CARD, COD
+  const [paymentMethod, setPaymentMethod] = useState('UPI'); // 'UPI' | 'COD' | 'CARD' | 'NETBANKING'
 
   const loadCart = async () => {
     setIsLoading(true);
@@ -69,9 +75,11 @@ export default function CartModal({ visible, onClose, onOrderPlaced }) {
       });
 
       if (res.success && res.data && res.data.order) {
-        showSuccess(`Order ${res.data.order.order_number} confirmed!`, 'Order Placed');
-        if (onOrderPlaced) onOrderPlaced(res.data.order);
-        onClose();
+        showSuccess(`Order ${res.data.order.order_number} confirmed!`, t('order_placed'));
+        const confirmedOrder = res.data.order;
+        if (onOrderPlaced) onOrderPlaced(confirmedOrder);
+        // Open complete payment gateway modal for interactive payment/COD OTP verification
+        setActivePaymentOrder(confirmedOrder);
       } else {
         showError(res.message || 'Checkout failed', 'Error');
       }
@@ -86,8 +94,8 @@ export default function CartModal({ visible, onClose, onOrderPlaced }) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <View style={styles.container}>
         <Header
-          title="My Procurement Cart"
-          subtitle={`${cart.items.length} items selected`}
+          title={t('cart')}
+          subtitle={`${cart.items.length} ${t('order_items')}`}
           onBack={onClose}
           rightAction={<Badge label="CHECKOUT" variant="buyer" />}
         />
@@ -96,14 +104,20 @@ export default function CartModal({ visible, onClose, onOrderPlaced }) {
           {cart.items.length === 0 ? (
             <Card style={styles.emptyCard}>
               <Text style={styles.emptyEmoji}>🛒</Text>
-              <Text style={styles.emptyTitle}>Your Cart is Empty</Text>
+              <Text style={styles.emptyTitle}>{t('cart')} is Empty</Text>
               <Text style={styles.emptySub}>Browse farm produce or input supplies to add items.</Text>
-              <Button title="Continue Browsing" variant="primary" size="sm" onPress={onClose} style={styles.browseBtn} />
+              <Button
+                title="Continue Browsing"
+                variant="primary"
+                size="sm"
+                onPress={onClose}
+                style={styles.browseBtn}
+              />
             </Card>
           ) : (
             <View>
               {/* Cart Items List */}
-              <Text style={styles.sectionHeader}>Order Items</Text>
+              <Text style={styles.sectionHeader}>{t('order_items')}</Text>
               {cart.items.map((item) => (
                 <Card key={item.id} style={styles.itemCard}>
                   <View style={styles.itemRow}>
@@ -125,52 +139,79 @@ export default function CartModal({ visible, onClose, onOrderPlaced }) {
 
               {/* Delivery Address & Contact */}
               <Card style={styles.sectionCard}>
-                <Text style={styles.cardTitle}>🚚 Delivery Destination</Text>
-                <Input label="Recipient / Business Name" value={shippingName} onChangeText={setShippingName} />
-                <Input label="Delivery Address / Warehouse" value={shippingAddress} onChangeText={setShippingAddress} />
-                <Input label="Contact Phone" value={shippingPhone} onChangeText={setShippingPhone} keyboardType="phone-pad" />
+                <Text style={styles.cardTitle}>🚚 {t('delivery_destination')}</Text>
+                <Input
+                  label={t('recipient_name')}
+                  value={shippingName}
+                  onChangeText={setShippingName}
+                />
+                <Input
+                  label={t('delivery_address')}
+                  value={shippingAddress}
+                  onChangeText={setShippingAddress}
+                />
+                <Input
+                  label={t('contact_phone')}
+                  value={shippingPhone}
+                  onChangeText={setShippingPhone}
+                  keyboardType="phone-pad"
+                />
               </Card>
 
               {/* Payment Method Selector */}
               <Card style={styles.sectionCard}>
-                <Text style={styles.cardTitle}>💳 Payment Method</Text>
-                <View style={styles.payMethodsRow}>
+                <Text style={styles.cardTitle}>💳 {t('payment_method')}</Text>
+                <View style={styles.payMethodsGrid}>
                   {[
-                    { id: 'UPI', label: '⚡ UPI / QR' },
-                    { id: 'CARD', label: '💳 Card / NetBanking' },
-                    { id: 'COD', label: '💵 Cash On Delivery' },
-                  ].map((p) => (
-                    <TouchableOpacity
-                      key={p.id}
-                      style={[styles.payPill, paymentMethod === p.id ? styles.payPillActive : null]}
-                      onPress={() => setPaymentMethod(p.id)}
-                    >
-                      <Text style={[styles.payText, paymentMethod === p.id ? styles.payTextActive : null]}>
-                        {p.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                    { id: 'UPI', label: '⚡ UPI / QR', desc: 'GPay, PhonePe, Paytm' },
+                    { id: 'COD', label: '🚚 Cash on Delivery', desc: 'Pay at farm/warehouse' },
+                    { id: 'CARD', label: '💳 Credit / Debit', desc: 'RuPay, Visa, Mastercard' },
+                    { id: 'NETBANKING', label: '🏦 Net Banking', desc: 'SBI, Canara, HDFC, ICICI' },
+                  ].map((p) => {
+                    const isActive = paymentMethod === p.id;
+                    return (
+                      <TouchableOpacity
+                        key={p.id}
+                        style={[styles.payTile, isActive ? styles.payTileActive : null]}
+                        onPress={() => setPaymentMethod(p.id)}
+                      >
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={[styles.payText, isActive ? styles.payTextActive : null]}>
+                            {p.label}
+                          </Text>
+                          <View style={[styles.radio, isActive ? styles.radioActive : null]} />
+                        </View>
+                        <Text style={styles.paySub}>{p.desc}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </Card>
 
               {/* Price Breakdown */}
               <Card style={styles.summaryCard}>
-                <Text style={styles.cardTitle}>Invoice Summary</Text>
+                <Text style={styles.cardTitle}>Consignment Cost Breakdown</Text>
                 <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Items Subtotal:</Text>
+                  <Text style={styles.summaryLabel}>{t('items_subtotal')}:</Text>
                   <Text style={styles.summaryVal}>₹{cart.subtotal}</Text>
                 </View>
                 <View style={styles.summaryRow}>
-                  <Text style={styles.summaryLabel}>Agricultural Freight / Delivery:</Text>
-                  <Text style={styles.summaryVal}>{cart.delivery_fee === 0 ? 'FREE' : `₹${cart.delivery_fee}`}</Text>
+                  <Text style={styles.summaryLabel}>{t('freight_fee')}:</Text>
+                  <Text style={styles.summaryVal}>
+                    {cart.delivery_fee === 0 ? t('free_delivery') : `₹${cart.delivery_fee}`}
+                  </Text>
                 </View>
                 <View style={[styles.summaryRow, styles.totalRow]}>
-                  <Text style={styles.totalLabel}>Total Payable:</Text>
+                  <Text style={styles.totalLabel}>{t('total_payable')}:</Text>
                   <Text style={styles.totalVal}>₹{cart.total}</Text>
                 </View>
 
                 <Button
-                  title={`Confirm Order • ₹${cart.total}`}
+                  title={
+                    paymentMethod === 'COD'
+                      ? `${t('confirm_cod_order')} • ₹${cart.total}`
+                      : `${t('proceed_to_pay')} • ₹${cart.total}`
+                  }
                   variant="primary"
                   size="lg"
                   loading={isCheckingOut}
@@ -181,6 +222,22 @@ export default function CartModal({ visible, onClose, onOrderPlaced }) {
             </View>
           )}
         </ScrollView>
+
+        {/* Real Payment / Tax Invoice Modal */}
+        {activePaymentOrder ? (
+          <PaymentModal
+            visible={!!activePaymentOrder}
+            order={activePaymentOrder}
+            onClose={() => {
+              setActivePaymentOrder(null);
+              onClose();
+            }}
+            onSuccess={() => {
+              loadCart();
+            }}
+            onOpenTracking={onOpenTracking}
+          />
+        ) : null}
       </View>
     </Modal>
   );
@@ -220,13 +277,12 @@ const styles = StyleSheet.create({
     minWidth: 160,
   },
   sectionHeader: {
-    fontSize: typography.sizes.sm,
+    fontSize: typography.sizes.md,
     fontWeight: typography.weights.bold,
-    color: colors.textSecondary,
+    color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   itemCard: {
-    padding: spacing.md,
     marginBottom: spacing.xs,
   },
   itemRow: {
@@ -236,7 +292,6 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     flex: 1,
-    paddingRight: spacing.sm,
   },
   itemTitle: {
     fontSize: typography.sizes.sm,
@@ -260,12 +315,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   removeText: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.error,
-    fontWeight: typography.weights.bold,
+    fontWeight: typography.weights.semiBold,
   },
   sectionCard: {
-    padding: spacing.md,
     marginTop: spacing.sm,
   },
   cardTitle: {
@@ -274,40 +328,48 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },
-  payMethodsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  payMethodsGrid: {
     gap: spacing.xs,
   },
-  payPill: {
-    flex: 1,
-    minWidth: '30%',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
+  payTile: {
+    padding: spacing.sm,
     borderRadius: borderRadius.md,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    alignItems: 'center',
     backgroundColor: colors.surface,
   },
-  payPillActive: {
-    borderColor: colors.skyBlue,
-    backgroundColor: colors.skyBlueBg,
+  payTileActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primaryBg,
   },
   payText: {
     fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    textAlign: 'center',
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
   },
   payTextActive: {
-    color: colors.skyBlue,
-    fontWeight: typography.weights.bold,
+    color: colors.primary,
+  },
+  paySub: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  radio: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    borderColor: colors.border,
+  },
+  radioActive: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary,
   },
   summaryCard: {
-    padding: spacing.md,
     marginTop: spacing.sm,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
     borderColor: colors.border,
   },
   summaryRow: {
@@ -321,7 +383,7 @@ const styles = StyleSheet.create({
   },
   summaryVal: {
     fontSize: typography.sizes.xs,
-    fontWeight: typography.weights.semiBold,
+    fontWeight: typography.weights.medium,
     color: colors.textPrimary,
   },
   totalRow: {
@@ -331,14 +393,14 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
   },
   totalLabel: {
-    fontSize: typography.sizes.md,
+    fontSize: typography.sizes.sm,
     fontWeight: typography.weights.bold,
     color: colors.textPrimary,
   },
   totalVal: {
     fontSize: typography.sizes.md,
     fontWeight: typography.weights.bold,
-    color: colors.primaryLight,
+    color: colors.primary,
   },
   orderBtn: {
     marginTop: spacing.md,

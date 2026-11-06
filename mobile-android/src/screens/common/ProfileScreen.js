@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { colors, typography, spacing } from '../../theme';
-import { Card, Badge, Button, Input, Header } from '../../components/common';
+import { Card, Badge, Button, Input, Header, LanguageSelector } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 
 export default function ProfileScreen({ onBack }) {
   const { user, updateProfile, logout, isLoading } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useLanguage();
   const profile = user?.profile || {};
 
   // Common Fields
@@ -191,8 +193,17 @@ export default function ProfileScreen({ onBack }) {
           </Card>
         )}
 
+        {/* App Language Card */}
+        <Card style={[styles.card, { marginTop: spacing.md }]}>
+          <Text style={styles.title}>🌐 {t('language')} / ಭಾಷೆ / भाषा</Text>
+          <Text style={styles.sub}>Choose your preferred language across the FarmConnect ecosystem</Text>
+          <View style={{ marginTop: spacing.sm, alignItems: 'flex-start' }}>
+            <LanguageSelector />
+          </View>
+        </Card>
+
         <Button
-          title="Save Profile Changes"
+          title={t('save') + " Profile Changes"}
           onPress={handleSave}
           loading={isLoading}
           variant="primary"

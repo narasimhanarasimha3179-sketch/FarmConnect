@@ -7,11 +7,13 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Button, Input, Card, Badge } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import validators from '../../utils/validation';
 
 export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
   const { login, isLoading, authError, setAuthError } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { t } = useLanguage();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -82,12 +84,12 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
   return (
     <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.headerArea}>
-        <Text style={styles.appTitle}>🌱 FarmConnect</Text>
-        <Text style={styles.tagline}>Smart Agricultural Products & Market Assistance</Text>
+        <Text style={styles.appTitle}>🌱 {t('app_title')}</Text>
+        <Text style={styles.tagline}>{t('tagline')}</Text>
       </View>
 
       <Card style={styles.loginCard}>
-        <Text style={styles.cardTitle}>Sign In to Your Account</Text>
+        <Text style={styles.cardTitle}>{t('sign_in')}</Text>
         <Text style={styles.cardSubtitle}>Enter your registered Indian phone number or email</Text>
 
         <Input

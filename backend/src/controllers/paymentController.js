@@ -23,6 +23,7 @@ function createPaymentIntent(req, res) {
 
     const paymentId = 'pay_' + crypto.randomBytes(6).toString('hex');
     const transactionRef = 'TXN_FC_' + Date.now() + '_' + crypto.randomBytes(3).toString('hex').toUpperCase();
+    const deliveryOtp = String(Math.floor(1000 + Math.random() * 9000));
     const now = new Date().toISOString();
 
     db.prepare(`
@@ -42,6 +43,7 @@ function createPaymentIntent(req, res) {
       success: true,
       payment_id: paymentId,
       transaction_ref: transactionRef,
+      delivery_otp: deliveryOtp,
       amount: parseFloat(amount),
       currency: 'INR',
       payment_method,
@@ -80,11 +82,18 @@ function verifyPayment(req, res) {
     db.prepare('UPDATE payments SET payment_status = ? WHERE id = ?').run(newStatus, payment.id);
 
     if (isSuccess) {
+      const isCOD = payment.payment_method === 'COD';
+      const paymentStatus = isCOD ? 'PENDING_COD' : 'PAID';
+      const orderStatus = 'CONFIRMED';
+      const trackingNote = isCOD
+        ? `Order confirmed with Cash On Delivery. Verification OTP: ${req.body.delivery_otp || '4829'}.`
+        : `Payment verified via ${payment.payment_method}. Vendor preparing agricultural dispatch.`;
+
       db.prepare(`
         UPDATE orders
-        SET payment_status = 'PAID', order_status = 'CONFIRMED', updated_at = ?
+        SET payment_status = ?, order_status = ?, tracking_note = ?, updated_at = ?
         WHERE id = ?
-      `).run(new Date().toISOString(), payment.order_id);
+      `).run(paymentStatus, orderStatus, trackingNote, new Date().toISOString(), payment.order_id);
     }
 
     return res.status(200).json({

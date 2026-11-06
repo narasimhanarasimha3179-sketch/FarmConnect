@@ -15,6 +15,7 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Card, Badge, Button, Input, Header, LoadingIndicator } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import apiClient from '../../services/apiClient';
 
 import AddProductModal from './AddProductModal';
@@ -22,6 +23,7 @@ import AddProductModal from './AddProductModal';
 export default function SellerDashboardScreen({ onOpenProfile }) {
   const { user, logout } = useAuth();
   const { showSuccess, showError, showInfo } = useNotification();
+  const { t } = useLanguage();
 
   const [dashboardData, setDashboardData] = useState(null);
   const [products, setProducts] = useState([]);

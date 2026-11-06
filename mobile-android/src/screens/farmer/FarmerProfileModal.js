@@ -7,11 +7,13 @@ import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Card, Badge, Button, Input, Header } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useLanguage } from '../../context/LanguageContext';
 import apiClient from '../../services/apiClient';
 
 export default function FarmerProfileModal({ onBack, onProfileUpdated }) {
   const { user, updateProfile, isLoading } = useAuth();
   const { showSuccess, showError } = useNotification();
+  const { currentLanguage, changeLanguage, t } = useLanguage();
   const profile = user?.profile || {};
 
   const [name, setName] = useState(user?.name || '');
@@ -25,7 +27,7 @@ export default function FarmerProfileModal({ onBack, onProfileUpdated }) {
   const [soilType, setSoilType] = useState(profile.soil_type || 'Red Sandy Loam');
   const [crops, setCrops] = useState(profile.primary_crops || 'Sugarcane, Paddy, Ragi');
   const [experience, setExperience] = useState(String(profile.experience_years || 15));
-  const [lang, setLang] = useState(profile.preferred_language || 'en');
+  const [lang, setLang] = useState(currentLanguage || profile.preferred_language || 'en');
 
   const soilTypes = [
     'Red Sandy Loam',
@@ -52,6 +54,7 @@ export default function FarmerProfileModal({ onBack, onProfileUpdated }) {
       });
 
       if (res.success && res.data && res.data.farmer) {
+        changeLanguage(lang);
         showSuccess('Farmer land & cultivation details updated in SQLite!', 'Profile Saved');
         if (onProfileUpdated) onProfileUpdated(res.data.farmer);
         onBack();
@@ -146,10 +149,18 @@ export default function FarmerProfileModal({ onBack, onProfileUpdated }) {
             ].map((item) => (
               <TouchableOpacity
                 key={item.id}
-                style={[styles.langPill, lang === item.id ? styles.langPillActive : null]}
-                onPress={() => setLang(item.id)}
+                style={[styles.langPill, (currentLanguage === item.id || lang === item.id) ? styles.langPillActive : null]}
+                onPress={() => {
+                  setLang(item.id);
+                  changeLanguage(item.id);
+                }}
               >
-                <Text style={[styles.langText, lang === item.id ? styles.langTextActive : null]}>
+                <Text
+                  style={[
+                    styles.langText,
+                    (currentLanguage === item.id || lang === item.id) ? styles.langTextActive : null,
+                  ]}
+                >
                   {item.label}
                 </Text>
               </TouchableOpacity>

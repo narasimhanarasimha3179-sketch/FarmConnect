@@ -258,9 +258,15 @@ exports.checkout = async (req, res) => {
     const orderNumber = `FC-ORD-2026-${Math.floor(10000 + Math.random() * 90000)}`;
     const now = new Date().toISOString();
 
+    const isCOD = payment_method === 'COD';
+    const initialPaymentStatus = isCOD ? 'PENDING_COD' : 'PAID';
+    const trackingNote = isCOD
+      ? `Cash on Delivery order confirmed. Verification OTP generated.`
+      : `Payment authorized via ${payment_method}. Vendor preparing agricultural dispatch.`;
+
     db.prepare(`
       INSERT INTO orders (id, order_number, buyer_id, total_amount, shipping_name, shipping_address, shipping_phone, payment_method, payment_status, order_status, tracking_note, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'PAID', 'CONFIRMED', 'Order confirmed. Vendor preparing agricultural dispatch.', ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'CONFIRMED', ?, ?, ?)
     `).run(
       orderId,
       orderNumber,
@@ -270,6 +276,8 @@ exports.checkout = async (req, res) => {
       shipping_address || 'APMC Hub, Mysuru, Karnataka',
       shipping_phone || user.phone,
       payment_method,
+      initialPaymentStatus,
+      trackingNote,
       now,
       now
     );
@@ -292,7 +300,37 @@ exports.checkout = async (req, res) => {
         item.unit,
         item.unit_price * item.quantity
       );
+
+      // Decrement stock in real product catalog
+      try {
+        db.prepare('UPDATE products SET stock_quantity = MAX(0, stock_quantity - ?) WHERE id = ?').run(item.quantity, item.item_id);
+      } catch {}
     }
+
+    // Initialize real shipment tracking record
+    try {
+      const trackId = crypto.randomUUID();
+      const initialCheckpoint = JSON.stringify([
+        {
+          timestamp: now,
+          status: 'ORDER_PLACED',
+          location: 'Agricultural Marketplace Hub, Mandya',
+          description: `Consignment verified. Payment mode: ${payment_method}.`,
+        },
+      ]);
+      db.prepare(`
+        INSERT OR IGNORE INTO shipment_trackings (id, order_id, current_stage, tracking_number, courier_partner, estimated_delivery, checkpoints, created_at, updated_at)
+        VALUES (?, ?, 'ORDER_PLACED', ?, 'K-Agri Express Fleet', ?, ?, ?, ?)
+      `).run(
+        trackId,
+        orderId,
+        `TRK-${orderNumber}`,
+        new Date(Date.now() + 86400000 * 2).toISOString(),
+        initialCheckpoint,
+        now,
+        now
+      );
+    } catch {}
 
     // Clear cart
     db.prepare('DELETE FROM cart_items WHERE user_id = ?').run(userId);
