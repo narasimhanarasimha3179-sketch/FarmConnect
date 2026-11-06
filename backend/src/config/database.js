@@ -167,6 +167,21 @@ function initSchema() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS crop_enquiries (
+      id TEXT PRIMARY KEY,
+      crop_id TEXT NOT NULL,
+      farmer_id TEXT NOT NULL,
+      buyer_id TEXT NOT NULL,
+      buyer_name TEXT NOT NULL,
+      buyer_phone TEXT NOT NULL,
+      offered_price REAL NOT NULL,
+      quantity_requested REAL NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'Quintal',
+      message TEXT,
+      status TEXT NOT NULL DEFAULT 'PENDING', -- 'PENDING', 'ACCEPTED', 'DECLINED'
+      created_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -387,6 +402,59 @@ function seedInitialData() {
 
     for (const p of products) {
       insertProduct.run(...p);
+    }
+  }
+
+  // Ensure All 10 Agriculture E-Commerce Categories are Present
+  const additionalCategories = [
+    ['prod_7', 'seller_cauvery', 'BIO_FERTILIZERS', 'Trichoderma Viride Bio-Fungicide (1% WP)', 'Ecofriendly fungal antagonist for root rot, wilt, and damping-off seed treatment.', 280, 'packet (1kg)', 90, 'https://images.unsplash.com/photo-1589923188900-85dae523342b', 4.9],
+    ['prod_8', 'seller_cauvery', 'PESTICIDES', 'Neemazal 10,000 PPM Bio-Pesticide', 'Cold-pressed azadirachtin botanical pesticide for whiteflies, aphids, and borers.', 450, 'bottle (500ml)', 110, 'https://images.unsplash.com/photo-1628352081506-83c43123ed6d', 4.7],
+    ['prod_9', 'seller_cauvery', 'IRRIGATION_PRODUCTS', 'Inline Drip Lateral Pipe 16mm (Class 2)', 'UV-stabilized drip tube with 40cm emitter spacing delivering 2.2 LPH flow rate.', 1850, 'bundle (400m)', 35, 'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0', 4.8],
+    ['prod_10', 'seller_cauvery', 'ORGANIC_PRODUCTS', 'Pure Vermicompost Enriched with Cow Dung', 'Laboratory-tested earthworm casting compost high in organic carbon and micro-flora.', 550, 'bag (50kg)', 140, 'https://images.unsplash.com/photo-1592417817098-8f3d6910985b', 4.9],
+    ['prod_11', 'seller_cauvery', 'CROP_PROTECTION', 'UV Stabilized Silver-Black Mulch Film (25 Micron)', 'Prevents weed growth, retains soil moisture and minimizes water evaporation.', 1600, 'roll (400m)', 50, 'https://images.unsplash.com/photo-1589923188900-85dae523342b', 4.8],
+    ['prod_12', 'seller_cauvery', 'OTHER_SUPPLIES', 'Heavy Duty Waterproof Tarpaulin Sheet (250 GSM)', '18 x 24 ft reinforced multi-layer sheet for grain storage and threshing floor.', 2100, 'sheet', 45, 'https://images.unsplash.com/photo-1527842891421-42eec6e703ea', 4.7],
+  ];
+
+  const nowTime = new Date().toISOString();
+  for (const extra of additionalCategories) {
+    const exists = db.prepare('SELECT id FROM products WHERE id = ?').get(extra[0]);
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO products (id, seller_id, category, title, description, price, unit, stock_quantity, image_url, rating, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(...extra, nowTime);
+    }
+  }
+
+  // Ensure Rich Crop Marketplace Listings
+  const extraCrops = [
+    ['crop_m4', 'farmer_ramesh', 'Ramesh Patil', 'Red Onion', 'Bellary Premium Red', 150, 'Quintal', 1950, 'Hubli Mandi Yard', 'Grade A', '2026-11-25', 'Medium-to-large pungent red onions cured for long shelf storage.', 'https://images.unsplash.com/photo-1618512496248-a07fe83aa8cb', 'AVAILABLE'],
+    ['crop_m5', 'farmer_ramesh', 'Ramesh Patil', 'Hybrid Tomato', 'Shivaji F1 Firm Skin', 90, 'Crate (25kg)', 480, 'Kolar APMC Market', 'Grade A', '2026-11-18', 'Grade A field-plucked table tomatoes with thick pericarp suitable for long distance freight.', 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea', 'AVAILABLE'],
+    ['crop_m6', 'farmer_shankar', 'Shankar Gowda', 'Bt Cotton', 'DCH-32 Long Staple', 60, 'Quintal', 7100, 'Raichur Cotton Yard', 'Grade A', '2026-12-02', 'First picking high-strength long-staple seed cotton with minimal trash content.', 'https://images.unsplash.com/photo-1606041008023-472dfb5e530f', 'AVAILABLE'],
+  ];
+
+  for (const cr of extraCrops) {
+    const exists = db.prepare('SELECT id FROM crops_market WHERE id = ?').get(cr[0]);
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO crops_market (id, farmer_id, farmer_name, crop_name, variety, quantity_available, unit, expected_price, mandi_location, quality_grade, harvest_date, description, image_url, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(...cr, nowTime);
+    }
+  }
+
+  // Seed Crop Enquiries
+  const existingEnq = db.prepare('SELECT COUNT(*) as count FROM crop_enquiries').get();
+  if (existingEnq.count === 0) {
+    const enquiries = [
+      ['enq_1', 'crop_m1', 'farmer_ramesh', 'buyer_kiran', 'Kiran Wholesales', '9845012346', 3250, 100, 'Quintal', 'Can you deliver 100 quintals to our Mandya processing facility next Monday?', 'PENDING', nowTime],
+      ['enq_2', 'crop_m2', 'farmer_ramesh', 'buyer_kiran', 'Kiran Wholesales', '9845012346', 2350, 50, 'Quintal', 'Interested in full batch if moisture level is under 14%. Please confirm.', 'ACCEPTED', nowTime],
+    ];
+    for (const e of enquiries) {
+      db.prepare(`
+        INSERT INTO crop_enquiries (id, crop_id, farmer_id, buyer_id, buyer_name, buyer_phone, offered_price, quantity_requested, unit, message, status, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(...e);
     }
   }
 

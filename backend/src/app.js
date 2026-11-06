@@ -6,6 +6,8 @@ const farmerRoutes = require('./routes/farmerRoutes');
 const buyerRoutes = require('./routes/buyerRoutes');
 const sellerRoutes = require('./routes/sellerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const ecommerceRoutes = require('./routes/ecommerceRoutes');
+const cropMarketRoutes = require('./routes/cropMarketRoutes');
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.use('/api/farmer', farmerRoutes);
 app.use('/api/buyer', buyerRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/ecommerce', ecommerceRoutes);
+app.use('/api/crop-market', cropMarketRoutes);
 
 // 404 Handler
 app.use((req, res) => {

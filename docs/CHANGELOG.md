@@ -5,6 +5,31 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 7 & Phase 8] - Agricultural E-Commerce & Direct Crop Marketplace - 2026-11-06
+
+### Added
+- **Phase 7: Agricultural E-Commerce Subsystem:**
+  - `backend/src/controllers/ecommerceController.js` & `backend/src/routes/ecommerceRoutes.js`:
+    - Full coverage across all 10 verified agricultural categories: Seeds, Fertilizers, Bio-Fertilizers, Pesticides, Farming Equipment, Agricultural Tools, Irrigation Products, Organic Products, Crop Protection, Other Supplies.
+    - `GET /api/ecommerce/categories` with real-time active product count.
+    - `GET /api/ecommerce/products` with text search, category filtering, min/max price range, stock status, and sorting (`price_asc`, `price_desc`, `rating_desc`, `newest`).
+    - `GET /api/ecommerce/products/:id` with seller credentials, verified customer reviews, and related recommendations.
+    - `POST /api/ecommerce/reviews` with customer ratings (1-5 stars) and dynamic rating recalculation.
+  - `mobile-android/src/screens/ecommerce/ProductCatalogScreen.js`:
+    - Multi-category pills, keyword search, price/rating sorting, product specification modal, and seamless cart addition.
+- **Phase 8: Direct Crop Marketplace Subsystem:**
+  - `backend/src/controllers/cropMarketController.js` & `backend/src/routes/cropMarketRoutes.js`:
+    - `GET /api/crop-market/listings` & `GET /api/crop-market/listings/:id`: Harvest listings from verified farmers with quality grades (`Grade A`, `Grade B`), mandi delivery locations, and harvest dates.
+    - `POST /api/crop-market/listings` & `PUT /api/crop-market/listings/:id`: Farmer crop listing publisher and inventory updater.
+    - `POST /api/crop-market/enquiries` & `GET /api/crop-market/farmer/enquiries` & `PUT /api/crop-market/enquiries/:id/status`: Direct buyer-to-farmer price bidding, quantity negotiation, and offer acceptance.
+  - `mobile-android/src/screens/cropmarket/CropMarketplaceScreen.js`:
+    - Harvest produce marketplace with lot sizes, quality badges, APMC yard delivery tags, "+ List Produce" modal for farmers, and "Make an Offer / Bid" negotiation modal for buyers.
+- **Automated Verification:**
+  - `backend/tests/ecommerce_cropmarket.test.js` (22 end-to-end tests passing).
+  - `mobile-android/__tests__/phase7_8.test.js` verifying code presence and baseline preservation.
+
+---
+
 ## [Phase 6] - Admin Dashboard & Platform Governance - 2026-11-06
 
 ### Added
