@@ -13,6 +13,9 @@ const weatherRoutes = require('./routes/weatherRoutes');
 const cropAssistanceRoutes = require('./routes/cropAssistanceRoutes');
 const soilRoutes = require('./routes/soilRoutes');
 const pestDiseaseRoutes = require('./routes/pestDiseaseRoutes');
+const cameraAiRoutes = require('./routes/cameraAiRoutes');
+const aiAssistantRoutes = require('./routes/aiAssistantRoutes');
+const schemeRoutes = require('./routes/schemeRoutes');
 
 const app = express();
 
@@ -54,6 +57,9 @@ app.use('/api/weather', weatherRoutes);
 app.use('/api/crop-assistance', cropAssistanceRoutes);
 app.use('/api/soil', soilRoutes);
 app.use('/api/pest-disease', pestDiseaseRoutes);
+app.use('/api/camera-ai', cameraAiRoutes);
+app.use('/api/ai', aiAssistantRoutes);
+app.use('/api/schemes', schemeRoutes);
 
 // 404 Handler
 app.use((req, res) => {

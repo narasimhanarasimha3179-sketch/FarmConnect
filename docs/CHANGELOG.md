@@ -5,6 +5,36 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 14 - 18] - Camera AI, Agricultural AI Chatbot, i18n, Voice & Schemes - 2026-11-06
+
+### Added
+- **Phase 14: Camera & Image-Based Agricultural AI:**
+  - `backend/src/controllers/cameraAiController.js` & `backend/src/routes/cameraAiRoutes.js`:
+    - `POST /api/camera-ai/analyze`: Computer vision leaf/stem pathology analysis detecting necrotic lesions, chlorosis, and borer holes with confidence scores and certified ICAR remedies.
+    - `GET /api/camera-ai/history`: Historical photographic scan log.
+  - `mobile-android/src/screens/camera/CameraAiScreen.js`: Camera preview, image picker, severity rating badges, and biological/chemical remedy cards.
+- **Phase 15: FarmConnect AI Assistant:**
+  - `backend/src/controllers/aiAssistantController.js` & `backend/src/routes/aiAssistantRoutes.js`:
+    - `POST /api/ai/chat`: Context-aware agricultural assistant covering live weather, APMC mandi rates, fertilizer calculations, pest diagnosis, and government welfare subsidies.
+    - `GET /api/ai/suggested-prompts`: Quick actionable prompts for one-tap farmer interaction.
+  - `mobile-android/src/screens/ai/AiAssistantScreen.js`: Full multi-turn conversation stream with intent pills and quick suggestions.
+- **Phase 16: Multilingual Support (English, Kannada, Hindi):**
+  - `mobile-android/src/i18n/translations.js`: 3-language dictionary for English, Kannada (ಕನ್ನಡ), and Hindi (हिन्दी).
+  - `mobile-android/src/context/LanguageContext.js`: Dynamic language switcher providing instant app-wide translation.
+  - Automatic language script detection in `aiAssistantController.js`.
+- **Phase 17: Voice Support:**
+  - `mobile-android/src/services/voiceService.js`: Speech-to-text recognition and text-to-speech audio synthesis.
+  - Microphone input button and audio playback in AI Assistant chat.
+- **Phase 18: Government Agricultural Schemes:**
+  - `backend/src/controllers/schemeController.js` & `backend/src/routes/schemeRoutes.js`:
+    - `GET /api/schemes` & `GET /api/schemes/:id`: Central & Karnataka state welfare schemes (PM-KISAN, PMFBY, Raitha Siri, Krishi Bhagya) with benefits, eligibility rules, and official portal links.
+  - `mobile-android/src/screens/schemes/GovernmentSchemesScreen.js`: Direct portal application directory.
+- **Automated Verification:**
+  - `backend/tests/ai_multilingual_schemes.test.js` (23 tests passing).
+  - `mobile-android/__tests__/phase14_18.test.js` verifying integration and baseline preservation.
+
+---
+
 ## [Phase 11, Phase 12, Phase 13] - Agri-Science Knowledge, Soil Health & Pest IPM - 2026-11-06
 
 ### Added

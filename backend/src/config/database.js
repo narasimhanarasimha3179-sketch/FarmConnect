@@ -238,6 +238,19 @@ function initSchema() {
       image_url TEXT
     );
 
+    CREATE TABLE IF NOT EXISTS camera_scans (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      crop_type TEXT,
+      plant_part TEXT,
+      image_preview TEXT,
+      diagnosis_name TEXT NOT NULL,
+      confidence_percentage REAL NOT NULL,
+      severity TEXT NOT NULL,
+      treatment_summary TEXT,
+      created_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -814,6 +827,78 @@ function seedInitialData() {
 
     for (const p of pests) {
       insertPest.run(...p);
+    }
+  }
+
+  // Seed Government Agricultural Schemes (Phase 18)
+  const existingSchemes = db.prepare('SELECT COUNT(*) as count FROM schemes').get();
+  if (existingSchemes.count === 0) {
+    const nowS = new Date().toISOString();
+    const schemes = [
+      [
+        'sch_pmkisan',
+        'Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)',
+        'Central',
+        'FINANCIAL',
+        'All landholding farmer families with cultivable land in their names.',
+        'Direct financial benefit of ₹6,000 per year payable in three equal four-monthly installments of ₹2,000.',
+        'Aadhaar Card, Land Record (Pahani / RTC), Bank Account linked with Aadhaar.',
+        'https://pmkisan.gov.in',
+        'Open Throughout Year',
+        'ACTIVE',
+        nowS,
+      ],
+      [
+        'sch_pmfby',
+        'Pradhan Mantri Fasal Bima Yojana (PMFBY)',
+        'Central',
+        'INSURANCE',
+        'All farmers growing notified crops in notified areas including sharecroppers and tenant farmers.',
+        'Comprehensive crop insurance covering yield loss due to non-preventable natural risks (drought, flood, pests) at low premium (1.5% - 2%).',
+        'Proposal Form, Land Record (RTC / Saguvali Chit), Sowing Certificate, Bank Passbook.',
+        'https://pmfby.gov.in',
+        'Before Cut-off date per crop season',
+        'ACTIVE',
+        nowS,
+      ],
+      [
+        'sch_raitha_siri',
+        'Raitha Siri Scheme (ರೈತ ಸಿರಿ ಯೋಜನೆ)',
+        'Karnataka',
+        'SUBSIDY',
+        'Farmers cultivating minor millets (Ragi, Foxtail, Little, Kodo, Barnyard, Proso millet) in Karnataka.',
+        'Direct benefit incentive of ₹10,000 per hectare (up to a maximum of 2 hectares) credited to farmer bank account.',
+        'FRUITS ID (FID), RTC Land Record, Aadhaar linked bank account.',
+        'https://fruits.karnataka.gov.in',
+        'Post-sowing verification window',
+        'ACTIVE',
+        nowS,
+      ],
+      [
+        'sch_krishi_bhagya',
+        'Krishi Bhagya Scheme (ಕೃಷಿ ಭಾಗ್ಯ ಯೋಜನೆ)',
+        'Karnataka',
+        'IRRIGATION',
+        'Rainfed dryland agricultural farmers in drought-prone taluks across Karnataka.',
+        '80% to 90% subsidy for construction of farm ponds (Krishi Honda), polythene lining, diesel/solar pump sets, and shade net nurseries.',
+        'Land RTC, Caste Certificate (for SC/ST higher subsidy), Bank Passbook, Field GPS photo.',
+        'https://raitamitra.karnataka.gov.in',
+        'Subject to annual district budget allocations',
+        'ACTIVE',
+        nowS,
+      ],
+    ];
+
+    const insertScheme = db.prepare(`
+      INSERT INTO schemes (
+        id, title, state, category, eligibility, benefits, required_documents,
+        application_url, deadline, status, created_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const sch of schemes) {
+      insertScheme.run(...sch);
     }
   }
 }
