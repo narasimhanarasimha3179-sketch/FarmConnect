@@ -29,17 +29,64 @@ export default function RegisterScreen({ onNavigateLogin }) {
   const [buyerType, setBuyerType] = useState('Individual');
   const [shopName, setShopName] = useState('');
   const [licenseNumber, setLicenseNumber] = useState('');
+  const [department, setDepartment] = useState('');
+  const [designation, setDesignation] = useState('');
 
   // Errors
   const [errors, setErrors] = useState({});
 
+  // 1-Click Sample Pre-fill for Instant Registration Testing
+  const handleAutoFillSample = () => {
+    const randSuffix = Math.floor(1000 + Math.random() * 9000);
+    const randPhone = `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+    if (role === 'FARMER') {
+      setName(`Basavaraj Gowda`);
+      setPhone(randPhone);
+      setEmail(`farmer.${randSuffix}@farmconnect.org`);
+      setPassword('FarmerSecret123');
+      setStateName('Karnataka');
+      setDistrict('Mandya');
+      setVillage('Maddur');
+      setLandSize('5.5');
+      setCrops('Sugarcane, Paddy, Ragi');
+    } else if (role === 'BUYER') {
+      setName(`Anand Kumar`);
+      setPhone(randPhone);
+      setEmail(`buyer.${randSuffix}@farmconnect.org`);
+      setPassword('BuyerSecret123');
+      setBusinessName(`Anand Fresh Agro Procurements`);
+      setBuyerType('Wholesaler');
+    } else if (role === 'SELLER') {
+      setName(`Venkatesh Rao`);
+      setPhone(randPhone);
+      setEmail(`seller.${randSuffix}@farmconnect.org`);
+      setPassword('SellerSecret123');
+      setShopName(`Sri Lakshmi Seeds & Fertilizers`);
+      setLicenseNumber(`KA-SELLER-${randSuffix}`);
+    } else if (role === 'ADMIN') {
+      setName(`Deepa Hegde`);
+      setPhone(randPhone);
+      setEmail(`admin.${randSuffix}@farmconnect.org`);
+      setPassword('AdminSecret123');
+      setDepartment('State Directorate of Horticulture');
+      setDesignation('Senior Agricultural Officer');
+    }
+    setErrors({});
+  };
+
   const handleRegister = async () => {
     const newErrors = {};
 
-    if (!validators.isRequired(name)) newErrors.name = 'Full name is required';
+    const cleanName = (name || '').trim();
+    const cleanEmail = (email || '').trim().toLowerCase();
+    const cleanPhone = validators.cleanIndianPhone(phone);
+    const cleanPw = (password || '').trim();
+
+    if (!validators.isRequired(cleanName)) newErrors.name = 'Full name is required';
     if (!validators.isValidIndianPhone(phone)) newErrors.phone = 'Valid 10-digit Indian phone number required';
-    if (!validators.isValidEmail(email)) newErrors.email = 'Valid email address required';
-    if (!validators.isValidPassword(password)) newErrors.password = 'Password must be at least 6 characters';
+    if (!validators.isValidEmail(cleanEmail)) newErrors.email = 'Valid email address required';
+    if (!validators.isValidPassword(cleanPw)) newErrors.password = 'Password must be at least 6 characters';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -52,23 +99,26 @@ export default function RegisterScreen({ onNavigateLogin }) {
     const profileData = {};
     if (role === 'FARMER') {
       profileData.state = stateName;
-      profileData.district = district;
-      profileData.village = village;
-      profileData.land_size_acres = Number(landSize) || 0;
-      profileData.primary_crops = crops;
+      profileData.district = district || 'Mandya';
+      profileData.village = village || 'Central';
+      profileData.land_size_acres = Number(landSize) || 2.5;
+      profileData.primary_crops = crops || 'General Crops';
     } else if (role === 'BUYER') {
-      profileData.business_name = businessName || name;
+      profileData.business_name = businessName || cleanName;
       profileData.buyer_type = buyerType;
     } else if (role === 'SELLER') {
-      profileData.shop_name = shopName || `${name} Agri Center`;
-      profileData.license_number = licenseNumber;
+      profileData.shop_name = shopName || `${cleanName} Agri Center`;
+      profileData.license_number = licenseNumber || 'KA-AGRI-2026';
+    } else if (role === 'ADMIN') {
+      profileData.department = department || 'Department of Agriculture';
+      profileData.designation = designation || 'Agricultural Officer';
     }
 
     const res = await register({
-      name,
-      phone,
-      email,
-      password,
+      name: cleanName,
+      phone: cleanPhone,
+      email: cleanEmail,
+      password: cleanPw,
       role,
       profileData,
     });
@@ -87,7 +137,12 @@ export default function RegisterScreen({ onNavigateLogin }) {
         <Text style={styles.subtitle}>Select your agricultural role and enter your details</Text>
 
         {/* Role Selection Tabs */}
-        <Text style={styles.sectionLabel}>Select Your Role</Text>
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.sectionLabel}>Select Your Role</Text>
+          <TouchableOpacity style={styles.autoFillPill} onPress={handleAutoFillSample}>
+            <Text style={styles.autoFillText}>⚡ Auto-Fill Sample</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.roleTabs}>
           {[
             { id: 'FARMER', label: '🌾 Farmer', color: colors.primaryLight },
@@ -204,6 +259,24 @@ export default function RegisterScreen({ onNavigateLogin }) {
           </View>
         ) : null}
 
+        {role === 'ADMIN' ? (
+          <View style={styles.roleFieldsContainer}>
+            <Text style={styles.roleFieldsTitle}>🛡 Administrative Credentials</Text>
+            <Input
+              label="Department / Ministry"
+              placeholder="e.g. Department of Agriculture"
+              value={department}
+              onChangeText={setDepartment}
+            />
+            <Input
+              label="Designation / Staff ID"
+              placeholder="e.g. Senior Agricultural Officer"
+              value={designation}
+              onChangeText={setDesignation}
+            />
+          </View>
+        ) : null}
+
         {authError ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>⚠ {authError}</Text>
@@ -249,11 +322,29 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     marginTop: 2,
   },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
   sectionLabel: {
     fontSize: typography.sizes.sm,
     fontWeight: typography.weights.semiBold,
     color: colors.textPrimary,
-    marginBottom: spacing.xs,
+  },
+  autoFillPill: {
+    backgroundColor: colors.primaryBg,
+    borderColor: colors.primaryLight,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: borderRadius.sm,
+  },
+  autoFillText: {
+    fontSize: typography.sizes.xs,
+    color: colors.primary,
+    fontWeight: typography.weights.bold,
   },
   roleTabs: {
     flexDirection: 'row',

@@ -456,7 +456,13 @@ function initSchema() {
   try {
     const bcrypt = require('bcryptjs');
     const fHash = bcrypt.hashSync('FarmerPassword123', 8);
-    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'ramesh.farmer@example.com'").run(fHash);
+    const bHash = bcrypt.hashSync('BuyerPassword123', 8);
+    const sHash = bcrypt.hashSync('SellerPassword123', 8);
+    const aHash = bcrypt.hashSync('AdminSuperPassword123', 8);
+    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'ramesh.farmer@example.com' OR phone = '9845012345'").run(fHash);
+    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'kiran.buyer@example.com' OR phone = '9845012346'").run(bHash);
+    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'cauvery.seller@example.com' OR phone = '9845012347'").run(sHash);
+    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'admin@farmconnect.org' OR phone = '9845012348'").run(aHash);
   } catch {}
 
   // Seed Initial Verified Mandi Data & Weather Data for testing and real reference

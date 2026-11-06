@@ -10,7 +10,7 @@ import { useNotification } from '../../context/NotificationContext';
 import validators from '../../utils/validation';
 
 export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
-  const { login, isLoading, authError } = useAuth();
+  const { login, isLoading, authError, setAuthError } = useAuth();
   const { showSuccess, showError } = useNotification();
 
   const [identifier, setIdentifier] = useState('');
@@ -18,16 +18,19 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
   const [identifierError, setIdentifierError] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
 
-  const handleLogin = async () => {
+  const executeLogin = async (idToUse, pwToUse) => {
+    const cleanId = (idToUse || '').trim();
+    const cleanPw = (pwToUse || '').trim();
+
     let valid = true;
-    if (!validators.isRequired(identifier)) {
+    if (!validators.isRequired(cleanId)) {
       setIdentifierError('Phone number or email is required');
       valid = false;
     } else {
       setIdentifierError(null);
     }
 
-    if (!validators.isRequired(password)) {
+    if (!validators.isRequired(cleanPw)) {
       setPasswordError('Password is required');
       valid = false;
     } else {
@@ -36,7 +39,7 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
 
     if (!valid) return;
 
-    const res = await login(identifier, password);
+    const res = await login(cleanId, cleanPw);
     if (res.success) {
       showSuccess(`Welcome back, ${res.user.name}!`, `Logged in as ${res.user.role}`);
     } else {
@@ -44,23 +47,36 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
     }
   };
 
-  // Quick auto-fill helpers for testing the 4 verified roles in real database
-  const fillRole = (role) => {
+  const handleLogin = () => {
+    executeLogin(identifier, password);
+  };
+
+  // Quick auto-fill & optional 1-tap instant login for the 4 verified roles
+  const fillRole = (role, autoSubmit = false) => {
+    let id = '';
+    let pw = '';
     if (role === 'FARMER') {
-      setIdentifier('ramesh.farmer@example.com');
-      setPassword('FarmerPassword123');
+      id = 'ramesh.farmer@example.com';
+      pw = 'FarmerPassword123';
     } else if (role === 'BUYER') {
-      setIdentifier('kiran.buyer@example.com');
-      setPassword('BuyerPassword123');
+      id = 'kiran.buyer@example.com';
+      pw = 'BuyerPassword123';
     } else if (role === 'SELLER') {
-      setIdentifier('cauvery.seller@example.com');
-      setPassword('SellerPassword123');
+      id = 'cauvery.seller@example.com';
+      pw = 'SellerPassword123';
     } else if (role === 'ADMIN') {
-      setIdentifier('admin@farmconnect.org');
-      setPassword('AdminSuperPassword123');
+      id = 'admin@farmconnect.org';
+      pw = 'AdminSuperPassword123';
     }
+    setIdentifier(id);
+    setPassword(pw);
     setIdentifierError(null);
     setPasswordError(null);
+    if (setAuthError) setAuthError(null);
+
+    if (autoSubmit) {
+      executeLogin(id, pw);
+    }
   };
 
   return (
@@ -127,27 +143,54 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
         </View>
       </Card>
 
-      {/* Quick Role Fill Shortcuts for Testing Real Roles */}
+      {/* Quick Role Fill Shortcuts for Instant Access */}
       <Card style={styles.demoCard}>
-        <Text style={styles.demoTitle}>⚡ Quick Role Login (Verified SQLite Accounts)</Text>
-        <Text style={styles.demoSubtitle}>Tap any role to prefill real credentials from the SQLite database:</Text>
+        <View style={styles.demoHeaderRow}>
+          <Text style={styles.demoTitle}>⚡ 1-Tap Quick Access (Verified SQLite Roles)</Text>
+        </View>
+        <Text style={styles.demoSubtitle}>
+          Tap "Enter" to immediately log into any verified account, or tap the chip to prefill credentials:
+        </Text>
         <View style={styles.roleGrid}>
-          <TouchableOpacity style={styles.roleTile} onPress={() => fillRole('FARMER')}>
-            <Badge label="Farmer" variant="farmer" />
-            <Text style={styles.roleSub}>Ramesh Patil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.roleTile} onPress={() => fillRole('BUYER')}>
-            <Badge label="Buyer" variant="buyer" />
-            <Text style={styles.roleSub}>Kiran Wholesales</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.roleTile} onPress={() => fillRole('SELLER')}>
-            <Badge label="Seller" variant="seller" />
-            <Text style={styles.roleSub}>Cauvery Agri</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.roleTile} onPress={() => fillRole('ADMIN')}>
-            <Badge label="Admin" variant="admin" />
-            <Text style={styles.roleSub}>System Admin</Text>
-          </TouchableOpacity>
+          <View style={styles.roleTile}>
+            <TouchableOpacity onPress={() => fillRole('FARMER', false)}>
+              <Badge label="🌾 Farmer" variant="farmer" />
+              <Text style={styles.roleSub}>Ramesh Patil</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('FARMER', true)}>
+              <Text style={styles.instantBtnText}>Enter ➔</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.roleTile}>
+            <TouchableOpacity onPress={() => fillRole('BUYER', false)}>
+              <Badge label="🛒 Buyer" variant="buyer" />
+              <Text style={styles.roleSub}>Kiran Wholesales</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('BUYER', true)}>
+              <Text style={styles.instantBtnText}>Enter ➔</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.roleTile}>
+            <TouchableOpacity onPress={() => fillRole('SELLER', false)}>
+              <Badge label="🏪 Seller" variant="seller" />
+              <Text style={styles.roleSub}>Cauvery Agri</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('SELLER', true)}>
+              <Text style={styles.instantBtnText}>Enter ➔</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.roleTile}>
+            <TouchableOpacity onPress={() => fillRole('ADMIN', false)}>
+              <Badge label="🛡 Admin" variant="admin" />
+              <Text style={styles.roleSub}>System Admin</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('ADMIN', true)}>
+              <Text style={styles.instantBtnText}>Enter ➔</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Card>
     </ScrollView>
@@ -254,5 +297,23 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: colors.textSecondary,
     marginTop: 4,
+    textAlign: 'center',
+  },
+  instantBtn: {
+    marginTop: 6,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  instantBtnText: {
+    color: '#ffffff',
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+  },
+  demoHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 });

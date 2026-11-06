@@ -3,11 +3,23 @@
 
 export const validators = {
   // Mobile numbers in India: 10 digits starting with 6, 7, 8, or 9
+  // Accepts standard 10-digit, +91, 91 prefix, leading 0, and spaced/dashed formats
   isValidIndianPhone(phone) {
     if (!phone) return false;
-    const cleaned = String(phone).replace(/\s+|-/g, '');
+    let cleaned = String(phone).replace(/[\s\-\(\)\+\.]/g, '');
+    if (cleaned.startsWith('91') && cleaned.length === 12) cleaned = cleaned.substring(2);
+    if (cleaned.startsWith('0') && cleaned.length === 11) cleaned = cleaned.substring(1);
     const regex = /^[6-9]\d{9}$/;
     return regex.test(cleaned);
+  },
+
+  // Normalizes any valid Indian phone number into standard 10 digits
+  cleanIndianPhone(phone) {
+    if (!phone) return '';
+    let cleaned = String(phone).replace(/[\s\-\(\)\+\.]/g, '');
+    if (cleaned.startsWith('91') && cleaned.length === 12) cleaned = cleaned.substring(2);
+    if (cleaned.startsWith('0') && cleaned.length === 11) cleaned = cleaned.substring(1);
+    return cleaned;
   },
 
   // Standard Email validation
