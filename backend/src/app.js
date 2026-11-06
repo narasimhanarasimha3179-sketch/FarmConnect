@@ -8,6 +8,8 @@ const sellerRoutes = require('./routes/sellerRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const ecommerceRoutes = require('./routes/ecommerceRoutes');
 const cropMarketRoutes = require('./routes/cropMarketRoutes');
+const mandiRoutes = require('./routes/mandiRoutes');
+const weatherRoutes = require('./routes/weatherRoutes');
 
 const app = express();
 
@@ -44,6 +46,8 @@ app.use('/api/seller', sellerRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/ecommerce', ecommerceRoutes);
 app.use('/api/crop-market', cropMarketRoutes);
+app.use('/api/mandi', mandiRoutes);
+app.use('/api/weather', weatherRoutes);
 
 // 404 Handler
 app.use((req, res) => {

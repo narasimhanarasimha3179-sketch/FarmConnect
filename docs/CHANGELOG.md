@@ -5,6 +5,32 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 9 & Phase 10] - Live Mandi Prices & Agro-Weather System - 2026-11-06
+
+### Added
+- **Phase 9: Live Agricultural Mandi Telemetry Subsystem:**
+  - `backend/src/controllers/mandiController.js` & `backend/src/routes/mandiRoutes.js`:
+    - `GET /api/mandi/rates`: Live APMC rates ticker with district, commodity, and multi-mandi filtering.
+    - `GET /api/mandi/commodities`: Aggregated state-wide average modal rates across reporting mandis.
+    - `GET /api/mandi/history`: Chronological historical price trend data points for chart rendering and market trend classification (`UP`, `DOWN`, `STABLE`).
+    - `GET /api/mandi/comparison`: Cross-mandi comparison evaluating prices across Mandya, Maddur, Mysuru, Hubli, Kolar, and Raichur APMCs.
+    - `POST /api/mandi/alerts`, `GET /api/mandi/alerts`, `DELETE /api/mandi/alerts/:id`: Target price alert system.
+  - `mobile-android/src/screens/mandi/MandiPriceScreen.js`:
+    - Mandi rate cards with Min/Modal/Max price bands, 7-day bar chart trend visualization, inter-mandi comparison panel, and price alert creation modal.
+- **Phase 10: Agricultural Weather System:**
+  - `backend/src/controllers/weatherController.js` & `backend/src/routes/weatherRoutes.js`:
+    - `GET /api/weather/current`: District-level meteorological telemetry with Celsius temperature, relative humidity, wind speed, and rain probability.
+    - `GET /api/weather/forecast`: Multi-day daily forecast breakdown for agricultural planning.
+    - `GET /api/weather/advisories`: Real-time agronomic guidance based on weather parameters (irrigation schedule, pest/fungal risk, spraying conditions).
+    - `GET /api/weather/districts`: Multi-district meteorological coverage across Karnataka.
+  - `mobile-android/src/screens/weather/WeatherScreen.js`:
+    - Weather hero card with temperature, humidity, wind, and rain indicators; 4-day daily forecast cards; and smart agronomic field advisories with urgency indicators.
+- **Automated Verification:**
+  - `backend/tests/mandi_weather.test.js` (24 automated tests passing).
+  - `mobile-android/__tests__/phase9_10.test.js` verifying integration and baseline preservation.
+
+---
+
 ## [Phase 7 & Phase 8] - Agricultural E-Commerce & Direct Crop Marketplace - 2026-11-06
 
 ### Added

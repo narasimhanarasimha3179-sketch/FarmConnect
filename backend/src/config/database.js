@@ -182,6 +182,17 @@ function initSchema() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS price_alerts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      commodity TEXT NOT NULL,
+      market_mandi TEXT,
+      target_price REAL NOT NULL,
+      condition TEXT NOT NULL DEFAULT 'ABOVE', -- 'ABOVE', 'BELOW'
+      status TEXT NOT NULL DEFAULT 'ACTIVE', -- 'ACTIVE', 'TRIGGERED', 'CANCELLED'
+      created_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -382,7 +393,95 @@ function seedInitialData() {
     }
   }
 
-  // Seed Verified Marketplace Products (Agri Inputs)
+  // Seed Multi-District Weather Records if needed
+  const additionalDistricts = [
+    [
+      'w_kolar',
+      'Kolar',
+      'Karnataka',
+      27.2,
+      64,
+      'Clear & Sunny',
+      10,
+      11.5,
+      'Ideal dry climate for tomato and vegetable picking. Ensure evening drip irrigation for newly transplanted seedlings.',
+      JSON.stringify([
+        { day: 'Today', temp: 27, condition: 'Clear', rain: 10 },
+        { day: 'Tomorrow', temp: 28, condition: 'Sunny', rain: 5 },
+        { day: 'Friday', temp: 29, condition: 'Partly Cloudy', rain: 15 },
+        { day: 'Saturday', temp: 27, condition: 'Clear', rain: 10 },
+      ]),
+    ],
+    [
+      'w_hubli',
+      'Hubli',
+      'Karnataka',
+      30.5,
+      55,
+      'Sunny & Dry',
+      5,
+      16.0,
+      'Dry weather favorable for red onion bulb curing in field rows. Avoid surface irrigation 7 days before harvesting.',
+      JSON.stringify([
+        { day: 'Today', temp: 31, condition: 'Sunny', rain: 5 },
+        { day: 'Tomorrow', temp: 32, condition: 'Sunny', rain: 5 },
+        { day: 'Friday', temp: 30, condition: 'Sunny', rain: 10 },
+        { day: 'Saturday', temp: 29, condition: 'Partly Cloudy', rain: 20 },
+      ]),
+    ],
+    [
+      'w_raichur',
+      'Raichur',
+      'Karnataka',
+      32.0,
+      50,
+      'High Heat',
+      0,
+      18.5,
+      'High daytime heat in cotton belt. Watch out for whitefly stress. Spray 2% neem oil extract in late afternoon.',
+      JSON.stringify([
+        { day: 'Today', temp: 32, condition: 'High Heat', rain: 0 },
+        { day: 'Tomorrow', temp: 33, condition: 'Sunny', rain: 0 },
+        { day: 'Friday', temp: 32, condition: 'Clear', rain: 5 },
+        { day: 'Saturday', temp: 31, condition: 'Sunny', rain: 5 },
+      ]),
+    ],
+  ];
+
+  const nowW = new Date().toISOString();
+  for (const w of additionalDistricts) {
+    const exists = db.prepare('SELECT id FROM weather_records WHERE id = ?').get(w[0]);
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO weather_records (id, district, state, temp_c, humidity, condition, rainfall_chance, wind_speed_kmh, advisory, forecast_json, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(...w, nowW);
+    }
+  }
+
+  // Seed Historical Mandi Data Points for Trend Visualizations
+  const baseMandiHistory = [
+    // Sugarcane at Mandya (Past 5 days)
+    ['m_hist_1', 'Sugarcane', 'Co 86032', 'Karnataka', 'Mandya', 'Mandya APMC', 3100, 3350, 3210, 'UP', '2026-11-01'],
+    ['m_hist_2', 'Sugarcane', 'Co 86032', 'Karnataka', 'Mandya', 'Mandya APMC', 3120, 3380, 3230, 'UP', '2026-11-02'],
+    ['m_hist_3', 'Sugarcane', 'Co 86032', 'Karnataka', 'Mandya', 'Mandya APMC', 3140, 3400, 3250, 'UP', '2026-11-03'],
+    ['m_hist_4', 'Sugarcane', 'Co 86032', 'Karnataka', 'Mandya', 'Mandya APMC', 3150, 3400, 3280, 'STABLE', '2026-11-04'],
+    // Paddy at Maddur (Past 5 days)
+    ['m_hist_5', 'Paddy (Dhan)', 'Sona Masoori', 'Karnataka', 'Mandya', 'Maddur Mandi', 2100, 2400, 2300, 'UP', '2026-11-01'],
+    ['m_hist_6', 'Paddy (Dhan)', 'Sona Masoori', 'Karnataka', 'Mandya', 'Maddur Mandi', 2120, 2420, 2320, 'UP', '2026-11-02'],
+    ['m_hist_7', 'Paddy (Dhan)', 'Sona Masoori', 'Karnataka', 'Mandya', 'Maddur Mandi', 2150, 2450, 2350, 'UP', '2026-11-03'],
+    ['m_hist_8', 'Paddy (Dhan)', 'Sona Masoori', 'Karnataka', 'Mandya', 'Maddur Mandi', 2140, 2430, 2340, 'DOWN', '2026-11-04'],
+  ];
+
+  for (const row of baseMandiHistory) {
+    const exists = db.prepare('SELECT id FROM mandi_prices WHERE id = ?').get(row[0]);
+    if (!exists) {
+      db.prepare(`
+        INSERT INTO mandi_prices (id, commodity, variety, state, district, market_mandi, min_price, max_price, modal_price, trend, arrival_date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(...row);
+    }
+  }
   const existingProd = db.prepare('SELECT COUNT(*) as count FROM products').get();
   if (existingProd.count === 0) {
     const now = new Date().toISOString();
