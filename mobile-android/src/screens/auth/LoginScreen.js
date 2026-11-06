@@ -48,7 +48,7 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
   const fillRole = (role) => {
     if (role === 'FARMER') {
       setIdentifier('ramesh.farmer@example.com');
-      setPassword('NewFarmerPassword456');
+      setPassword('FarmerPassword123');
     } else if (role === 'BUYER') {
       setIdentifier('kiran.buyer@example.com');
       setPassword('BuyerPassword123');
