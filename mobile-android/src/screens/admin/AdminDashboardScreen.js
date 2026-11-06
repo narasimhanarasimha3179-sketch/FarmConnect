@@ -205,6 +205,24 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
           {/* TAB 1: OVERVIEW & PLATFORM METRICS */}
           {activeTab === 'overview' && (
             <View>
+              {/* Administrator Dossier Card */}
+              <Card style={styles.adminDossierCard}>
+                <View style={styles.dossierTopRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.dossierTitle}>Karnataka Agricultural Marketing Board</Text>
+                    <Text style={styles.dossierOfficer}>Officer: Dr. Rajeshwar Swamy (Chief Compliance Officer)</Text>
+                  </View>
+                  <Badge label="SUPER ADMIN" variant="admin" size="sm" />
+                </View>
+                <View style={styles.dossierDivider} />
+                <Text style={styles.dossierMeta}>🏛️ HQ: Krishi Bhavan, Hudson Circle, Bengaluru - 560001</Text>
+                <Text style={styles.dossierMeta}>📧 admin@farmconnect.org • 📞 +91 80 2234 5678</Text>
+                <Text style={styles.dossierMeta}>🌐 Monitored APMC Zones: Mandya, Maddur, Mysuru, Kolar, Hubli, Raichur</Text>
+                <TouchableOpacity onPress={onOpenProfile} style={{ marginTop: 6, alignItems: 'flex-end' }}>
+                  <Text style={styles.dossierLink}>View Full Administration Profile →</Text>
+                </TouchableOpacity>
+              </Card>
+
               {/* Platform Metrics Grid */}
               <View style={styles.kpiGrid}>
                 <Card style={styles.kpiCard}>
@@ -895,5 +913,42 @@ const styles = StyleSheet.create({
   modalBtnRow: {
     flexDirection: 'row',
     gap: spacing.sm,
+  },
+  adminDossierCard: {
+    padding: spacing.md,
+    backgroundColor: '#F3F4F6',
+    borderColor: '#9CA3AF',
+    borderWidth: 1,
+    marginBottom: spacing.md,
+  },
+  dossierTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  dossierTitle: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    color: '#111827',
+  },
+  dossierOfficer: {
+    fontSize: typography.sizes.xs,
+    color: '#4B5563',
+    marginTop: 2,
+  },
+  dossierDivider: {
+    height: 1,
+    backgroundColor: '#D1D5DB',
+    marginVertical: spacing.xs,
+  },
+  dossierMeta: {
+    fontSize: 11,
+    color: '#374151',
+    marginVertical: 1,
+  },
+  dossierLink: {
+    fontSize: 11,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
   },
 });

@@ -453,6 +453,11 @@ function initSchema() {
   try { db.exec("UPDATE seller_profiles SET business_name = shop_name WHERE business_name IS NULL;"); } catch {}
   try { db.exec("UPDATE seller_profiles SET verification_status = 'VERIFIED' WHERE is_verified = 1;"); } catch {}
   try { db.exec("UPDATE notifications SET user_id = 'farmer_ramesh' WHERE id IN ('notif_1', 'notif_2');"); } catch {}
+  try {
+    const bcrypt = require('bcryptjs');
+    const fHash = bcrypt.hashSync('FarmerPassword123', 8);
+    db.prepare("UPDATE users SET password_hash = ? WHERE email = 'ramesh.farmer@example.com'").run(fHash);
+  } catch {}
 
   // Seed Initial Verified Mandi Data & Weather Data for testing and real reference
   seedInitialData();

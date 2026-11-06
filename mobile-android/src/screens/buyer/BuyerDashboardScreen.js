@@ -146,6 +146,35 @@ export default function BuyerDashboardScreen({ onOpenProfile }) {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.skyBlue]} />}
       >
+        {/* Buyer Commercial Enterprise & Profile Card */}
+        <Card style={styles.profileSummaryCard}>
+          <View style={styles.profileSummaryHeader}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.enterpriseName}>{profile.business_name || 'Kiran Wholesales & Grain Depot'}</Text>
+              <Text style={styles.enterpriseRole}>Licensed APMC Wholesaler & Food Stockist</Text>
+            </View>
+            <Badge label="VERIFIED BUYER" variant="success" size="sm" />
+          </View>
+          <View style={styles.dividerLine} />
+          <View style={styles.profileMetaRow}>
+            <Text style={styles.profileMetaLabel}>GSTIN / License:</Text>
+            <Text style={styles.profileMetaVal}>{profile.gst_number || '29ABCDE1234F1Z5'}</Text>
+          </View>
+          <View style={styles.profileMetaRow}>
+            <Text style={styles.profileMetaLabel}>Delivery Yard:</Text>
+            <Text style={styles.profileMetaVal} numberOfLines={1}>
+              {profile.delivery_address || 'Shop #12, APMC Market Yard, Mandya'}
+            </Text>
+          </View>
+          <View style={styles.profileMetaRow}>
+            <Text style={styles.profileMetaLabel}>Authorized Contact:</Text>
+            <Text style={styles.profileMetaVal}>{user?.name} ({user?.phone || '9845012346'})</Text>
+          </View>
+          <TouchableOpacity onPress={onOpenProfile} style={styles.editProfilePill}>
+            <Text style={styles.editProfileText}>Manage Trade Profile & Address →</Text>
+          </TouchableOpacity>
+        </Card>
+
         {/* Search & Filter Bar */}
         <Card style={styles.searchCard}>
           <View style={styles.searchRow}>
@@ -495,5 +524,57 @@ const styles = StyleSheet.create({
   },
   btnFlex: {
     flex: 1,
+  },
+  profileSummaryCard: {
+    padding: spacing.md,
+    backgroundColor: '#F0F7FF',
+    borderColor: '#B3D7FF',
+    borderWidth: 1,
+    marginBottom: spacing.md,
+  },
+  profileSummaryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  enterpriseName: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  enterpriseRole: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  dividerLine: {
+    height: 1,
+    backgroundColor: '#D0E3F7',
+    marginVertical: spacing.xs,
+  },
+  profileMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  profileMetaLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  profileMetaVal: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.textPrimary,
+    maxWidth: '65%',
+  },
+  editProfilePill: {
+    marginTop: spacing.xs,
+    paddingVertical: 4,
+    alignItems: 'flex-end',
+  },
+  editProfileText: {
+    fontSize: 12,
+    color: colors.skyBlue,
+    fontWeight: typography.weights.bold,
   },
 });

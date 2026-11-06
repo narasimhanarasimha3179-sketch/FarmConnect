@@ -260,6 +260,11 @@ async function runDirectTests() {
   console.assert(newLogin.status === 200, 'Login with updated password failed');
   console.log('✓ Password reset workflow complete & verified with new login');
 
+  // Restore default seed password for interactive UI usage
+  const bcrypt = require('bcryptjs');
+  const defaultHash = bcrypt.hashSync('FarmerPassword123', 8);
+  db.prepare("UPDATE users SET password_hash = ? WHERE email = 'ramesh.farmer@example.com'").run(defaultHash);
+
   console.log('\n======================================================');
   console.log(' 🎉 ALL 11 PHASE 2 BACKEND AUTH & RBAC TESTS PASSED! 🎉');
   console.log('======================================================\n');

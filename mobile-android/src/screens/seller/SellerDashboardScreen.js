@@ -119,10 +119,17 @@ export default function SellerDashboardScreen({ onOpenProfile }) {
             </View>
             <View style={styles.storeInfoCol}>
               <View style={styles.storeNameRow}>
-                <Text style={styles.storeNameText}>{profile.shop_name || `${user?.name} Agri Store`}</Text>
-                <Badge label={profile.is_verified ? 'Verified Merchant' : 'KYC Verified'} variant="success" size="sm" />
+                <Text style={styles.storeNameText}>{profile.shop_name || 'Cauvery Agri Input Centre & Seed Depot'}</Text>
+                <Badge label="Verified Dealer 4.9★" variant="success" size="sm" />
               </View>
-              <Text style={styles.storeAddress}>{profile.store_address || 'APMC Yard, Mandya, Karnataka'}</Text>
+              <Text style={styles.storeAddress}>{profile.store_address || 'Shop #4, Near APMC Main Gate, Mandya Industrial Estate, Mandya - 571401'}</Text>
+              <View style={styles.dealerMetaBox}>
+                <Text style={styles.dealerMetaText}>📜 Lic: {profile.license_number || 'KA-AGRI-RET-MDY-2024-8841'} • GSTIN: {profile.gstin || '29AABCC5678F1ZT'}</Text>
+                <Text style={styles.dealerMetaText}>🏷️ Authorized: IFFCO, KRIBHCO, Bayer, National Seeds Corp</Text>
+                <TouchableOpacity onPress={onOpenProfile} style={{ marginTop: 4 }}>
+                  <Text style={styles.dealerEditLink}>Manage Storefront & License Credentials →</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
 
@@ -573,5 +580,21 @@ const styles = StyleSheet.create({
   },
   btnFlex: {
     flex: 1,
+  },
+  dealerMetaBox: {
+    marginTop: 6,
+    backgroundColor: '#F5F5F5',
+    padding: 6,
+    borderRadius: 6,
+  },
+  dealerMetaText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginVertical: 1,
+  },
+  dealerEditLink: {
+    fontSize: 11,
+    color: colors.primary,
+    fontWeight: typography.weights.bold,
   },
 });
