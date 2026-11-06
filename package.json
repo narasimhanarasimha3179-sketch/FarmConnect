@@ -1,0 +1,23 @@
+{
+  "name": "farmconnect-platform",
+  "version": "1.0.0",
+  "description": "FarmConnect – Smart Agricultural Products & Market Assistance Platform (Phases 0 to 32)",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "start": "node backend/src/server.js",
+    "test": "node scripts/run_all_tests.js",
+    "backend:dev": "node backend/src/server.js",
+    "mobile:start": "cd mobile-android && npm start",
+    "mobile:android": "cd mobile-android && npm run android"
+  },
+  "keywords": [
+    "agriculture",
+    "farming",
+    "mandi",
+    "react-native",
+    "nodejs",
+    "sqlite"
+  ],
+  "author": "FarmConnect Engineering Team",
+  "license": "UNLICENSED"
+}
