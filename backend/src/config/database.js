@@ -193,6 +193,51 @@ function initSchema() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS crop_guides (
+      id TEXT PRIMARY KEY,
+      crop_name TEXT NOT NULL,
+      season TEXT NOT NULL, -- 'Kharif', 'Rabi', 'Zaid', 'All Season'
+      soil_type TEXT NOT NULL,
+      climate TEXT NOT NULL,
+      land_preparation TEXT NOT NULL,
+      seed_selection TEXT NOT NULL,
+      sowing_guide TEXT NOT NULL,
+      irrigation_stages_json TEXT NOT NULL,
+      fertilizer_schedule_json TEXT NOT NULL,
+      weed_control TEXT NOT NULL,
+      harvesting_tips TEXT NOT NULL,
+      post_harvest TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS soil_reports (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      farm_name TEXT,
+      ph REAL NOT NULL,
+      nitrogen_kg_ha REAL NOT NULL,
+      phosphorus_kg_ha REAL NOT NULL,
+      potassium_kg_ha REAL NOT NULL,
+      organic_carbon_percent REAL NOT NULL,
+      soil_type TEXT NOT NULL,
+      fertility_rating TEXT NOT NULL, -- 'LOW', 'MEDIUM', 'OPTIMAL', 'HIGH'
+      recommendations_json TEXT NOT NULL,
+      tested_date TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS pest_diseases (
+      id TEXT PRIMARY KEY,
+      crop_name TEXT NOT NULL,
+      category TEXT NOT NULL, -- 'PEST', 'DISEASE'
+      name TEXT NOT NULL,
+      scientific_name TEXT,
+      symptoms TEXT NOT NULL,
+      causes TEXT NOT NULL,
+      prevention TEXT NOT NULL,
+      chemical_treatment TEXT NOT NULL,
+      biological_control TEXT NOT NULL,
+      image_url TEXT
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -593,6 +638,182 @@ function seedInitialData() {
 
     for (const c of complaints) {
       insertCmp.run(...c);
+    }
+  }
+
+  // Seed Crop Cultivation Guides (Phase 11)
+  const existingGuides = db.prepare('SELECT COUNT(*) as count FROM crop_guides').get();
+  if (existingGuides.count === 0) {
+    const guides = [
+      [
+        'guide_sugarcane',
+        'Sugarcane',
+        'All Season',
+        'Deep fertile well-drained loamy soil, pH 6.5 to 7.5',
+        'Tropical climate with 28-35°C, high sunshine hours',
+        'Deep plowing with mould board plow up to 45cm followed by 2 cross-harrowings and furrows spaced at 120-150cm.',
+        'Choose disease-free three-budded setts of Co 86032 or Co 0238 treated with Carbendazim (0.1%).',
+        'End-to-end trench planting in furrows; cover with 5cm soil and perform light irrigation immediately.',
+        JSON.stringify([
+          { stage: 'Germination (0-35 days)', days: 'Every 7-8 days', note: 'Ensure wet soil without waterlogging' },
+          { stage: 'Tillering (36-100 days)', days: 'Every 10-12 days', note: 'Critical water requirement' },
+          { stage: 'Grand Growth (101-250 days)', days: 'Every 8-10 days', note: 'Peak vegetative water demand' },
+          { stage: 'Ripening (251-360 days)', days: 'Stop 15 days before harvest', note: 'Facilitates sugar accumulation' },
+        ]),
+        JSON.stringify({
+          basal: 'Urea: 50 kg/acre, SSP: 125 kg/acre, MOP: 40 kg/acre + 10 tonnes FYM',
+          day45: 'Urea: 50 kg/acre at first earthing up',
+          day90: 'Urea: 75 kg/acre, MOP: 40 kg/acre at final earthing up',
+        }),
+        'Apply Atrazine @ 1.0 kg/acre within 3 days of planting followed by 2 manual hoeings at 30 & 60 days.',
+        'Harvest at 11-12 months when lower leaves dry and brix reading reaches 18-20% using hand refractometer.',
+        'Crush harvested cane within 24 hours to prevent inversion of sucrose into non-crystallizable sugars.',
+      ],
+      [
+        'guide_paddy',
+        'Paddy (Rice)',
+        'Kharif',
+        'Clay or clay-loamy soils with high water holding capacity',
+        'Warm humid climate, 22-32°C during vegetative phase',
+        'Wet tillage (puddling) 2-3 times to create an impermeable hardpan for ponding water.',
+        'Certified Sona Masoori (BPT 5204) seeds treated with Trichoderma or salt water floatation.',
+        'Transplant 21-25 day old seedlings at 20x15cm spacing with 2-3 seedlings per hill.',
+        JSON.stringify([
+          { stage: 'Transplanting to Tillering', days: 'Keep 2-3cm standing water', note: 'Prevents weed flush' },
+          { stage: 'Panicle Initiation to Flowering', days: 'Keep 5cm standing water', note: 'Most sensitive to drought' },
+          { stage: 'Grain Filling to Maturity', days: 'Drain field 10 days before harvest', note: 'Even ripening' },
+        ]),
+        JSON.stringify({
+          basal: 'DAP: 50 kg/acre, Potash: 25 kg/acre, Zinc Sulphate: 10 kg/acre',
+          tillering: 'Urea: 35 kg/acre top dress',
+          panicle: 'Urea: 25 kg/acre + Potash: 15 kg/acre',
+        }),
+        'Apply Pretilachlor 50 EC @ 500 ml/acre at 3-5 days after transplanting in shallow water.',
+        'Harvest when 80-85% grains in panicles turn golden straw color.',
+        'Dry threshed paddy grains to 12-14% moisture content before bagging in jute gunny sacks.',
+      ],
+    ];
+
+    const insertGuide = db.prepare(`
+      INSERT INTO crop_guides (
+        id, crop_name, season, soil_type, climate, land_preparation, seed_selection,
+        sowing_guide, irrigation_stages_json, fertilizer_schedule_json, weed_control, harvesting_tips, post_harvest
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const g of guides) {
+      insertGuide.run(...g);
+    }
+  }
+
+  // Seed Soil Health Reports (Phase 12)
+  const existingSoil = db.prepare('SELECT COUNT(*) as count FROM soil_reports').get();
+  if (existingSoil.count === 0) {
+    const soilReports = [
+      [
+        'soil_1',
+        'farmer_ramesh',
+        'East Canal Plot (Survey #142)',
+        6.8,
+        240.0, // Low Nitrogen (< 280)
+        24.5,  // Medium Phosphorus (23-56)
+        290.0, // High Potassium (> 280)
+        0.65,  // Medium Organic Carbon (0.5 - 0.75%)
+        'Red Sandy Loam',
+        'OPTIMAL',
+        JSON.stringify({
+          dosage_nitrogen: '+15% Urea supplementation required for target tillering',
+          dosage_phosphorus: 'Standard DAP application recommended at basal stage',
+          dosage_potassium: 'Adequate soil reserve; reduce MOP top dressing by 20%',
+          soil_amendments: 'Apply 2 tonnes/acre farmyard manure or vermicompost to elevate organic carbon above 0.75%',
+          suitable_crops: ['Sugarcane', 'Paddy', 'Finger Millet (Ragi)', 'Groundnut'],
+        }),
+        '2026-10-15',
+      ],
+    ];
+
+    const insertSoil = db.prepare(`
+      INSERT INTO soil_reports (
+        id, user_id, farm_name, ph, nitrogen_kg_ha, phosphorus_kg_ha, potassium_kg_ha,
+        organic_carbon_percent, soil_type, fertility_rating, recommendations_json, tested_date
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const s of soilReports) {
+      insertSoil.run(...s);
+    }
+  }
+
+  // Seed Pest & Disease Knowledge Base (Phase 13)
+  const existingPests = db.prepare('SELECT COUNT(*) as count FROM pest_diseases').get();
+  if (existingPests.count === 0) {
+    const pests = [
+      [
+        'pest_1',
+        'Paddy (Rice)',
+        'PEST',
+        'Yellow Stem Borer',
+        'Scirpophaga incertulas',
+        'Dead heart in vegetative stage (central shoot dries); white earhead at heading stage with chaffy empty grains.',
+        'Adult moths lay egg masses covered with buff hairs on leaf tips; caterpillars bore into tillers.',
+        'Clip seedling tips before transplanting; avoid excess nitrogen fertilizer; set up pheromone traps @ 8 traps/acre.',
+        'Chlorantraniliprole 18.5% SC @ 60 ml/acre or Cartap Hydrochloride 50% SP @ 400 g/acre.',
+        'Release egg parasitoid Trichogramma japonicum @ 40,000/acre at weekly intervals starting 30 days after transplanting.',
+        'https://images.unsplash.com/photo-1590682680695-43b964a3ae17',
+      ],
+      [
+        'pest_2',
+        'Paddy (Rice)',
+        'DISEASE',
+        'Rice Blast',
+        'Magnaporthe oryzae',
+        'Spindle-shaped lesions with grey/ash center and brownish-red border on leaves; black nodal necrosis; neck rot.',
+        'High air humidity (>90%), prolonged leaf wetness, cloudy drizzling days and high doses of nitrogenous fertilizers.',
+        'Seed treatment with Tricyclazole 75% WP @ 2g/kg seed; balanced NPK application; avoid late planting.',
+        'Foliar spray of Tricyclazole 75% WP @ 120 g/acre or Isoprothiolane 40% EC @ 300 ml/acre at initial symptom appearance.',
+        'Foliar spray of Pseudomonas fluorescens @ 1 kg/acre in 200 liters of water.',
+        'https://images.unsplash.com/photo-1589923188900-85dae523342b',
+      ],
+      [
+        'pest_3',
+        'Tomato',
+        'DISEASE',
+        'Early Blight',
+        'Alternaria solani',
+        'Concentric dark rings (target board pattern) on older lower leaves, stems, and fruits; leaf yellowing and drop.',
+        'Warm temperatures (24-29°C) accompanied by frequent rains or heavy dews; infected crop residue in soil.',
+        'Crop rotation with non-solanaceous crops; drip irrigation instead of sprinkler; mulch beds with silver-black film.',
+        'Spray Mancozeb 75% WP @ 400 g/acre or Azoxystrobin 23% SC @ 200 ml/acre.',
+        'Biological spray of Trichoderma harzianum or Bacillus subtilis @ 5g/liter water.',
+        'https://images.unsplash.com/photo-1592924357228-91a4daadcfea',
+      ],
+      [
+        'pest_4',
+        'Sugarcane',
+        'PEST',
+        'Early Shoot Borer',
+        'Chilo infuscatellus',
+        'Dead heart in young shoots (1-3 months); emitting foul odor when pulled out; pinholes on stem bases.',
+        'High temperature with low humidity during pre-monsoon summer months; late planting.',
+        'Trash mulching @ 3 tonnes/acre at 30 days after planting; light furrow irrigation during hot spells.',
+        'Soil application of Fipronil 0.3% GR @ 10 kg/acre along cane rows or Chlorantraniliprole 18.5% SC @ 150 ml/acre.',
+        'Release of Trichogramma chilonis @ 20,000/acre starting 30 days after cane planting.',
+        'https://images.unsplash.com/photo-1596704017254-9b121068fb31',
+      ],
+    ];
+
+    const insertPest = db.prepare(`
+      INSERT INTO pest_diseases (
+        id, crop_name, category, name, scientific_name, symptoms, causes,
+        prevention, chemical_treatment, biological_control, image_url
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const p of pests) {
+      insertPest.run(...p);
     }
   }
 }

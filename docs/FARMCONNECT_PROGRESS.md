@@ -1,8 +1,8 @@
 # FarmConnect Phase Progress Tracker
 
-**Active Phase:** PHASE 11 – Crop & Farming Assistance  
+**Active Phase:** PHASE 14 – Camera & Image-Based Agricultural AI  
 **Active Step:** STEP 1 – Continuous Execution Pipeline  
-**Overall Completion:** 11 of 33 Phases Completed (Phases 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 Complete)
+**Overall Completion:** 14 of 33 Phases Completed (Phases 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 Complete)
 
 ---
 
@@ -21,7 +21,10 @@
 | **8** | **Crop Marketplace** | **COMPLETED** | Direct Farmer-to-Buyer Trade, Enquiries, Price Bidding | Verified crop harvest listings, APMC yard delivery tags, buyer negotiation bids, farmer offer acceptance & quality grades |
 | **9** | **Live Agricultural Market Prices** | **COMPLETED** | Verified APMC Ticker, Historical Trend Charts, Price Alerts | Multi-day chronological modal rate graphs, cross-mandi comparisons, and SMS/notification price threshold triggers |
 | **10** | **Weather System** | **COMPLETED** | Location Forecasts, Rain Alerts, Agro-Advisories | Micro-climatic temperature, humidity, wind & precipitation forecasting with smart irrigation and spraying guidance |
-| 11 | Crop & Farming Assistance | IN PROGRESS | Cultivation Guides by Season/Crop | Land prep to harvest guidance |
+| **11** | **Crop & Farming Assistance** | **COMPLETED** | Crop Cultivation Guides, Stage-wise Irrigation & Fertilizer Schedule | Comprehensive roadmaps from land prep to storage, seasonal farming calendar with field operations |
+| **12** | **Soil Health System** | **COMPLETED** | Soil Health Cards, NPK Precision Dosage Calculator | Lab report management (pH, N, P, K, Organic Carbon), fertility ratings, and exact commercial fertilizer bag calculations |
+| **13** | **Pest & Disease Assistance** | **COMPLETED** | Symptom Matching Rule Engine, Biological Parasitoids & IPM | Instant symptom diagnosis, CIBRC approved chemical treatments, and zero-residue biological control recommendations |
+| 14 | Camera & Image-Based Agricultural AI | IN PROGRESS | Photo Diagnosis Engine | Real vision model integration |
 | 12 | Soil Health System | PENDING | N-P-K & pH Report Analysis | Fertilizer dosage calculations |
 | 13 | Pest & Disease Assistance | PENDING | Symptoms, IPM & Treatments | Verified biological controls |
 | 14 | Camera & Image-Based Agricultural AI | PENDING | Photo Diagnosis Engine | Real vision model integration |

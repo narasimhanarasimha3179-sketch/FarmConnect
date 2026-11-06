@@ -5,6 +5,29 @@ This project adheres to **STRICT ANTIGRAVITY DEVELOPMENT RULES** with permanent 
 
 ---
 
+## [Phase 11, Phase 12, Phase 13] - Agri-Science Knowledge, Soil Health & Pest IPM - 2026-11-06
+
+### Added
+- **Phase 11: Crop Cultivation & Farming Assistance:**
+  - `backend/src/controllers/cropAssistanceController.js` & `backend/src/routes/cropAssistanceRoutes.js`:
+    - `GET /api/crop-assistance/guides` & `GET /api/crop-assistance/guides/:id`: Stage-by-stage agronomic roadmaps covering land preparation, seed selection, sowing depths, irrigation stages, and split fertilizer schedules.
+    - `GET /api/crop-assistance/calendar`: Monthly seasonal calendar with active field operations and recommended crops.
+- **Phase 12: Soil Health System & Precision NPK Calculator:**
+  - `backend/src/controllers/soilController.js` & `backend/src/routes/soilRoutes.js`:
+    - `GET /api/soil/reports` & `POST /api/soil/reports`: Laboratory soil health cards recording pH, Nitrogen, Phosphorus, Potassium, and Organic Carbon with automated fertility ratings.
+    - `POST /api/soil/npk-calculator`: Precision agronomic fertilizer dosage calculator computing exact 50kg bags of Urea, DAP, and MOP tailored to target crop and field acreage.
+- **Phase 13: Pest & Disease Assistance & IPM Diagnostics:**
+  - `backend/src/controllers/pestDiseaseController.js` & `backend/src/routes/pestDiseaseRoutes.js`:
+    - `GET /api/pest-disease` & `GET /api/pest-disease/:id`: Pest and plant disease profiles with biological parasitoid controls (e.g. *Trichogramma*) and CIBRC approved chemical treatments.
+    - `POST /api/pest-disease/diagnose`: Rule-based symptom matching diagnosis engine with confidence scoring.
+- **Mobile Knowledge Center:**
+  - `mobile-android/src/screens/knowledge/AgriScienceScreen.js`: 3-tab unified hub for Crop Roadmaps, Soil Health Cards & Interactive NPK Dosage Calculator, and Pest Symptom Diagnosis.
+- **Automated Verification:**
+  - `backend/tests/agri_science.test.js` (22 automated tests passing).
+  - `mobile-android/__tests__/phase11_13.test.js` verifying integration and baseline preservation.
+
+---
+
 ## [Phase 9 & Phase 10] - Live Mandi Prices & Agro-Weather System - 2026-11-06
 
 ### Added

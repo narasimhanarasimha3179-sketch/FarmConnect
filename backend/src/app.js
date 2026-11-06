@@ -10,6 +10,9 @@ const ecommerceRoutes = require('./routes/ecommerceRoutes');
 const cropMarketRoutes = require('./routes/cropMarketRoutes');
 const mandiRoutes = require('./routes/mandiRoutes');
 const weatherRoutes = require('./routes/weatherRoutes');
+const cropAssistanceRoutes = require('./routes/cropAssistanceRoutes');
+const soilRoutes = require('./routes/soilRoutes');
+const pestDiseaseRoutes = require('./routes/pestDiseaseRoutes');
 
 const app = express();
 
@@ -48,6 +51,9 @@ app.use('/api/ecommerce', ecommerceRoutes);
 app.use('/api/crop-market', cropMarketRoutes);
 app.use('/api/mandi', mandiRoutes);
 app.use('/api/weather', weatherRoutes);
+app.use('/api/crop-assistance', cropAssistanceRoutes);
+app.use('/api/soil', soilRoutes);
+app.use('/api/pest-disease', pestDiseaseRoutes);
 
 // 404 Handler
 app.use((req, res) => {
