@@ -9,9 +9,10 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Modal,
 } from 'react-native';
 import { colors, typography, spacing, borderRadius } from '../../theme';
-import { Card, Badge, Button, Header, LoadingIndicator } from '../../components/common';
+import { Card, Badge, Button, Input, Header, LoadingIndicator } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import apiClient from '../../services/apiClient';
@@ -30,11 +31,24 @@ export default function SellerDashboardScreen({ onOpenProfile }) {
   const [isLoading, setIsLoading] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  // Seed & Chemical Batch Registry State
+  const [batches, setBatches] = useState([]);
+
+  // Customer Credit Ledger ("Khata") State
+  const [creditLedger, setCreditLedger] = useState([]);
+  const [totalCreditOutstanding, setTotalCreditOutstanding] = useState(0);
+  const [showSettleModal, setShowSettleModal] = useState(false);
+  const [selectedKhataEntry, setSelectedKhataEntry] = useState(null);
+  const [settleAmt, setSettleAmt] = useState('');
+  const [isSettling, setIsSettling] = useState(false);
+
   const loadData = async () => {
     try {
-      const [dashRes, repRes] = await Promise.all([
+      const [dashRes, repRes, batchRes, khataRes] = await Promise.all([
         apiClient.get('/seller/dashboard'),
         apiClient.get('/seller/reports'),
+        apiClient.get('/seller/batches'),
+        apiClient.get('/seller/credit-ledger'),
       ]);
 
       if (dashRes.success && dashRes.data) {
@@ -46,8 +60,51 @@ export default function SellerDashboardScreen({ onOpenProfile }) {
       if (repRes.success && repRes.data) {
         setReports(repRes.data.report);
       }
+
+      const bData = batchRes.data || batchRes;
+      if (bData?.success && bData.batches) {
+        setBatches(bData.batches);
+      }
+
+      const kData = khataRes.data || khataRes;
+      if (kData?.success && kData.khata_entries) {
+        setCreditLedger(kData.khata_entries);
+        setTotalCreditOutstanding(kData.total_outstanding || 0);
+      }
     } catch (err) {
       console.error('Error fetching seller dashboard:', err);
+    }
+  };
+
+  const handleOpenSettle = (entry) => {
+    setSelectedKhataEntry(entry);
+    setSettleAmt(String(entry.outstanding_balance));
+    setShowSettleModal(true);
+  };
+
+  const handleRecordPayment = async () => {
+    if (!settleAmt || !selectedKhataEntry) {
+      showError('Please enter settlement amount.', 'Missing Info');
+      return;
+    }
+    setIsSettling(true);
+    try {
+      const res = await apiClient.post('/seller/credit-ledger/settle', {
+        khata_id: selectedKhataEntry.id,
+        amount_paid: Number(settleAmt),
+      });
+      const data = res.data || res;
+      if (data?.success || res.success) {
+        showSuccess(data?.message || 'Payment recorded successfully', 'Khata Settled');
+        setShowSettleModal(false);
+        await loadData();
+      } else {
+        showError(data?.message || res.message || 'Failed to record payment', 'Error');
+      }
+    } catch (err) {
+      showError(err.message, 'Network Error');
+    } finally {
+      setIsSettling(false);
     }
   };
 
@@ -262,6 +319,77 @@ export default function SellerDashboardScreen({ onOpenProfile }) {
           ))}
         </Card>
 
+        {/* Seed & Chemical Batch Expiry Tracker (Batch Registry) */}
+        <Card style={styles.batchCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>🏷️ Seed & Chemical Batch Expiry Registry ({batches.length})</Text>
+            <Badge label="CIBRC & NSC COMPLIANCE" variant="success" size="sm" />
+          </View>
+          <Text style={styles.batchSub}>Mandatory quality compliance tracking for certified seeds & crop protection lots.</Text>
+
+          {batches.map((b) => (
+            <View key={b.id} style={styles.batchItem}>
+              <View style={styles.batchTopRow}>
+                <Text style={styles.batchName}>{b.product_name}</Text>
+                <Badge
+                  label={b.status === 'EXPIRING_SOON' ? `⚠️ ${b.days_to_expiry} Days Left` : `✓ ${b.days_to_expiry} Days`}
+                  variant={b.status === 'EXPIRING_SOON' ? 'warning' : 'success'}
+                  size="sm"
+                />
+              </View>
+              <Text style={styles.batchMeta}>
+                Lot: {b.lot_number} • Batch: {b.batch_no} • Qty: {b.quantity_bags} Bags
+              </Text>
+              <Text style={styles.batchCert}>
+                📜 {b.certification} • Germination: {b.germination_rate}
+              </Text>
+              <Text style={styles.batchDates}>
+                Mfg: {b.mfg_date} | Expiry: {b.expiry_date}
+              </Text>
+            </View>
+          ))}
+        </Card>
+
+        {/* Customer Credit Ledger (Khata Book) */}
+        <Card style={styles.khataCard}>
+          <View style={styles.sectionHeaderRow}>
+            <View>
+              <Text style={styles.sectionTitle}>📒 Rural Customer Credit Ledger ("Khata Book")</Text>
+              <Text style={styles.khataTotalSub}>
+                Total Outstanding: <Text style={{ color: colors.error, fontWeight: 'bold' }}>₹{totalCreditOutstanding.toLocaleString('en-IN')}</Text>
+              </Text>
+            </View>
+            <Badge label="CREDIT RECOVERY" variant="primary" size="sm" />
+          </View>
+
+          {creditLedger.map((k) => (
+            <View key={k.id} style={styles.khataRow}>
+              <View style={{ flex: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={styles.khataFarmerName}>{k.farmer_name}</Text>
+                  <Badge
+                    label={k.status}
+                    variant={k.status === 'SETTLED' ? 'success' : k.status === 'OVERDUE' ? 'error' : 'warning'}
+                    size="sm"
+                  />
+                </View>
+                <Text style={styles.khataMeta}>{k.village} ({k.phone}) • {k.crop_cycle}</Text>
+                <Text style={styles.khataBal}>
+                  Bal: <Text style={{ fontWeight: 'bold', color: k.outstanding_balance > 0 ? colors.error : colors.success }}>₹{k.outstanding_balance.toLocaleString('en-IN')}</Text> / Total: ₹{k.credit_amount.toLocaleString('en-IN')} (Due: {k.due_date})
+                </Text>
+              </View>
+              {k.outstanding_balance > 0 ? (
+                <TouchableOpacity
+                  style={styles.settleBtn}
+                  onPress={() => handleOpenSettle(k)}
+                >
+                  <Text style={styles.settleTxt}>Record ₹</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+          ))}
+        </Card>
+
         {/* Sales & Revenue Analytics Report */}
         {reports ? (
           <Card style={styles.reportCard}>
@@ -298,6 +426,36 @@ export default function SellerDashboardScreen({ onOpenProfile }) {
         onClose={() => setShowAddModal(false)}
         onProductSaved={() => loadData()}
       />
+
+      {/* Settle Customer Khata Modal */}
+      <Modal visible={showSettleModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+            <Text style={styles.modalTitle}>💰 Settle Rural Credit Payment</Text>
+            <Text style={styles.modalSub}>
+              Record payment receipt for {selectedKhataEntry?.farmer_name} ({selectedKhataEntry?.village}).
+            </Text>
+
+            <View style={styles.settleSummaryBox}>
+              <Text style={styles.settleSummaryLbl}>Total Outstanding Balance:</Text>
+              <Text style={styles.settleSummaryVal}>₹{selectedKhataEntry?.outstanding_balance?.toLocaleString('en-IN')}</Text>
+            </View>
+
+            <Input
+              label="Amount Paid Today (₹)"
+              placeholder="e.g. 5000"
+              value={settleAmt}
+              onChangeText={setSettleAmt}
+              keyboardType="numeric"
+            />
+
+            <View style={styles.modalBtnRow}>
+              <Button title="Cancel" variant="outline" size="md" onPress={() => setShowSettleModal(false)} style={styles.btnFlex} />
+              <Button title="Record Receipt" variant="primary" size="md" loading={isSettling} onPress={handleRecordPayment} style={styles.btnFlex} />
+            </View>
+          </Card>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -596,5 +754,145 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.primary,
     fontWeight: typography.weights.bold,
+  },
+  // Batch Registry Styles
+  batchCard: {
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    borderColor: colors.primaryLight,
+    borderWidth: 1.5,
+  },
+  batchSub: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+  },
+  batchItem: {
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.xs,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  batchTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  batchName: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+    flex: 1,
+    marginRight: spacing.xs,
+  },
+  batchMeta: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  batchCert: {
+    fontSize: 10,
+    color: colors.primary,
+    marginTop: 1,
+  },
+  batchDates: {
+    fontSize: 9,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  // Khata Book Styles
+  khataCard: {
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    backgroundColor: '#FFFDF9',
+    borderColor: colors.amber,
+    borderWidth: 1.5,
+  },
+  khataTotalSub: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  khataRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.xs,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  khataFarmerName: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  khataMeta: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    marginTop: 1,
+  },
+  khataBal: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  settleBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 6,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  settleTxt: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+    color: '#ffffff',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: spacing.md,
+  },
+  modalCard: {
+    padding: spacing.lg,
+  },
+  modalTitle: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+    marginBottom: 2,
+  },
+  modalSub: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+  },
+  modalBtnRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  settleSummaryBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.sm,
+  },
+  settleSummaryLbl: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+  },
+  settleSummaryVal: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.error,
   },
 });

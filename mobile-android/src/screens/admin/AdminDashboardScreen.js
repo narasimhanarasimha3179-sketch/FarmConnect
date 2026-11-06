@@ -23,7 +23,7 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
   const { user, logout } = useAuth();
   const { showSuccess, showError, showInfo } = useNotification();
 
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sellers' | 'users' | 'complaints' | 'audit'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'sellers' | 'users' | 'complaints' | 'audit' | 'compliance'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -33,6 +33,15 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
   const [sellers, setSellers] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [complianceReport, setComplianceReport] = useState(null);
+
+  // Broadcast Alert Modal
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastTitle, setBroadcastTitle] = useState('Urgent: Heavy Rainfall Alert & Pest Precautions');
+  const [broadcastMessage, setBroadcastMessage] = useState('IMD alerts heavy unseasonal downpours across Mandya & Maddur blocks. Safeguard standing harvest and delay chemical spraying.');
+  const [broadcastSeverity, setBroadcastSeverity] = useState('WARNING');
+  const [broadcastType, setBroadcastType] = useState('WEATHER');
+  const [isBroadcasting, setIsBroadcasting] = useState(false);
 
   // Filters & Search
   const [userRoleFilter, setUserRoleFilter] = useState('ALL');
@@ -50,12 +59,13 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
   async function loadAllAdminData() {
     setLoading(true);
     try {
-      const [dashRes, usersRes, sellersRes, complaintsRes, auditRes] = await Promise.all([
+      const [dashRes, usersRes, sellersRes, complaintsRes, auditRes, mspRes] = await Promise.all([
         apiClient.get('/admin/dashboard').catch(() => ({ data: { data: { summary: {} } } })),
         apiClient.get('/admin/users').catch(() => ({ data: { data: [] } })),
         apiClient.get('/admin/sellers').catch(() => ({ data: { data: [] } })),
         apiClient.get('/admin/complaints').catch(() => ({ data: { data: [] } })),
         apiClient.get('/admin/audit-logs').catch(() => ({ data: { data: [] } })),
+        apiClient.get('/admin/msp-compliance').catch(() => ({ data: { data: null } })),
       ]);
 
       if (dashRes?.data?.data?.summary) {
@@ -63,6 +73,47 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
       }
       setUsers(usersRes?.data?.data || []);
       setSellers(sellersRes?.data?.data || []);
+      setComplaints(complaintsRes?.data?.data || []);
+      setAuditLogs(auditRes?.data?.data || []);
+      const mData = mspRes?.data || mspRes;
+      if (mData?.success) {
+        setComplianceReport(mData);
+      }
+    } catch (err) {
+      showError('Failed to load administrative console data.', 'Network Error');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }
+
+  async function handleBroadcastAlert() {
+    if (!broadcastTitle || !broadcastMessage) {
+      showError('Alert headline and content are required.', 'Missing Info');
+      return;
+    }
+    setIsBroadcasting(true);
+    try {
+      const res = await apiClient.post('/admin/broadcast-alert', {
+        title: broadcastTitle,
+        message: broadcastMessage,
+        severity: broadcastSeverity,
+        type: broadcastType,
+      });
+      const data = res.data || res;
+      if (data?.success || res.success) {
+        showSuccess(data?.message || 'Emergency alert broadcasted to all farmers!', 'Broadcast Dispatched');
+        setShowBroadcastModal(false);
+        await loadAllAdminData();
+      } else {
+        showError(data?.message || res.message || 'Failed to dispatch alert', 'Error');
+      }
+    } catch (err) {
+      showError(err.message, 'Network Error');
+    } finally {
+      setIsBroadcasting(false);
+    }
+  }
       setComplaints(complaintsRes?.data?.data || []);
       setAuditLogs(auditRes?.data?.data || []);
     } catch (err) {
@@ -196,6 +247,15 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
         >
           <Text style={[styles.tabLabel, activeTab === 'audit' && styles.activeTabLabel]}>Audit Trail</Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.tabItem, activeTab === 'compliance' && styles.activeTabItem]}
+          onPress={() => setActiveTab('compliance')}
+        >
+          <Text style={[styles.tabLabel, activeTab === 'compliance' && styles.activeTabLabel]}>
+            MSP Audit {complianceReport?.flagged_anomalies > 0 ? `(${complianceReport.flagged_anomalies})` : ''}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {loading ? (
@@ -221,6 +281,22 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
                 <TouchableOpacity onPress={onOpenProfile} style={{ marginTop: 6, alignItems: 'flex-end' }}>
                   <Text style={styles.dossierLink}>View Full Administration Profile →</Text>
                 </TouchableOpacity>
+              </Card>
+
+              {/* Emergency Agricultural Push Dispatcher Card */}
+              <Card style={styles.emergencyCard}>
+                <View style={styles.emergencyHeader}>
+                  <View style={{ flex: 1, marginRight: spacing.xs }}>
+                    <Text style={styles.emergencyTitle}>🚨 Agricultural Emergency Push Dispatcher</Text>
+                    <Text style={styles.emergencySub}>Broadcast high-priority weather warnings, pest alarms, or disaster subsidies to all farmers.</Text>
+                  </View>
+                  <Button
+                    title="📢 Dispatch Alert"
+                    variant="danger"
+                    size="sm"
+                    onPress={() => setShowBroadcastModal(true)}
+                  />
+                </View>
               </Card>
 
               {/* Platform Metrics Grid */}
@@ -523,6 +599,61 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
             </View>
           )}
 
+          {/* TAB 6: MSP & APMC STATUTORY PRICE COMPLIANCE AUDIT */}
+          {activeTab === 'compliance' && (
+            <View>
+              <Card style={styles.complianceSummaryCard}>
+                <View style={styles.sectionHeaderRow}>
+                  <View>
+                    <Text style={styles.cardHeading}>⚖️ MSP & Price Regulatory Oversight</Text>
+                    <Text style={styles.complianceSub}>Real-time compliance monitoring against statutory minimum floor prices.</Text>
+                  </View>
+                  <Badge label={complianceReport?.compliance_rate || '100% COMPLIANT'} variant="success" size="sm" />
+                </View>
+
+                <View style={styles.kpiGrid}>
+                  <Card style={styles.kpiCard}>
+                    <Text style={styles.kpiValue}>{complianceReport?.total_audited || 0}</Text>
+                    <Text style={styles.kpiLabel}>Audited Lots</Text>
+                  </Card>
+                  <Card style={styles.kpiCard}>
+                    <Text style={[styles.kpiValue, { color: complianceReport?.flagged_anomalies > 0 ? '#ef4444' : '#10b981' }]}>
+                      {complianceReport?.flagged_anomalies || 0}
+                    </Text>
+                    <Text style={styles.kpiLabel}>Flagged Anomalies</Text>
+                  </Card>
+                </View>
+              </Card>
+
+              <Text style={styles.tabSectionTitle}>Active Marketplace Listings & Price Audits</Text>
+              {!complianceReport?.listings || complianceReport.listings.length === 0 ? (
+                <EmptyState title="No Listings to Audit" message="Marketplace listings will appear here for statutory verification." />
+              ) : (
+                complianceReport.listings.map((item) => (
+                  <Card key={item.id} style={styles.auditListingCard}>
+                    <View style={styles.auditListingHeader}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.auditCropName}>{item.crop_name} ({item.variety})</Text>
+                        <Text style={styles.auditFarmer}>Farmer: {item.farmer_name} • {item.mandi_location}</Text>
+                      </View>
+                      <Badge
+                        label={item.compliance_status === 'COMPLIANT' ? '✓ COMPLIANT' : item.compliance_status === 'BELOW_MSP_WARNING' ? '⚠️ BELOW MSP' : '🚩 HIGH CEILING'}
+                        variant={item.compliance_status === 'COMPLIANT' ? 'success' : item.compliance_status === 'BELOW_MSP_WARNING' ? 'error' : 'warning'}
+                        size="sm"
+                      />
+                    </View>
+
+                    <View style={styles.auditPriceRow}>
+                      <Text style={styles.auditExpectedPrice}>Listed: ₹{item.expected_price}/{item.unit}</Text>
+                      <Text style={styles.auditMspBenchmark}>Benchmark MSP: ₹{item.official_msp}/qtl</Text>
+                    </View>
+                    <Text style={styles.auditNotesText}>📋 {item.notes}</Text>
+                  </Card>
+                ))
+              )}
+            </View>
+          )}
+
           {/* Sign Out Card */}
           <Card style={styles.accountCard}>
             <Text style={styles.accountTitle}>Administrator Identity</Text>
@@ -566,6 +697,82 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
                 size="sm"
                 disabled={submittingAction}
                 onPress={() => handleResolveComplaint(selectedComplaint.id, 'RESOLVED')}
+                style={styles.flexBtn}
+              />
+            </View>
+          </Card>
+        </View>
+      </Modal>
+
+      {/* EMERGENCY BROADCAST MODAL */}
+      <Modal visible={showBroadcastModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+            <Text style={styles.modalTitle}>📢 Broadcast Emergency Agricultural Alert</Text>
+            <Text style={styles.modalSub}>
+              Instantly pushes alert notifications to all registered farmers across Karnataka.
+            </Text>
+
+            <Input
+              label="Alert Headline / Title"
+              value={broadcastTitle}
+              onChangeText={setBroadcastTitle}
+            />
+
+            <View style={{ marginBottom: spacing.xs }}>
+              <Text style={styles.inputLabelSmall}>Severity Level:</Text>
+              <View style={styles.pillRow}>
+                {['CRITICAL', 'WARNING', 'INFO'].map((sev) => (
+                  <TouchableOpacity
+                    key={sev}
+                    style={[styles.smallPill, broadcastSeverity === sev && styles.smallPillActive]}
+                    onPress={() => setBroadcastSeverity(sev)}
+                  >
+                    <Text style={[styles.smallPillTxt, broadcastSeverity === sev && styles.smallPillTxtActive]}>{sev}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={{ marginBottom: spacing.xs }}>
+              <Text style={styles.inputLabelSmall}>Category:</Text>
+              <View style={styles.pillRow}>
+                {['WEATHER', 'PEST', 'SCHEME'].map((t) => (
+                  <TouchableOpacity
+                    key={t}
+                    style={[styles.smallPill, broadcastType === t && styles.smallPillActive]}
+                    onPress={() => setBroadcastType(t)}
+                  >
+                    <Text style={[styles.smallPillTxt, broadcastType === t && styles.smallPillTxtActive]}>{t}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Enter actionable guidance for farmers..."
+              multiline
+              numberOfLines={3}
+              value={broadcastMessage}
+              onChangeText={setBroadcastMessage}
+              placeholderTextColor="#9ca3af"
+            />
+
+            <View style={styles.modalBtnRow}>
+              <Button
+                title="Cancel"
+                variant="outline"
+                size="sm"
+                onPress={() => setShowBroadcastModal(false)}
+                style={styles.flexBtn}
+              />
+              <Button
+                title="Broadcast Alert"
+                variant="danger"
+                size="sm"
+                loading={isBroadcasting}
+                onPress={handleBroadcastAlert}
                 style={styles.flexBtn}
               />
             </View>
@@ -950,5 +1157,110 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: typography.weights.bold,
     color: colors.primary,
+  },
+  // Emergency Card Styles
+  emergencyCard: {
+    padding: spacing.md,
+    backgroundColor: '#FEF2F2',
+    borderColor: '#F87171',
+    borderWidth: 1.5,
+    marginBottom: spacing.md,
+  },
+  emergencyHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  emergencyTitle: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: '#991B1B',
+  },
+  emergencySub: {
+    fontSize: typography.sizes.xs,
+    color: '#B91C1C',
+    marginTop: 2,
+  },
+  // Compliance Audit Styles
+  complianceSummaryCard: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    borderColor: colors.primaryLight,
+    borderWidth: 1.5,
+  },
+  complianceSub: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  auditListingCard: {
+    padding: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  auditListingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  auditCropName: {
+    fontSize: typography.sizes.sm,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  auditFarmer: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  auditPriceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.xs,
+    borderRadius: borderRadius.sm,
+    marginVertical: spacing.xs,
+  },
+  auditExpectedPrice: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  auditMspBenchmark: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semiBold,
+    color: colors.primary,
+  },
+  auditNotesText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    lineHeight: typography.lineHeights.tight,
+  },
+  inputLabelSmall: {
+    fontSize: 11,
+    fontWeight: typography.weights.bold,
+    color: '#374151',
+    marginBottom: 4,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  smallPill: {
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: '#F3F4F6',
+    borderRadius: borderRadius.full,
+  },
+  smallPillActive: {
+    backgroundColor: colors.primary,
+  },
+  smallPillTxt: {
+    fontSize: 10,
+    fontWeight: typography.weights.semiBold,
+    color: '#4B5563',
+  },
+  smallPillTxtActive: {
+    color: '#ffffff',
   },
 });

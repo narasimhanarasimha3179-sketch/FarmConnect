@@ -219,3 +219,133 @@ exports.getReports = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to generate reports', error: err.message });
   }
 };
+
+// Seed / Chemical Expiry & Compliance Batch Register
+const merchantBatches = [
+  {
+    id: 'batch_seed_01',
+    product_name: 'Certified Paddy Seeds (Sona Masoori BPT 5204)',
+    batch_no: 'BATCH-BPT-2026-KHARIF-08',
+    lot_number: 'NSC-LOT-88214',
+    category: 'SEEDS',
+    quantity_bags: 120,
+    germination_rate: '96.5%',
+    mfg_date: '2026-06-15',
+    expiry_date: '2027-06-14',
+    days_to_expiry: 220,
+    status: 'ACTIVE',
+    certification: 'National Seeds Corporation (NSC) Certified Tag #8821',
+  },
+  {
+    id: 'batch_fert_02',
+    product_name: 'IFFCO Granular Urea 46% N (50kg Bag)',
+    batch_no: 'BATCH-IFFCO-UR-2026-04',
+    lot_number: 'IFFCO-MDY-9923',
+    category: 'FERTILIZERS',
+    quantity_bags: 85,
+    germination_rate: 'N/A',
+    mfg_date: '2026-07-01',
+    expiry_date: '2028-06-30',
+    days_to_expiry: 598,
+    status: 'ACTIVE',
+    certification: 'CIBRC & Fertilizer Control Order (FCO) Tested',
+  },
+  {
+    id: 'batch_pest_03',
+    product_name: 'Bayer Confidor Insecticide (Imidacloprid 17.8% SL)',
+    batch_no: 'BATCH-BAYER-CF-2025-11',
+    lot_number: 'BAYER-IN-44120',
+    category: 'PESTICIDES',
+    quantity_bags: 40,
+    germination_rate: 'N/A',
+    mfg_date: '2025-11-10',
+    expiry_date: '2026-11-30',
+    days_to_expiry: 24,
+    status: 'EXPIRING_SOON',
+    certification: 'Central Insecticides Board & Registration Committee (CIBRC)',
+  },
+];
+
+// Customer Khata Ledger
+let customerKhata = [
+  {
+    id: 'khata_1',
+    farmer_name: 'Ramesh Patil',
+    phone: '9845012345',
+    village: 'Shivalli, Mandya',
+    crop_cycle: 'Sugarcane Adasali (14-Month)',
+    credit_amount: 14500,
+    paid_amount: 5000,
+    outstanding_balance: 9500,
+    due_date: '2026-12-15',
+    status: 'ACTIVE',
+    last_payment_date: '2026-10-20',
+  },
+  {
+    id: 'khata_2',
+    farmer_name: 'Basavaraj Hiremath',
+    phone: '9845012399',
+    village: 'Kothathi, Mandya',
+    crop_cycle: 'Paddy Kharif 2026',
+    credit_amount: 8200,
+    paid_amount: 8200,
+    outstanding_balance: 0,
+    due_date: '2026-11-01',
+    status: 'SETTLED',
+    last_payment_date: '2026-10-28',
+  },
+  {
+    id: 'khata_3',
+    farmer_name: 'Chennappa Gowda',
+    phone: '9845012377',
+    village: 'Maddur Rural',
+    crop_cycle: 'Ragi GPU-28 Rainfed',
+    credit_amount: 6400,
+    paid_amount: 2000,
+    outstanding_balance: 4400,
+    due_date: '2026-11-25',
+    status: 'OVERDUE',
+    last_payment_date: '2026-09-15',
+  },
+];
+
+exports.getBatches = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    count: merchantBatches.length,
+    batches: merchantBatches,
+  });
+};
+
+exports.getCreditLedger = async (req, res) => {
+  const totalOutstanding = customerKhata.reduce((sum, k) => sum + k.outstanding_balance, 0);
+  return res.status(200).json({
+    success: true,
+    total_outstanding: totalOutstanding,
+    khata_entries: customerKhata,
+  });
+};
+
+exports.recordCreditPayment = async (req, res) => {
+  try {
+    const { khata_id, amount_paid } = req.body;
+    const entry = customerKhata.find((k) => k.id === khata_id);
+    if (!entry) {
+      return res.status(404).json({ success: false, message: 'Khata entry not found' });
+    }
+    const amt = parseFloat(amount_paid) || 0;
+    entry.paid_amount += amt;
+    entry.outstanding_balance = Math.max(0, entry.outstanding_balance - amt);
+    entry.last_payment_date = new Date().toISOString().split('T')[0];
+    if (entry.outstanding_balance === 0) {
+      entry.status = 'SETTLED';
+    }
+    return res.status(200).json({
+      success: true,
+      message: `Payment of ₹${amt.toLocaleString('en-IN')} recorded for ${entry.farmer_name}. Remaining balance: ₹${entry.outstanding_balance}`,
+      entry,
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Failed to record credit payment', error: err.message });
+  }
+};

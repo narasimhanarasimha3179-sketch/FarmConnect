@@ -15,5 +15,8 @@ router.delete('/products/:id', sellerController.deleteProduct);
 router.get('/orders', sellerController.getOrders);
 router.put('/orders/:id/status', sellerController.updateOrderStatus);
 router.get('/reports', sellerController.getReports);
+router.get('/batches', sellerController.getBatches);
+router.get('/credit-ledger', sellerController.getCreditLedger);
+router.post('/credit-ledger/settle', sellerController.recordCreditPayment);
 
 module.exports = router;

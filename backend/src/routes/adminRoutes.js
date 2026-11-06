@@ -30,4 +30,8 @@ router.get('/audit-logs', adminController.getAuditLogs);
 router.get('/mandi-prices', adminController.getMandiPrices);
 router.post('/mandi-prices', adminController.upsertMandiPrice);
 
+// Agricultural Emergency Broadcast & MSP Governance
+router.post('/broadcast-alert', adminController.broadcastEmergencyAlert);
+router.get('/msp-compliance', adminController.getMspComplianceReport);
+
 module.exports = router;

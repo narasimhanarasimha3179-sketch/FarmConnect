@@ -340,6 +340,56 @@ function updateEnquiryStatus(req, res) {
   }
 }
 
+/**
+ * GET /api/crop-market/buyer/enquiries
+ * Buyer retrieves counter-offers/enquiries they have submitted to farmers
+ */
+function getBuyerEnquiries(req, res) {
+  try {
+    const enquiries = db.prepare(`
+      SELECT ce.*, cm.crop_name, cm.variety, cm.expected_price, cm.mandi_location
+      FROM crop_enquiries ce
+      JOIN crops_market cm ON ce.crop_id = cm.id
+      WHERE ce.buyer_id = ?
+      ORDER BY ce.created_at DESC
+    `).all(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      count: enquiries.length,
+      data: enquiries,
+    });
+  } catch (err) {
+    console.error('getBuyerEnquiries error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve buyer enquiries.' });
+  }
+}
+
+/**
+ * GET /api/crop-market/farmer/my-listings
+ * Farmer retrieves their own published crop listings
+ */
+function getFarmerMyListings(req, res) {
+  try {
+    const listings = db.prepare(`
+      SELECT cm.*, 
+        (SELECT COUNT(*) FROM crop_enquiries ce WHERE ce.crop_id = cm.id) as enquiry_count
+      FROM crops_market cm
+      WHERE cm.farmer_id = ?
+      ORDER BY cm.created_at DESC
+    `).all(req.user.id);
+
+    return res.status(200).json({
+      success: true,
+      count: listings.length,
+      data: listings,
+    });
+  } catch (err) {
+    console.error('getFarmerMyListings error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to load farmer crop listings.' });
+  }
+}
+
 module.exports = {
   getCropListings,
   getCropListingById,
@@ -348,5 +398,7 @@ module.exports = {
   deleteCropListing,
   createCropEnquiry,
   getFarmerEnquiries,
+  getBuyerEnquiries,
+  getFarmerMyListings,
   updateEnquiryStatus,
 };

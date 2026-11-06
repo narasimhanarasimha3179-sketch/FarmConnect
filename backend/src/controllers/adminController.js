@@ -398,6 +398,141 @@ function upsertMandiPrice(req, res) {
   }
 }
 
+/**
+ * POST /api/admin/broadcast-alert
+ * Dispatches high-priority agricultural warnings/subsidies to all farmers
+ */
+function broadcastEmergencyAlert(req, res) {
+  try {
+    const db = getDb();
+    const { title, message, severity = 'WARNING', type = 'WEATHER', target_district = 'ALL' } = req.body;
+
+    if (!title || !message) {
+      return res.status(400).json({ success: false, message: 'Title and message are required for broadcast.' });
+    }
+
+    const alertId = 'alt_broad_' + crypto.randomBytes(4).toString('hex');
+    const now = new Date().toISOString();
+
+    // Insert into farmer_alerts (user_id NULL or specific)
+    db.prepare(`
+      INSERT INTO farmer_alerts (id, user_id, type, title, message, severity, created_at)
+      VALUES (?, NULL, ?, ?, ?, ?, ?)
+    `).run(alertId, type, title, message, severity, now);
+
+    // Notify all active farmers
+    const farmers = db.prepare("SELECT id FROM users WHERE role = 'FARMER'").all();
+    const insertNotif = db.prepare(`
+      INSERT INTO notifications (id, user_id, title, message, type, is_read, created_at)
+      VALUES (?, ?, ?, ?, ?, 0, ?)
+    `);
+
+    for (const f of farmers) {
+      const nid = 'notif_' + crypto.randomBytes(4).toString('hex');
+      insertNotif.run(nid, f.id, title, message, type, now);
+    }
+
+    // Log action to audit_logs
+    db.prepare(`
+      INSERT INTO audit_logs (id, user_id, action, details, timestamp)
+      VALUES (?, ?, 'BROADCAST_ALERT', ?, ?)
+    `).run('aud_' + crypto.randomBytes(4).toString('hex'), req.user.id, `Dispatched: "${title}" (${severity}) to ${farmers.length} farmers`, now);
+
+    return res.status(200).json({
+      success: true,
+      message: `Emergency alert broadcasted to ${farmers.length} registered farmers.`,
+      alert: { id: alertId, title, severity, recipients_count: farmers.length },
+    });
+  } catch (err) {
+    console.error('broadcastEmergencyAlert error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to broadcast alert.' });
+  }
+}
+
+/**
+ * GET /api/admin/msp-compliance
+ * Audits all active marketplace crop listings against official MSP and APMC benchmarks
+ */
+function getMspComplianceReport(req, res) {
+  try {
+    const db = getDb();
+
+    // Official Govt of Karnataka / GOI MSP benchmarks (₹/Quintal)
+    const mspBenchmarks = {
+      'paddy': { msp: 2300, name: 'Paddy (Common / Sona Masoori)' },
+      'rice': { msp: 2300, name: 'Paddy / Rice' },
+      'ragi': { msp: 4290, name: 'Ragi (Finger Millet)' },
+      'sugarcane': { msp: 315, name: 'Sugarcane (FRP per Quintal)' },
+      'maize': { msp: 2225, name: 'Maize (Corn)' },
+      'cotton': { msp: 7121, name: 'Cotton (Medium Staple)' },
+    };
+
+    const listings = db.prepare(`
+      SELECT cm.*, u.phone as farmer_phone
+      FROM crops_market cm
+      LEFT JOIN users u ON cm.farmer_id = u.id
+      ORDER BY cm.created_at DESC
+    `).all();
+
+    const auditResults = listings.map((item) => {
+      const lower = item.crop_name.toLowerCase();
+      let matchedMsp = null;
+      for (const [key, benchmark] of Object.entries(mspBenchmarks)) {
+        if (lower.includes(key)) {
+          matchedMsp = benchmark;
+          break;
+        }
+      }
+
+      const expectedPrice = item.expected_price;
+      let complianceStatus = 'COMPLIANT';
+      let deviationPercent = 0;
+      let notes = 'Listing price aligns with Fair Remunerative Price / MSP standards.';
+
+      if (matchedMsp) {
+        if (expectedPrice < matchedMsp.msp * 0.9) {
+          complianceStatus = 'BELOW_MSP_WARNING';
+          deviationPercent = Math.round(((expectedPrice - matchedMsp.msp) / matchedMsp.msp) * 100);
+          notes = `Price is ${Math.abs(deviationPercent)}% below statutory MSP floor (₹${matchedMsp.msp}/qtl). Possible distress sale.`;
+        } else if (expectedPrice > matchedMsp.msp * 2.0) {
+          complianceStatus = 'EXCESSIVE_CEILING_FLAG';
+          deviationPercent = Math.round(((expectedPrice - matchedMsp.msp) / matchedMsp.msp) * 100);
+          notes = `Price is ${deviationPercent}% above benchmark. Verify organic or premium export grade.`;
+        }
+      }
+
+      return {
+        id: item.id,
+        crop_name: item.crop_name,
+        variety: item.variety,
+        farmer_name: item.farmer_name,
+        farmer_phone: item.farmer_phone,
+        expected_price: item.expected_price,
+        unit: item.unit,
+        quantity: item.quantity_available,
+        mandi_location: item.mandi_location,
+        official_msp: matchedMsp ? matchedMsp.msp : 'Market Driven',
+        compliance_status: complianceStatus,
+        deviation_percent: deviationPercent,
+        notes,
+      };
+    });
+
+    const nonCompliantCount = auditResults.filter((r) => r.compliance_status !== 'COMPLIANT').length;
+
+    return res.status(200).json({
+      success: true,
+      total_audited: auditResults.length,
+      flagged_anomalies: nonCompliantCount,
+      compliance_rate: `${Math.round(((auditResults.length - nonCompliantCount) / (auditResults.length || 1)) * 100)}%`,
+      listings: auditResults,
+    });
+  } catch (err) {
+    console.error('getMspComplianceReport error:', err);
+    return res.status(500).json({ success: false, message: 'Failed to generate MSP compliance audit.' });
+  }
+}
+
 module.exports = {
   getDashboard,
   getUsers,
@@ -409,4 +544,6 @@ module.exports = {
   getAuditLogs,
   getMandiPrices,
   upsertMandiPrice,
+  broadcastEmergencyAlert,
+  getMspComplianceReport,
 };

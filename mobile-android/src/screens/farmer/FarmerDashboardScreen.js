@@ -46,6 +46,33 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
   const [stage, setStage] = useState('Vegetative');
   const [isSubmittingCrop, setIsSubmittingCrop] = useState(false);
 
+  // Publish Harvest Modal State
+  const [showHarvestModal, setShowHarvestModal] = useState(false);
+  const [hCropName, setHCropName] = useState('Sugarcane');
+  const [hVariety, setHVariety] = useState('Co 86032');
+  const [hQty, setHQty] = useState('45');
+  const [hPrice, setHPrice] = useState('3200');
+  const [hMandiLoc, setHMandiLoc] = useState('Mandya APMC Market Yard');
+  const [hGrade, setHGrade] = useState('Grade A');
+  const [isSubmittingHarvest, setIsSubmittingHarvest] = useState(false);
+
+  // My Published Harvest & Buyer Bids
+  const [myHarvestListings, setMyHarvestListings] = useState([]);
+  const [incomingOffers, setIncomingOffers] = useState([]);
+
+  // Farm Accounting Ledger State
+  const [finSeedCost, setFinSeedCost] = useState('4500');
+  const [finFertCost, setFinFertCost] = useState('8200');
+  const [finLaborCost, setFinLaborCost] = useState('11000');
+  const [finPowerCost, setFinPowerCost] = useState('3500');
+  const [finYieldQtl, setFinYieldQtl] = useState('45');
+  const [finSalePrice, setFinSalePrice] = useState('3200');
+
+  // Precision Irrigation State
+  const [irrigCrop, setIrrigCrop] = useState('Sugarcane');
+  const [irrigSoil, setIrrigSoil] = useState('Red Loam');
+  const [irrigAcres, setIrrigAcres] = useState('2.5');
+
   // Fetch real telemetry from backend
   const loadDashboard = async () => {
     try {
@@ -58,15 +85,35 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
     }
   };
 
+  const loadFarmerMarketData = async () => {
+    try {
+      const [listRes, enqRes] = await Promise.all([
+        apiClient.get('/crop-market/farmer/my-listings'),
+        apiClient.get('/crop-market/farmer/enquiries'),
+      ]);
+      const lData = listRes.data || listRes;
+      if (lData?.success && lData.data) {
+        setMyHarvestListings(lData.data);
+      }
+      const eData = enqRes.data || enqRes;
+      if (eData?.success && eData.data) {
+        setIncomingOffers(eData.data);
+      }
+    } catch (err) {
+      console.log('Error loading farmer market data:', err);
+    }
+  };
+
   useEffect(() => {
     loadDashboard();
+    loadFarmerMarketData();
   }, []);
 
   const onRefresh = async () => {
     setIsRefreshing(true);
-    await loadDashboard();
+    await Promise.all([loadDashboard(), loadFarmerMarketData()]);
     setIsRefreshing(false);
-    showSuccess('Refreshed live weather & mandi rates', 'Data Updated');
+    showSuccess('Refreshed live telemetry, market listings & bids', 'Data Updated');
   };
 
   const handleAddCrop = async () => {
@@ -102,6 +149,66 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
       setIsSubmittingCrop(false);
     }
   };
+
+  const handlePublishHarvest = async () => {
+    if (!hCropName || !hQty || !hPrice || !hMandiLoc) {
+      showError('Crop name, quantity, price, and location are required.', 'Missing Info');
+      return;
+    }
+    setIsSubmittingHarvest(true);
+    try {
+      const res = await apiClient.post('/crop-market/listings', {
+        crop_name: hCropName,
+        variety: hVariety || 'Local Hybrid',
+        quantity_available: Number(hQty),
+        unit: 'Quintal',
+        expected_price: Number(hPrice),
+        mandi_location: hMandiLoc,
+        quality_grade: hGrade,
+        harvest_date: new Date().toISOString().split('T')[0],
+        description: `Direct farm lot of ${hCropName} (${hVariety}) from Mandya. Ready for APMC wholesale delivery.`,
+      });
+      const data = res.data || res;
+      if (data?.success || res.success) {
+        showSuccess(`Harvest listing for ${hCropName} published to live APMC market!`, 'Listing Live');
+        setShowHarvestModal(false);
+        await Promise.all([loadDashboard(), loadFarmerMarketData()]);
+      } else {
+        showError(data?.message || res.message || 'Failed to publish harvest', 'Error');
+      }
+    } catch (err) {
+      showError(err.message, 'Network Error');
+    } finally {
+      setIsSubmittingHarvest(false);
+    }
+  };
+
+  const handleRespondOffer = async (enquiryId, status) => {
+    try {
+      const res = await apiClient.put(`/crop-market/enquiries/${enquiryId}/status`, { status });
+      const data = res.data || res;
+      if (data?.success || res.success) {
+        showSuccess(`Buyer counter-offer marked as ${status}!`, 'Offer Updated');
+        await loadFarmerMarketData();
+      } else {
+        showError(data?.message || res.message || 'Failed to update offer', 'Error');
+      }
+    } catch (err) {
+      showError(err.message, 'Error');
+    }
+  };
+
+  // Financial Ledger Computations
+  const totalExpenses = (Number(finSeedCost) || 0) + (Number(finFertCost) || 0) + (Number(finLaborCost) || 0) + (Number(finPowerCost) || 0);
+  const totalGrossRev = (Number(finYieldQtl) || 0) * (Number(finSalePrice) || 0);
+  const netFarmProfit = totalGrossRev - totalExpenses;
+  const farmRoiPercent = totalExpenses > 0 ? Math.round((netFarmProfit / totalExpenses) * 100) : 0;
+
+  // Precision Irrigation Computations
+  const cropWaterCoeff = irrigCrop === 'Sugarcane' ? 7000 : irrigCrop === 'Paddy' ? 8500 : irrigCrop === 'Tomato' ? 4200 : 3200;
+  const soilFactor = irrigSoil === 'Sandy Loam' ? 1.2 : irrigSoil === 'Black Clay' ? 0.85 : 1.0;
+  const totalWaterLitresDay = Math.round((Number(irrigAcres) || 1) * cropWaterCoeff * soilFactor);
+  const pumpHoursDay = (totalWaterLitresDay / 18000).toFixed(1);
 
   const farmer = dashboardData?.farmer || user;
   const profile = farmer?.profile || user?.profile || {};
@@ -564,15 +671,18 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
 
         {/* 6. Produce Selling & Marketplace Operations */}
         <Card style={styles.tradeCard}>
-          <Text style={styles.sectionTitle}>💰 Produce Marketplace & Orders</Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>💰 Produce Marketplace & Orders</Text>
+            <Badge label="DIRECT APMC TRADE" variant="success" size="sm" />
+          </View>
           <View style={styles.tradeMetricsRow}>
             <View style={styles.tradeMetric}>
-              <Text style={styles.tradeVal}>{summary.active_produce_listings}</Text>
+              <Text style={styles.tradeVal}>{myHarvestListings.length || summary.active_produce_listings}</Text>
               <Text style={styles.tradeLbl}>Active Listings</Text>
             </View>
             <View style={styles.tradeMetric}>
-              <Text style={styles.tradeVal}>{summary.pending_buyer_enquiries}</Text>
-              <Text style={styles.tradeLbl}>Buyer Enquiries</Text>
+              <Text style={styles.tradeVal}>{incomingOffers.length || summary.pending_buyer_enquiries}</Text>
+              <Text style={styles.tradeLbl}>Buyer Offers</Text>
             </View>
             <View style={styles.tradeMetric}>
               <Text style={styles.tradeVal}>{summary.completed_orders}</Text>
@@ -583,13 +693,168 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
               <Text style={styles.tradeLbl}>Total Revenue</Text>
             </View>
           </View>
+
           <Button
-            title="List New Harvest for Sale"
+            title="+ List New Harvest on Mandi Market"
             variant="primary"
             size="sm"
-            onPress={() => showInfo('Phase 8 direct crop marketplace will launch listing creation', 'Crop Marketplace')}
+            onPress={() => setShowHarvestModal(true)}
             style={styles.tradeBtn}
           />
+
+          {/* Incoming Buyer Counter-Offers */}
+          {incomingOffers.length > 0 ? (
+            <View style={styles.offersSection}>
+              <Text style={styles.subSectionTitle}>📨 Incoming Buyer Price Offers & Bids:</Text>
+              {incomingOffers.map((enq) => (
+                <View key={enq.id} style={styles.offerItem}>
+                  <View style={styles.offerHeader}>
+                    <Text style={styles.offerBuyer}>{enq.buyer_name || 'Wholesale Buyer'} ({enq.buyer_phone || 'Verified'})</Text>
+                    <Badge
+                      label={enq.status}
+                      variant={enq.status === 'ACCEPTED' ? 'success' : enq.status === 'DECLINED' ? 'error' : 'warning'}
+                      size="sm"
+                    />
+                  </View>
+                  <Text style={styles.offerCrop}>
+                    Crop: <Text style={{ fontWeight: 'bold' }}>{enq.crop_name}</Text> • Offr: <Text style={{ fontWeight: 'bold', color: colors.primary }}>₹{enq.offered_price}/qtl</Text> for {enq.quantity_requested} {enq.unit || 'Quintals'}
+                  </Text>
+                  {enq.message ? <Text style={styles.offerMsg}>"{enq.message}"</Text> : null}
+                  {enq.status === 'PENDING' ? (
+                    <View style={styles.offerActionRow}>
+                      <TouchableOpacity
+                        style={styles.offerAcceptBtn}
+                        onPress={() => handleRespondOffer(enq.id, 'ACCEPTED')}
+                      >
+                        <Text style={styles.offerAcceptTxt}>✓ Accept Bid</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.offerDeclineBtn}
+                        onPress={() => handleRespondOffer(enq.id, 'DECLINED')}
+                      >
+                        <Text style={styles.offerDeclineTxt}>✕ Decline</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {/* Farmer's Active Listings */}
+          {myHarvestListings.length > 0 ? (
+            <View style={styles.myListingsBox}>
+              <Text style={styles.subSectionTitle}>🌾 Your Active Market Lots:</Text>
+              {myHarvestListings.map((lot) => (
+                <View key={lot.id} style={styles.lotRow}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.lotCropName}>{lot.crop_name} ({lot.variety})</Text>
+                    <Text style={styles.lotMeta}>{lot.quantity_available} Quintals • {lot.mandi_location}</Text>
+                  </View>
+                  <View style={{ alignItems: 'flex-end' }}>
+                    <Text style={styles.lotPrice}>₹{lot.expected_price}/qtl</Text>
+                    <Badge label={lot.quality_grade || 'Grade A'} variant="neutral" size="sm" />
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : null}
+        </Card>
+
+        {/* 6B. Farm Financial Ledger & Profit/Acre Calculator */}
+        <Card style={styles.financeCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>📊 Farm Cost & Net Profit Ledger</Text>
+            <Badge label="ROI CALCULATOR" variant="primary" size="sm" />
+          </View>
+          <Text style={styles.financeSub}>Track production inputs vs harvest yield to compute exact net profit per acre.</Text>
+
+          <View style={styles.financeInputsGrid}>
+            <View style={styles.financeInputCol}>
+              <Input label="Seed / Seedling Cost (₹)" value={finSeedCost} onChangeText={setFinSeedCost} keyboardType="numeric" />
+              <Input label="Fertilizer & Sprays (₹)" value={finFertCost} onChangeText={setFinFertCost} keyboardType="numeric" />
+            </View>
+            <View style={styles.financeInputCol}>
+              <Input label="Labor & Tractor Rent (₹)" value={finLaborCost} onChangeText={setFinLaborCost} keyboardType="numeric" />
+              <Input label="Diesel / Power / Irrig (₹)" value={finPowerCost} onChangeText={setFinPowerCost} keyboardType="numeric" />
+            </View>
+          </View>
+
+          <View style={styles.financeInputsGrid}>
+            <View style={styles.financeInputCol}>
+              <Input label="Harvest Yield (Quintals)" value={finYieldQtl} onChangeText={setFinYieldQtl} keyboardType="numeric" />
+            </View>
+            <View style={styles.financeInputCol}>
+              <Input label="Selling Price (₹/Quintal)" value={finSalePrice} onChangeText={setFinSalePrice} keyboardType="numeric" />
+            </View>
+          </View>
+
+          {/* Ledger Output Box */}
+          <View style={styles.financeOutputBox}>
+            <View style={styles.financeMetricRow}>
+              <Text style={styles.finMetricLbl}>Total Input Expenses:</Text>
+              <Text style={styles.finMetricVal}>₹{totalExpenses.toLocaleString('en-IN')}</Text>
+            </View>
+            <View style={styles.financeMetricRow}>
+              <Text style={styles.finMetricLbl}>Gross Harvest Revenue:</Text>
+              <Text style={styles.finMetricVal}>₹{totalGrossRev.toLocaleString('en-IN')}</Text>
+            </View>
+            <View style={styles.financeDivider} />
+            <View style={styles.financeMetricRow}>
+              <Text style={[styles.finMetricLbl, { fontWeight: 'bold', fontSize: typography.sizes.sm }]}>Estimated Net Profit:</Text>
+              <Text style={[styles.finMetricVal, { color: netFarmProfit >= 0 ? colors.success : colors.error, fontSize: typography.sizes.md, fontWeight: 'bold' }]}>
+                ₹{netFarmProfit.toLocaleString('en-IN')} ({farmRoiPercent}% ROI)
+              </Text>
+            </View>
+          </View>
+        </Card>
+
+        {/* 6C. Precision Drip & Borewell Irrigation Scheduler */}
+        <Card style={styles.irrigationCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>💧 Precision Drip & Borewell Scheduler</Text>
+            <Badge label="WATER MANAGEMENT" variant="info" size="sm" />
+          </View>
+          <Text style={styles.financeSub}>Calculate daily crop evapotranspiration & pump runtime for a 5 HP borewell (300 LPM).</Text>
+
+          <View style={styles.pillRow}>
+            {['Sugarcane', 'Paddy', 'Tomato', 'Ragi'].map((c) => (
+              <TouchableOpacity
+                key={c}
+                style={[styles.smallPill, irrigCrop === c && styles.smallPillActive]}
+                onPress={() => setIrrigCrop(c)}
+              >
+                <Text style={[styles.smallPillTxt, irrigCrop === c && styles.smallPillTxtActive]}>{c}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={[styles.pillRow, { marginTop: 6 }]}>
+            {['Red Loam', 'Black Clay', 'Sandy Loam'].map((s) => (
+              <TouchableOpacity
+                key={s}
+                style={[styles.smallPill, irrigSoil === s && styles.smallPillActive]}
+                onPress={() => setIrrigSoil(s)}
+              >
+                <Text style={[styles.smallPillTxt, irrigSoil === s && styles.smallPillTxtActive]}>{s}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <View style={{ marginTop: spacing.xs }}>
+            <Input label="Land Cultivation Area (Acres)" value={irrigAcres} onChangeText={setIrrigAcres} keyboardType="numeric" />
+          </View>
+
+          <View style={styles.irrigationResultBox}>
+            <View style={styles.irrigStat}>
+              <Text style={styles.irrigVal}>{totalWaterLitresDay.toLocaleString('en-IN')} L</Text>
+              <Text style={styles.irrigLbl}>Daily Water Requirement</Text>
+            </View>
+            <View style={styles.irrigStat}>
+              <Text style={[styles.irrigVal, { color: colors.skyBlue }]}>{pumpHoursDay} Hours</Text>
+              <Text style={styles.irrigLbl}>5 HP Borewell Runtime</Text>
+            </View>
+          </View>
         </Card>
 
         {/* 7. Government Schemes & Agricultural Library Hub */}
@@ -682,6 +947,27 @@ export default function FarmerDashboardScreen({ onOpenProfile }) {
             <View style={styles.modalBtnRow}>
               <Button title="Cancel" variant="outline" size="md" onPress={() => setShowAddCropModal(false)} style={styles.btnFlex} />
               <Button title="Save Crop" variant="primary" size="md" loading={isSubmittingCrop} onPress={handleAddCrop} style={styles.btnFlex} />
+            </View>
+          </Card>
+        </View>
+      </Modal>
+
+      {/* Publish Harvest on Mandi Modal */}
+      <Modal visible={showHarvestModal} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+            <Text style={styles.modalTitle}>💰 List Harvest on Mandi Market</Text>
+            <Text style={styles.modalSub}>Publish your produce to licensed APMC buyers & food processing stockists.</Text>
+
+            <Input label="Crop Name" placeholder="e.g. Sugarcane, Paddy, Tomato" value={hCropName} onChangeText={setHCropName} />
+            <Input label="Variety" placeholder="e.g. Co 86032, Sona Masoori BPT 5204" value={hVariety} onChangeText={setHVariety} />
+            <Input label="Quantity (Quintals)" placeholder="e.g. 50" value={hQty} onChangeText={setHQty} keyboardType="numeric" />
+            <Input label="Expected Modal Price (₹/Quintal)" placeholder="e.g. 3200" value={hPrice} onChangeText={setHPrice} keyboardType="numeric" />
+            <Input label="APMC Yard Location" placeholder="e.g. Mandya APMC Yard" value={hMandiLoc} onChangeText={setHMandiLoc} />
+
+            <View style={styles.modalBtnRow}>
+              <Button title="Cancel" variant="outline" size="md" onPress={() => setShowHarvestModal(false)} style={styles.btnFlex} />
+              <Button title="Publish Lot" variant="primary" size="md" loading={isSubmittingHarvest} onPress={handlePublishHarvest} style={styles.btnFlex} />
             </View>
           </Card>
         </View>
@@ -1181,6 +1467,201 @@ const styles = StyleSheet.create({
   },
   tradeBtn: {
     marginTop: spacing.xs,
+  },
+  // Incoming Offers & My Listings
+  offersSection: {
+    marginTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingTop: spacing.sm,
+  },
+  subSectionTitle: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  offerItem: {
+    backgroundColor: colors.surfaceMuted,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginBottom: spacing.xs,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
+  },
+  offerHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  offerBuyer: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  offerCrop: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  offerMsg: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 2,
+  },
+  offerActionRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  offerAcceptBtn: {
+    backgroundColor: colors.primary,
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  offerAcceptTxt: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+    color: '#ffffff',
+  },
+  offerDeclineBtn: {
+    backgroundColor: colors.errorBg,
+    borderColor: colors.error,
+    borderWidth: 1,
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    borderRadius: borderRadius.sm,
+  },
+  offerDeclineTxt: {
+    fontSize: 10,
+    fontWeight: typography.weights.bold,
+    color: colors.error,
+  },
+  myListingsBox: {
+    marginTop: spacing.sm,
+  },
+  lotRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    padding: spacing.xs,
+    borderRadius: borderRadius.sm,
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  lotCropName: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.textPrimary,
+  },
+  lotMeta: {
+    fontSize: 10,
+    color: colors.textSecondary,
+  },
+  lotPrice: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+  },
+  // Financial Ledger
+  financeCard: {
+    padding: spacing.md,
+    backgroundColor: '#F9FDF9',
+    borderColor: colors.primaryLight,
+    borderWidth: 1.5,
+  },
+  financeSub: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+  },
+  financeInputsGrid: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  financeInputCol: {
+    flex: 1,
+  },
+  financeOutputBox: {
+    backgroundColor: colors.surface,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    marginTop: spacing.xs,
+  },
+  financeMetricRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 2,
+  },
+  finMetricLbl: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+  },
+  finMetricVal: {
+    fontSize: typography.sizes.xs,
+    fontWeight: typography.weights.semiBold,
+    color: colors.textPrimary,
+  },
+  financeDivider: {
+    height: 1,
+    backgroundColor: colors.border,
+    marginVertical: 4,
+  },
+  // Irrigation Scheduler
+  irrigationCard: {
+    padding: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.skyBlue,
+  },
+  pillRow: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  smallPill: {
+    paddingVertical: 4,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: borderRadius.full,
+  },
+  smallPillActive: {
+    backgroundColor: colors.primary,
+  },
+  smallPillTxt: {
+    fontSize: 10,
+    fontWeight: typography.weights.semiBold,
+    color: colors.textSecondary,
+  },
+  smallPillTxtActive: {
+    color: '#ffffff',
+  },
+  irrigationResultBox: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: colors.skyBlueBg,
+    padding: spacing.sm,
+    borderRadius: borderRadius.sm,
+    marginTop: spacing.xs,
+  },
+  irrigStat: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  irrigVal: {
+    fontSize: typography.sizes.md,
+    fontWeight: typography.weights.bold,
+    color: colors.primary,
+  },
+  irrigLbl: {
+    fontSize: 9,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
   // 7. Knowledge
   knowledgeCard: {
