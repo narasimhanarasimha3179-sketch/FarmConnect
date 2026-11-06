@@ -251,6 +251,77 @@ function initSchema() {
       created_at TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS payments (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      amount REAL NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'UPI', -- 'UPI', 'NETBANKING', 'CARD', 'COD'
+      payment_status TEXT NOT NULL DEFAULT 'COMPLETED', -- 'PENDING', 'COMPLETED', 'FAILED', 'REFUNDED'
+      transaction_ref TEXT UNIQUE NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS shipments (
+      id TEXT PRIMARY KEY,
+      order_id TEXT UNIQUE NOT NULL,
+      tracking_number TEXT UNIQUE NOT NULL,
+      courier_partner TEXT NOT NULL DEFAULT 'K-Agri Express Logistics',
+      vehicle_number TEXT,
+      driver_name TEXT,
+      driver_phone TEXT,
+      current_location TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'IN_TRANSIT', -- 'ORDER_CONFIRMED', 'DISPATCHED', 'IN_TRANSIT', 'OUT_FOR_DELIVERY', 'DELIVERED'
+      estimated_delivery TEXT NOT NULL,
+      checkpoints_json TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      type TEXT NOT NULL DEFAULT 'SYSTEM', -- 'ORDER', 'WEATHER', 'MANDI', 'SYSTEM'
+      is_read INTEGER DEFAULT 0,
+      action_url TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS community_posts (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      author_name TEXT NOT NULL,
+      author_role TEXT NOT NULL DEFAULT 'FARMER',
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      image_url TEXT,
+      likes_count INTEGER DEFAULT 0,
+      comments_count INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS community_comments (
+      id TEXT PRIMARY KEY,
+      post_id TEXT NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+      user_id TEXT NOT NULL,
+      author_name TEXT NOT NULL,
+      content TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS library_articles (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      category TEXT NOT NULL, -- 'AGRONOMY', 'IRRIGATION', 'SOIL_SCIENCE', 'ORGANIC', 'POST_HARVEST'
+      read_time_mins INTEGER DEFAULT 5,
+      summary TEXT NOT NULL,
+      content TEXT NOT NULL,
+      image_url TEXT,
+      author TEXT NOT NULL,
+      published_at TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
     CREATE INDEX IF NOT EXISTS idx_users_phone ON users(phone);
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -356,6 +427,16 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_crops_market_name ON crops_market(crop_name);
     CREATE INDEX IF NOT EXISTS idx_cart_user ON cart_items(user_id);
     CREATE INDEX IF NOT EXISTS idx_orders_buyer ON orders(buyer_id);
+    CREATE INDEX IF NOT EXISTS idx_shipments_order ON shipments(order_id);
+    CREATE INDEX IF NOT EXISTS idx_shipments_tracking ON shipments(tracking_number);
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read);
+    CREATE INDEX IF NOT EXISTS idx_community_posts_user ON community_posts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_community_comments_post ON community_comments(post_id);
+    CREATE INDEX IF NOT EXISTS idx_library_category ON library_articles(category);
+    CREATE INDEX IF NOT EXISTS idx_schemes_state ON schemes(state);
+    CREATE INDEX IF NOT EXISTS idx_crop_enquiries_crop ON crop_enquiries(crop_id);
+    CREATE INDEX IF NOT EXISTS idx_soil_reports_user ON soil_reports(user_id);
+    CREATE INDEX IF NOT EXISTS idx_pest_crop ON pest_diseases(crop_name);
   `);
 
   // Safe schema migrations for existing SQLite databases
@@ -371,6 +452,7 @@ function initSchema() {
   try { db.exec('ALTER TABLE audit_logs ADD COLUMN target_id TEXT;'); } catch {}
   try { db.exec("UPDATE seller_profiles SET business_name = shop_name WHERE business_name IS NULL;"); } catch {}
   try { db.exec("UPDATE seller_profiles SET verification_status = 'VERIFIED' WHERE is_verified = 1;"); } catch {}
+  try { db.exec("UPDATE notifications SET user_id = 'farmer_ramesh' WHERE id IN ('notif_1', 'notif_2');"); } catch {}
 
   // Seed Initial Verified Mandi Data & Weather Data for testing and real reference
   seedInitialData();
@@ -900,6 +982,212 @@ function seedInitialData() {
     for (const sch of schemes) {
       insertScheme.run(...sch);
     }
+  }
+
+  // Seed Community Posts (Phase 22)
+  const existingPosts = db.prepare('SELECT COUNT(*) as count FROM community_posts').get();
+  if (existingPosts.count === 0) {
+    const nowC = new Date().toISOString();
+    const posts = [
+      [
+        'post_1',
+        'farmer_ramesh',
+        'Ramesh Patil',
+        'FARMER',
+        'Remarkable tillering in Co 86032 Sugarcane with trash mulching!',
+        'Fellow farmers, we applied 3 tonnes of cane trash mulch between rows at 35 days after planting. Soil moisture is preserved even during hot spells, and weed emergence dropped by almost 80%. Highly recommended for Mandya canal belt.',
+        'https://images.unsplash.com/photo-1596704017254-9b121068fb31',
+        14,
+        2,
+        nowC,
+      ],
+      [
+        'post_2',
+        'farmer_shankar',
+        'Shankar Gowda',
+        'FARMER',
+        'Direct drilling of GPU-28 Ragi gave uniform emergence',
+        'Used UAS Bengaluru seed drill at 22.5cm row spacing with 5kg seed/acre. Emergence is 95% uniform without gap filling needed. Anyone else trying seed drills this season?',
+        'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b',
+        9,
+        1,
+        nowC,
+      ],
+    ];
+
+    const insertPost = db.prepare(`
+      INSERT INTO community_posts (
+        id, user_id, author_name, author_role, title, content, image_url,
+        likes_count, comments_count, created_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const p of posts) {
+      insertPost.run(...p);
+    }
+  }
+
+  // Seed Agricultural Library Articles (Phase 23)
+  const existingArticles = db.prepare('SELECT COUNT(*) as count FROM library_articles').get();
+  if (existingArticles.count === 0) {
+    const nowL = new Date().toISOString();
+    const articles = [
+      [
+        'art_1',
+        'Precision Furrow Irrigation Scheduling for Cash Crops',
+        'IRRIGATION',
+        6,
+        'Scientific guide on crop water requirements, critical moisture stress periods, and furrow discharge control.',
+        'Sugarcane, paddy, and vegetable cash crops require strict irrigation scheduling tailored to soil evapotranspiration rates. Over-irrigation leaches nitrate nitrogen and fosters root rots, while moisture stress at critical tillering and panicle development cuts yield by up to 35%. Always practice alternate furrow irrigation when water supply is restricted.',
+        'https://images.unsplash.com/photo-1563514227147-6d2ff665a6a0',
+        'Dr. H. M. Mallikarjuna (Agronomist, UAS Bengaluru)',
+        nowL,
+      ],
+      [
+        'art_2',
+        'Soil Organic Carbon Restoration Through Vermicomposting',
+        'SOIL_SCIENCE',
+        5,
+        'How earthworm casting compost improves soil cation exchange capacity (CEC) and fertilizer efficiency.',
+        'Tropical Indian agricultural soils typically suffer from depleted organic carbon (<0.5%). Applying 2.5 tonnes of enriched vermicompost per acre annually introduces mycorrhizal fungi and micro-flora, revitalizing soil microbial biomass and enhancing nutrient availability from commercial fertilizers by over 25%.',
+        'https://images.unsplash.com/photo-1592417817098-8f3d6910985b',
+        'Agricultural Research Station, Mandya',
+        nowL,
+      ],
+    ];
+
+    const insertArt = db.prepare(`
+      INSERT INTO library_articles (
+        id, title, category, read_time_mins, summary, content, image_url, author, published_at
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const a of articles) {
+      insertArt.run(...a);
+    }
+  }
+
+  // Ensure Seed Users exist for Referential Integrity (Phases 1-32)
+  let buyerUser = db.prepare("SELECT id FROM users WHERE id = 'buyer_kiran' OR email = 'kiran.buyer@example.com' OR phone = '9845012346'").get();
+  if (!buyerUser) {
+    const bcrypt = require('bcryptjs');
+    const hash = bcrypt.hashSync('BuyerPassword123', 8);
+    const nowB = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (id, name, email, phone, password_hash, role, status, created_at, updated_at)
+      VALUES ('buyer_kiran', 'Kiran Wholesales', 'kiran.buyer@example.com', '9845012346', ?, 'BUYER', 'ACTIVE', ?, ?)
+    `).run(hash, nowB, nowB);
+
+    db.prepare(`
+      INSERT INTO buyer_profiles (id, user_id, business_name, buyer_type, delivery_address, gst_number, created_at, updated_at)
+      VALUES ('prof_buyer_kiran', 'buyer_kiran', 'Kiran Wholesales Mandya', 'Wholesaler', 'Shop #12, APMC Market Yard, Maddur Road, Mandya, Karnataka - 571401', '29ABCDE1234F1Z5', ?, ?)
+    `).run(nowB, nowB);
+    buyerUser = { id: 'buyer_kiran' };
+  }
+
+  let farmerUser = db.prepare("SELECT id FROM users WHERE id = 'farmer_ramesh' OR email = 'ramesh.farmer@example.com' OR phone = '9845012345'").get();
+  if (!farmerUser) {
+    const bcrypt = require('bcryptjs');
+    const hash = bcrypt.hashSync('FarmerPassword123', 8);
+    const nowF = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (id, name, email, phone, password_hash, role, status, created_at, updated_at)
+      VALUES ('farmer_ramesh', 'Ramesh Patil', 'ramesh.farmer@example.com', '9845012345', ?, 'FARMER', 'ACTIVE', ?, ?)
+    `).run(hash, nowF, nowF);
+
+    db.prepare(`
+      INSERT INTO farmer_profiles (id, user_id, state, district, village, land_size_acres, soil_type, primary_crops, experience_years, preferred_language, created_at, updated_at)
+      VALUES ('prof_farmer_ramesh', 'farmer_ramesh', 'Karnataka', 'Mandya', 'Kyathumgere', 8.5, 'Red Sandy Loam', 'Sugarcane, Paddy', 15, 'kn', ?, ?)
+    `).run(nowF, nowF);
+    farmerUser = { id: 'farmer_ramesh' };
+  }
+
+  // Seed Initial Order & Shipment Tracking Record (Phase 20)
+  const existingOrder = db.prepare("SELECT COUNT(*) as count FROM orders WHERE id = 'ord_seed_1'").get();
+  if (existingOrder.count === 0) {
+    const nowO = new Date().toISOString();
+    db.prepare(`
+      INSERT OR IGNORE INTO orders (
+        id, order_number, buyer_id, total_amount, shipping_name, shipping_address,
+        shipping_phone, payment_method, payment_status, order_status, tracking_note, created_at, updated_at
+      )
+      VALUES (
+        'ord_seed_1', 'FC-ORD-2026-48679', ?, 2550.0, 'Kiran Wholesales',
+        'Shop #12, APMC Market Yard, Maddur Road, Mandya, Karnataka - 571401', '9845012346',
+        'UPI', 'PAID', 'SHIPPED', 'Dispatched via K-Agri Express', ?, ?
+      )
+    `).run(buyerUser.id, nowO, nowO);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO order_items (id, order_id, item_type, item_id, title, unit_price, quantity, unit, total_price)
+      VALUES ('item_seed_1', 'ord_seed_1', 'PRODUCT', 'prod_1', 'Hybrid Paddy Seeds (Sona Masoori)', 850.0, 3, 'bag (10kg)', 2550.0)
+    `).run();
+
+    db.prepare(`
+      INSERT OR IGNORE INTO payments (id, order_id, user_id, amount, payment_method, payment_status, transaction_ref, created_at)
+      VALUES ('pay_seed_1', 'ord_seed_1', ?, 2550.0, 'UPI', 'COMPLETED', 'TXN_FC_SEED_48679', ?)
+    `).run(buyerUser.id, nowO);
+
+    const checkpoints = [
+      {
+        timestamp: '2026-11-05T08:30:00.000Z',
+        location: 'Cauvery Agri Input Depot, Mandya',
+        title: 'Dispatched from Hub',
+        description: 'Consignment packaged, sealed and handed over to K-Agri Express Logistics. Assigned vehicle KA-11-EA-4821.',
+      },
+      {
+        timestamp: '2026-11-05T13:45:00.000Z',
+        location: 'Maddur Highway Transit Point',
+        title: 'In Transit',
+        description: 'Passed automated transit weighbridge checkpoint. On schedule for arrival.',
+      },
+    ];
+
+    db.prepare(`
+      INSERT OR IGNORE INTO shipments (
+        id, order_id, tracking_number, courier_partner, vehicle_number, driver_name,
+        driver_phone, current_location, status, estimated_delivery, checkpoints_json, created_at
+      )
+      VALUES (
+        'ship_seed_1', 'ord_seed_1', 'FC-TRK-882104-A1', 'K-Agri Express Logistics',
+        'KA-11-EA-4821', 'Basavaraj M.', '9844011223', 'Maddur Highway Transit Point',
+        'IN_TRANSIT', '2026-11-07', ?, ?
+      )
+    `).run(JSON.stringify(checkpoints), nowO);
+  }
+
+  // Seed Initial Notifications (Phase 21)
+  const existingNotif = db.prepare('SELECT COUNT(*) as count FROM notifications').get();
+  if (existingNotif.count === 0) {
+    const nowN = new Date().toISOString();
+    const notifications = [
+      ['notif_1', 'farmer_ramesh', 'Mandi Price Alert: Sugarcane Surge', 'Mandya APMC modal rate increased to ₹3,280/Quintal (+₹70). High demand recorded.', 'MANDI', 0, '/mandi/sugarcane', nowN],
+      ['notif_2', 'farmer_ramesh', 'Weather Advisory: Clear Skies', 'Next 48 hours show optimal dry weather in Mandya. Perfect window for field spraying.', 'WEATHER', 0, '/weather', nowN],
+      ['notif_3', buyerUser.id, 'Order #FC-ORD-2026-48679 In Transit', 'Your agricultural inputs package is en route with driver Basavaraj (KA-11-EA-4821).', 'ORDER', 0, '/orders/FC-ORD-2026-48679', nowN],
+    ];
+
+    const insertN = db.prepare(`
+      INSERT OR IGNORE INTO notifications (id, user_id, title, message, type, is_read, action_url, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    for (const n of notifications) {
+      insertN.run(...n);
+    }
+  }
+
+  // Seed Post Comments (Phase 22)
+  const existingComments = db.prepare('SELECT COUNT(*) as count FROM community_comments').get();
+  if (existingComments.count === 0) {
+    const nowCom = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO community_comments (id, post_id, user_id, author_name, content, created_at)
+      VALUES (
+        'com_seed_1', 'post_1', 'farmer_shankar', 'Shankar Gowda',
+        'Great tip Ramesh! We also noticed reduced stem borer incidence after trash mulching in our block.', ?
+      )
+    `).run(nowCom);
   }
 }
 

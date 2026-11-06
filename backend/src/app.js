@@ -1,6 +1,11 @@
-// FarmConnect Express Application
+// FarmConnect Express Application (Phases 0 to 32)
 const express = require('express');
 const cors = require('cors');
+
+// Security & Optimization Middleware (Phase 25, 26, 30)
+const { rateLimiter, securityHeaders, inputSanitizer } = require('./middleware/securityMiddleware');
+
+// Route Modules
 const authRoutes = require('./routes/authRoutes');
 const farmerRoutes = require('./routes/farmerRoutes');
 const buyerRoutes = require('./routes/buyerRoutes');
@@ -16,15 +21,40 @@ const pestDiseaseRoutes = require('./routes/pestDiseaseRoutes');
 const cameraAiRoutes = require('./routes/cameraAiRoutes');
 const aiAssistantRoutes = require('./routes/aiAssistantRoutes');
 const schemeRoutes = require('./routes/schemeRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const logisticsRoutes = require('./routes/logisticsRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const communityRoutes = require('./routes/communityRoutes');
+const libraryRoutes = require('./routes/libraryRoutes');
+const searchRoutes = require('./routes/searchRoutes');
+const docsRoutes = require('./routes/docsRoutes');
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Security Headers (Phase 25)
+app.use(securityHeaders);
 
-// Request Logging
+// CORS Policy
+app.use(cors());
+
+// Body Parsers & Input Sanitizer (Phase 25)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(inputSanitizer);
+
+// Rate Limiter (Phase 25)
+app.use(rateLimiter);
+
+// Performance & Cache Control Headers (Phase 30)
+app.use((req, res, next) => {
+  res.setHeader('X-Powered-By', 'FarmConnect Agriculture Platform OS');
+  if (req.method === 'GET') {
+    res.setHeader('Cache-Control', 'no-cache, must-revalidate');
+  }
+  next();
+});
+
+// Request Diagnostics & Logging
 app.use((req, res, next) => {
   const start = Date.now();
   res.on('finish', () => {
@@ -39,12 +69,13 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'ONLINE',
     system: 'FarmConnect Smart Agriculture Platform API',
-    version: '1.0.0-phase2',
+    version: '1.0.0-phase32',
     timestamp: new Date().toISOString(),
+    uptime_seconds: process.uptime(),
   });
 });
 
-// Mount Routes
+// Mount All Domain Routes (Phases 1 - 27)
 app.use('/api/auth', authRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/buyer', buyerRoutes);
@@ -60,6 +91,13 @@ app.use('/api/pest-disease', pestDiseaseRoutes);
 app.use('/api/camera-ai', cameraAiRoutes);
 app.use('/api/ai', aiAssistantRoutes);
 app.use('/api/schemes', schemeRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/logistics', logisticsRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/community', communityRoutes);
+app.use('/api/library', libraryRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/docs', docsRoutes);
 
 // 404 Handler
 app.use((req, res) => {

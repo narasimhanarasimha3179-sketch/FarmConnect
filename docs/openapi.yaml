@@ -1,0 +1,98 @@
+openapi: 3.0.3
+info:
+  title: FarmConnect Smart Agriculture Platform API
+  description: Complete, secure, scalable RESTful API powering Farmers, Buyers, Sellers, and Administrators across 32 developmental phases.
+  version: 1.0.0
+servers:
+  - url: http://localhost:5000/api
+    description: Local Development Server
+  - url: https://api.farmconnect.ag/api
+    description: Production Cloud Infrastructure
+
+paths:
+  /health:
+    get:
+      summary: System health check & node diagnostics
+      responses:
+        '200':
+          description: Operational status
+  /auth/register:
+    post:
+      summary: Register new user (FARMER, BUYER, SELLER, ADMIN)
+  /auth/login:
+    post:
+      summary: Authenticate user & issue JWT bearer token
+  /farmer/profile:
+    get:
+      summary: Retrieve farmer agronomic profile and landholdings
+  /farmer/crops:
+    post:
+      summary: Register active field crop
+  /buyer/products:
+    get:
+      summary: Browse input supply catalog
+  /buyer/checkout:
+    post:
+      summary: Place e-commerce purchase order
+  /seller/products:
+    post:
+      summary: Add merchant agriculture input product
+  /admin/stats:
+    get:
+      summary: Platform governance metrics and KYC queues
+  /crop-market/listings:
+    get:
+      summary: Live farmer harvest crops marketplace
+  /mandi/live:
+    get:
+      summary: Verified APMC mandi arrival prices & price trends
+  /weather/forecast:
+    get:
+      summary: District-level microclimatic agricultural weather advisory
+  /crop-assistance/guides:
+    get:
+      summary: Stage-wise crop cultivation guides
+  /soil/recommend:
+    post:
+      summary: Precision NPK fertilizer dosage calculator
+  /pest-disease/diagnose:
+    post:
+      summary: Field symptom matching and IPM chemical/biological treatments
+  /camera-ai/scan:
+    post:
+      summary: Computer vision leaf pathology scanner
+  /ai/chat:
+    post:
+      summary: Context-aware multilingual AI farm advisor
+  /schemes/list:
+    get:
+      summary: Central & State government welfare schemes
+  /payments/create-intent:
+    post:
+      summary: Initiate checkout payment session (UPI, Netbanking, Card)
+  /payments/verify:
+    post:
+      summary: Verify gateway signature and update order status
+  /payments/receipt/{order_id}:
+    get:
+      summary: Generate GST compliance tax invoice
+  /logistics/track/{tracking_id}:
+    get:
+      summary: 5-stage real-time shipment timeline & courier driver info
+  /logistics/dispatch:
+    post:
+      summary: Dispatch order consignment
+  /notifications:
+    get:
+      summary: Retrieve user notification inbox and alerts
+  /community/posts:
+    get:
+      summary: Agricultural peer discussion feed
+    post:
+      summary: Publish farming question or observation
+  /library/articles:
+    get:
+      summary: Digital agronomic reference library
+  /search:
+    get:
+      summary: Universal multi-domain search across all platforms
