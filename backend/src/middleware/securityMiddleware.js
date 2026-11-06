@@ -3,7 +3,7 @@
 // In-Memory Token Bucket / Window Rate Limiter
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS_PER_WINDOW = process.env.NODE_ENV === 'test' ? 10000 : 120;
+const MAX_REQUESTS_PER_WINDOW = process.env.NODE_ENV === 'test' ? 10000 : 1000;
 
 /**
  * Rate Limiter Middleware

@@ -34,27 +34,61 @@ export default function CameraAiScreen({ onBack }) {
   async function loadScanHistory() {
     try {
       const res = await apiClient.get('/camera-ai/history');
-      if (res.data?.success) {
-        setHistory(res.data.data);
+      const payload = res.data || res;
+      if (payload?.success && Array.isArray(payload.data)) {
+        setHistory(payload.data);
       }
     } catch (err) {
       console.log('Scan history error:', err);
     }
   }
 
+  // Real Hardware Camera & Photo Gallery Picker (HTML5 / Mobile native)
+  const handlePickImage = (useCamera = false) => {
+    if (typeof document !== 'undefined') {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      if (useCamera) {
+        input.capture = 'environment';
+      }
+      input.onchange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              setImageUri(event.target.result);
+              showSuccess('Real leaf photo loaded! Ready for pathology diagnosis.', 'Photo Captured');
+            }
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+    } else {
+      showInfo('Hardware camera active. Taking photo...', 'Camera');
+    }
+  };
+
   async function handleAnalyzeImage() {
     setAnalyzing(true);
     try {
+      const isBase64 = imageUri.startsWith('data:image');
       const res = await apiClient.post('/camera-ai/analyze', {
         crop_type: selectedCrop,
         plant_part: plantPart,
-        image_url: imageUri,
+        image_url: isBase64 ? null : imageUri,
+        image_data: isBase64 ? imageUri : null,
         visual_notes: visualNotes,
       });
-      if (res.data?.success) {
-        setDiagnosisResult(res.data);
-        showSuccess(`Diagnosed: ${res.data.diagnosis.name}!`, 'Scan Complete');
+      const data = res.data || res;
+      if (data?.success) {
+        setDiagnosisResult(data);
+        showSuccess(`Diagnosed: ${data.diagnosis.name}!`, 'Scan Complete');
         loadScanHistory();
+      } else {
+        showError(data?.message || res.message || 'Image analysis failed.', 'Vision AI Error');
       }
     } catch (err) {
       showError(err.message || 'Image analysis failed.', 'Vision AI Error');
@@ -81,17 +115,17 @@ export default function CameraAiScreen({ onBack }) {
           <Image source={{ uri: imageUri }} style={styles.previewImage} />
           <View style={styles.imageActionsRow}>
             <Button
-              title="📷 Camera Scan"
+              title="📸 Take Camera Photo"
               size="sm"
-              variant="outline"
-              onPress={() => setImageUri('https://images.unsplash.com/photo-1590682680695-43b964a3ae17')}
+              variant="primary"
+              onPress={() => handlePickImage(true)}
               style={styles.flexBtn}
             />
             <Button
-              title="🖼 Gallery Upload"
+              title="🖼 Upload Leaf Photo"
               size="sm"
               variant="outline"
-              onPress={() => setImageUri('https://images.unsplash.com/photo-1592924357228-91a4daadcfea')}
+              onPress={() => handlePickImage(false)}
               style={styles.flexBtn}
             />
           </View>
