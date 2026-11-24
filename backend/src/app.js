@@ -65,6 +65,23 @@ app.use((req, res, next) => {
   next();
 });
 
+// Root Status & Health Endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({
+    status: 'ONLINE',
+    system: 'FarmConnect Smart Agriculture Platform API',
+    message: '🌱 FarmConnect Operational OS Live & Running',
+    version: '1.0.0-phase32',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/api/health',
+      docs: '/api/docs',
+      telemetry: '/api/live/telemetry',
+      auth: '/api/auth',
+    },
+  });
+});
+
 // Health & System Info Endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({

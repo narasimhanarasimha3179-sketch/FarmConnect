@@ -5,14 +5,19 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 const HOST_LAN_IP = '172.16.51.144';
+const CLOUD_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://farmconnect-api.onrender.com/api';
 
 const getDevBaseUrl = () => {
   // 1. Web browser environment
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-      return `${window.location.protocol}//${window.location.hostname}:5000/api`;
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `${window.location.protocol}//${window.location.hostname}:5000/api`;
+      }
+      // Running deployed on cloud (Vercel, Render, Netlify) -> route to cloud API
+      return CLOUD_API_URL;
     }
-    return `http://${HOST_LAN_IP}:5000/api`;
+    return CLOUD_API_URL;
   }
 
   // 2. Physical Android / iOS Device running Expo Go
@@ -24,8 +29,8 @@ const getDevBaseUrl = () => {
     }
   }
 
-  // 3. Fallback to physical Wi-Fi IP for direct mobile LAN access
-  return `http://${HOST_LAN_IP}:5000/api`;
+  // 3. Fallback to live cloud backend or physical Wi-Fi IP for direct mobile access
+  return CLOUD_API_URL;
 };
 
 const ENV = {
@@ -38,10 +43,10 @@ const ENV = {
     APP_VERSION: '1.0.0-phase32',
   },
   production: {
-    API_BASE_URL: `http://${HOST_LAN_IP}:5000/api`,
-    API_TIMEOUT_MS: 10000,
+    API_BASE_URL: CLOUD_API_URL,
+    API_TIMEOUT_MS: 15000,
     ENABLE_DEBUG_LOGS: false,
-    ENABLE_MOCK_FALLBACK: false,
+    ENABLE_MOCK_FALLBACK: true,
     ENVIRONMENT_NAME: 'production',
     APP_VERSION: '1.0.0',
   },
