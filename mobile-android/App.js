@@ -200,6 +200,7 @@ function MainApp() {
           <View style={styles.authTopLeft}>
             <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
             <Badge label={role} variant={role.toLowerCase()} size="sm" />
+            <Text style={{ fontSize: 9, color: '#86efac', fontWeight: 'bold', marginLeft: 4 }}>🟢 LIVE</Text>
           </View>
           <LanguageSelector compact />
         </View>

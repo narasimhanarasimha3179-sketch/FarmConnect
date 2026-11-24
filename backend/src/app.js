@@ -28,6 +28,7 @@ const communityRoutes = require('./routes/communityRoutes');
 const libraryRoutes = require('./routes/libraryRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 const docsRoutes = require('./routes/docsRoutes');
+const liveRoutes = require('./routes/liveRoutes');
 
 const app = express();
 
@@ -98,6 +99,7 @@ app.use('/api/community', communityRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/docs', docsRoutes);
+app.use('/api/live', liveRoutes);
 
 // 404 Handler
 app.use((req, res) => {

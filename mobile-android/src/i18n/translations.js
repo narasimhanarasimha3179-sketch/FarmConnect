@@ -100,6 +100,14 @@ export const translations = {
     recent_mandi: 'Live APMC Mandi Ticker',
     crop_advisory: 'Agro-Advisory & Field Tips',
     live_chat: 'Ask Krishi AI Assistant',
+    iot_sensors_title: 'Live IoT Smart Farm Soil Telemetry',
+    iot_moisture: 'Soil Moisture Level',
+    iot_canopy_temp: 'Canopy Ambient Temp',
+    iot_drip_advisory: 'Smart Drip Irrigation Recommendation',
+    kisan_hotline_title: 'Kisan 24x7 Agricultural Assistance Hotline',
+    call_kisan_center: '📞 Call Kisan Call Center (1800-180-1551)',
+    whatsapp_kvk: '💬 Consult KVK Agronomist on WhatsApp',
+    live_online_sync: 'LIVE ONLINE',
   },
 
   kn: {
@@ -200,6 +208,14 @@ export const translations = {
     recent_mandi: 'ಲೈವ್ ಎಪಿಎಂಸಿ ಮಂಡಿ ದರಗಳು',
     crop_advisory: 'ಕೃಷಿ ಸಲಹೆ ಮತ್ತು ಸುಳಿವುಗಳು',
     live_chat: 'ಕೃಷಿ ಎಐ ಸಹಾಯಕರನ್ನು ಕೇಳಿ',
+    iot_sensors_title: 'ಲೈವ್ ಐಒಟಿ ಸ್ಮಾರ್ಟ್ ಕೃಷಿ ಮಣ್ಣಿನ ಟೆಲಿಮೆಟ್ರಿ',
+    iot_moisture: 'ಮಣ್ಣಿನ ತೇವಾಂಶ ಮಟ್ಟ',
+    iot_canopy_temp: 'ಬೆಳೆಯ ತಾಪಮಾನ',
+    iot_drip_advisory: 'ಸ್ಮಾರ್ಟ್ ಹನಿ ನೀರಾವರಿ ಶಿಫಾರಸು',
+    kisan_hotline_title: 'ಕಿಸಾನ್ 24x7 ಕೃಷಿ ಸಹಾಯವಾಣಿ',
+    call_kisan_center: '📞 ಕಿಸಾನ್ ಕಾಲ್ ಸೆಂಟರ್ (1800-180-1551)',
+    whatsapp_kvk: '💬 ವಾಟ್ಸಾಪ್‌ನಲ್ಲಿ ಕೃಷಿ ವಿಜ್ಞಾನಿಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ',
+    live_online_sync: 'ಲೈವ್ ಆನ್‌ಲೈನ್',
   },
 
   hi: {
@@ -300,6 +316,14 @@ export const translations = {
     recent_mandi: 'लाइव एपीएमसी मंडी भाव',
     crop_advisory: 'कृषि सलाह और टिप्स',
     live_chat: 'कृषि एआई सहायक से पूछें',
+    iot_sensors_title: 'लाइव IoT स्मार्ट फार्म मृदा टेलीमेट्री',
+    iot_moisture: 'मृदा नमी स्तर',
+    iot_canopy_temp: 'फसल परिवेश तापमान',
+    iot_drip_advisory: 'स्मार्ट ड्रिप सिंचाई सलाह',
+    kisan_hotline_title: 'किसान 24x7 कृषि सहायता हेल्पलाइन',
+    call_kisan_center: '📞 किसान कॉल सेंटर (1800-180-1551)',
+    whatsapp_kvk: '💬 व्हाट्सएप पर केवीके कृषि वैज्ञानिक से सलाह लें',
+    live_online_sync: 'लाइव ऑनलाइन',
   },
 };
 
