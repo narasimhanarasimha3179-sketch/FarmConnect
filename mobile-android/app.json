@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "7ddaace8-81e8-49d1-b3ef-b53f6f954f18"
+      }
+    },
+    "android": {
+      "package": "com.narasimha3179.farmconnectmobile"
+    }
+  }
+}

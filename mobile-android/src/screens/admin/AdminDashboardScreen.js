@@ -116,15 +116,6 @@ export default function AdminDashboardScreen({ onOpenProfile }) {
       setIsBroadcasting(false);
     }
   }
-      setComplaints(complaintsRes?.data?.data || []);
-      setAuditLogs(auditRes?.data?.data || []);
-    } catch (err) {
-      showError('Failed to load administrative console data.', 'Network Error');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }
 
   // Seller KYC Actions
   async function handleVerifySeller(sellerId, newStatus) {
