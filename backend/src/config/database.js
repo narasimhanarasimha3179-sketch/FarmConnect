@@ -1,7 +1,6 @@
 // FarmConnect Database Initialization & Persistent Relational Store
 // Powered by Node.js built-in native SQLite engine (ACID compliant, zero native compile failures)
 
-const { DatabaseSync } = require('node:sqlite');
 const path = require('path');
 const fs = require('fs');
 
@@ -11,11 +10,21 @@ if (!fs.existsSync(dataDir)) {
 }
 
 const dbPath = path.join(dataDir, 'farmconnect.db');
-const db = new DatabaseSync(dbPath);
+console.log(`[Database] Initializing FarmConnect SQLite engine on Node ${process.version}...`);
 
-// Enable WAL mode & foreign keys for high-performance concurrent reads
-db.exec('PRAGMA journal_mode = WAL;');
-db.exec('PRAGMA foreign_keys = ON;');
+let db;
+try {
+  const { DatabaseSync } = require('node:sqlite');
+  db = new DatabaseSync(dbPath);
+  // Enable WAL mode & foreign keys for high-performance concurrent reads
+  db.exec('PRAGMA journal_mode = WAL;');
+  db.exec('PRAGMA foreign_keys = ON;');
+  console.log('[Database] Native SQLite engine loaded and initialized successfully.');
+} catch (err) {
+  console.error(`[Database CRITICAL] node:sqlite is not supported on Node ${process.version}:`, err.message);
+  console.error('[Database CRITICAL] Fix: Ensure NODE_VERSION=22 is set in Render Environment Variables.');
+  throw err;
+}
 
 // Initialize Tables
 function initSchema() {
