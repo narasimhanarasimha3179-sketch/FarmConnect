@@ -3,7 +3,7 @@
 
 const https = require('https');
 
-const CLOUD_URL = process.env.CLOUD_URL || 'https://farmconnect-api.onrender.com/api/health';
+const CLOUD_URL = process.env.CLOUD_URL || 'https://farmconnect-api-ibr3.onrender.com/api/health';
 const INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
 console.log(`[Keep-Alive] Monitoring FarmConnect live cloud backend: ${CLOUD_URL}`);

@@ -5,7 +5,7 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 const HOST_LAN_IP = '172.16.51.144';
-const CLOUD_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://farmconnect-api.onrender.com/api';
+const CLOUD_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://farmconnect-api-ibr3.onrender.com/api';
 
 const getDevBaseUrl = () => {
   // 1. Web browser environment
