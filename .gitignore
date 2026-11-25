@@ -1,7 +1,9 @@
 node_modules/
 backend/data/*.db*
 .expo/
-dist/
+# Allow prebuilt production web bundle for static hosting
+!mobile-android/dist/
+!mobile-android/dist/**
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
