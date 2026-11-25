@@ -118,6 +118,32 @@ app.use('/api/search', searchRoutes);
 app.use('/api/docs', docsRoutes);
 app.use('/api/live', liveRoutes);
 
+// Static Web Application Serving (Phases 1 - 32)
+const path = require('path');
+const fs = require('fs');
+
+const staticCandidates = [
+  path.resolve(__dirname, '../public'),
+  path.resolve(__dirname, '../../mobile-android/dist'),
+  path.resolve(__dirname, '../../dist'),
+  path.resolve(__dirname, '../../public'),
+];
+
+const webDistPath = staticCandidates.find(dir => fs.existsSync(path.join(dir, 'index.html')));
+
+if (webDistPath) {
+  console.log(`[Frontend] Serving FarmConnect Web App from: ${webDistPath}`);
+  app.use(express.static(webDistPath));
+
+  // SPA browser navigation fallback for frontend screens
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(webDistPath, 'index.html'));
+  });
+}
+
 // 404 Handler
 app.use((req, res) => {
   res.status(404).json({
