@@ -1,12 +1,24 @@
 {
   "expo": {
+    "name": "FarmConnect",
+    "slug": "farmconnect-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
     "extra": {
       "eas": {
         "projectId": "7ddaace8-81e8-49d1-b3ef-b53f6f954f18"
       }
     },
     "android": {
-      "package": "com.narasimha3179.farmconnectmobile"
+      "package": "com.narasimha3179.farmconnectmobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#166534"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     }
   }
 }
