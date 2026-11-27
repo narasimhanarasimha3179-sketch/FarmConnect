@@ -83,28 +83,36 @@ if (webDistPath) {
   app.use(express.static(webDistPath));
 }
 
+const { renderFarmConnectApp } = require('./views/appView');
+
 // Root Status & Health Endpoints
 app.get('/', (req, res) => {
-  // If requested by a web browser, serve the interactive FarmConnect Web App
-  if (webDistPath && req.accepts('html')) {
+  // 1. Explicit JSON format request (for automated testers and curl)
+  if (req.query.format === 'json' || (req.headers.accept && req.headers.accept.includes('application/json') && !req.headers.accept.includes('text/html'))) {
+    return res.status(200).json({
+      status: 'ONLINE',
+      system: 'FarmConnect Smart Agriculture Platform API',
+      message: '🌱 FarmConnect Operational OS Live & Running',
+      version: '1.0.0-phase32',
+      timestamp: new Date().toISOString(),
+      endpoints: {
+        app: '/',
+        health: '/api/health',
+        docs: '/api/docs',
+        telemetry: '/api/live/telemetry',
+        auth: '/api/auth',
+      },
+    });
+  }
+
+  // 2. Prebuilt Web bundle if available
+  if (webDistPath && fs.existsSync(path.join(webDistPath, 'index.html'))) {
     return res.sendFile(path.join(webDistPath, 'index.html'));
   }
 
-  // Otherwise return JSON status (Render health checks, curl, API consumers)
-  res.status(200).json({
-    status: 'ONLINE',
-    system: 'FarmConnect Smart Agriculture Platform API',
-    message: '🌱 FarmConnect Operational OS Live & Running',
-    version: '1.0.0-phase32',
-    timestamp: new Date().toISOString(),
-    endpoints: {
-      app: '/',
-      health: '/api/health',
-      docs: '/api/docs',
-      telemetry: '/api/live/telemetry',
-      auth: '/api/auth',
-    },
-  });
+  // 3. Guaranteed embedded FarmConnect Interactive Single-Page Application
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.status(200).send(renderFarmConnectApp());
 });
 
 // Health & System Info Endpoint

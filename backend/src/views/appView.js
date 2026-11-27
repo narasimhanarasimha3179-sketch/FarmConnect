@@ -1,0 +1,610 @@
+// FarmConnect Interactive Single-Page Web Application Generator
+// Delivers a zero-latency, full-fidelity web UI directly to any browser or phone
+
+function renderFarmConnectApp() {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>FarmConnect · Smart Agricultural Products & Market Platform</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
+  <style>
+    :root {
+      --primary: #15803d;
+      --primary-dark: #166534;
+      --primary-light: #dcfce7;
+      --accent: #ca8a04;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --bg: #f8fafc;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --success: #16a34a;
+      --warning: #eab308;
+      --danger: #dc2626;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
+    
+    /* Top Navigation */
+    .top-bar {
+      background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+      color: white;
+      padding: 14px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.5px; }
+    .brand-logo { font-size: 1.8rem; }
+    .status-badge {
+      background: rgba(255,255,255,0.2);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
+    
+    .lang-switcher {
+      background: white;
+      color: var(--text);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Container */
+    .container { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
+
+    /* Role Pills */
+    .roles-bar {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+    }
+    .role-btn {
+      padding: 10px 16px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .role-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25);
+    }
+
+    /* Hero Banner */
+    .hero-card {
+      background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 10px 25px rgba(20, 83, 45, 0.2);
+    }
+    .hero-card h1 { font-size: 1.6rem; margin-bottom: 8px; }
+    .hero-card p { opacity: 0.9; font-size: 0.95rem; line-height: 1.5; }
+
+    /* Grid Layout */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
+    
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* IoT Telemetry */
+    .sensor-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+    .sensor-row:last-child { border-bottom: none; }
+    .sensor-label { font-weight: 500; color: var(--muted); font-size: 0.9rem; }
+    .sensor-val { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .progress-fill { height: 100%; background: var(--primary); width: 68%; border-radius: 4px; transition: width 0.5s; }
+
+    /* Action Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-outline { background: white; border: 1.5px solid var(--primary); color: var(--primary); }
+    .btn-outline:hover { background: var(--primary-light); }
+    .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
+    .btn-success { background: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
+
+    /* Mandi Rates Ticker */
+    .mandi-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .crop-name { font-weight: 600; font-size: 0.95rem; }
+    .crop-market { font-size: 0.8rem; color: var(--muted); }
+    .crop-price { font-weight: 700; color: var(--text); font-size: 1rem; text-align: right; }
+    .price-trend { font-size: 0.75rem; color: var(--success); font-weight: 600; }
+
+    /* Catalog Items */
+    .product-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 100%;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+    .pay-btn {
+      padding: 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      background: white;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .pay-btn.selected {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      color: var(--primary-dark);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: none;
+      z-index: 2000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-logo">🌱</span>
+      <div>
+        <div style="line-height: 1.1;">FarmConnect</div>
+        <div style="font-size: 0.7rem; font-weight: 500; opacity: 0.85;">Agricultural OS</div>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span id="txt-live">LIVE CLOUD</span>
+      </div>
+      <select class="lang-switcher" id="langSelect" onchange="switchLanguage(this.value)">
+        <option value="en">English (EN)</option>
+        <option value="kn">ಕನ್ನಡ (KN)</option>
+        <option value="hi">हिन्दी (HI)</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Role Switcher -->
+    <div class="roles-bar">
+      <button class="role-btn active" onclick="switchRole('FARMER', this)">👨‍🌾 <span id="r-farmer">Farmer (Ramesh)</span></button>
+      <button class="role-btn" onclick="switchRole('BUYER', this)">🛒 <span id="r-buyer">Buyer (Kiran)</span></button>
+      <button class="role-btn" onclick="switchRole('SELLER', this)">🏪 <span id="r-seller">Seller (Cauvery)</span></button>
+      <button class="role-btn" onclick="switchRole('ADMIN', this)">🛡️ <span id="r-admin">Admin Console</span></button>
+    </div>
+
+    <!-- Hero Card -->
+    <section class="hero-card">
+      <h1 id="hero-greeting">Namaskara, Ramesh Kumar! 🌾</h1>
+      <p id="hero-sub">Welcome to your FarmConnect dashboard. Real-time soil monitoring, APMC mandi arrivals, and 24x7 expert assistance are active.</p>
+    </section>
+
+    <!-- Main Grid -->
+    <div class="grid">
+
+      <!-- Card 1: Live IoT Soil Telemetry -->
+      <div class="card">
+        <div class="card-title">
+          <span id="title-soil">🌱 Smart Soil & Telemetry</span>
+          <span style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 999px;" id="pumpStatusBadge">PUMP ACTIVE</span>
+        </div>
+        <div class="sensor-row">
+          <span class="sensor-label" id="lbl-moisture">Soil Moisture</span>
+          <span class="sensor-val" id="soilVal">68%</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="soilProgress"></div></div>
+
+        <div class="sensor-row" style="margin-top: 10px;">
+          <span class="sensor-label" id="lbl-temp">Canopy Temp</span>
+          <span class="sensor-val" id="tempVal">28.4°C</span>
+        </div>
+        <div class="sensor-row">
+          <span class="sensor-label" id="lbl-humidity">Air Humidity</span>
+          <span class="sensor-val" id="humVal">74%</span>
+        </div>
+
+        <div style="margin-top: 16px;">
+          <button class="btn btn-primary" id="pumpToggleBtn" onclick="togglePump()">
+            ⚡ <span id="btn-pump">Toggle Drip Irrigation Pump</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: 24x7 Kisan Assistance & Hotline -->
+      <div class="card">
+        <div class="card-title">
+          <span id="title-kisan">📞 Kisan 24x7 Assistance</span>
+          <span style="font-size: 0.75rem; background: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 999px;">FREE HELPLINE</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 14px;" id="desc-kisan">Direct government agricultural hotline & KVK specialist support for pest, seed, and weather guidance.</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <a href="tel:18001801551" class="btn btn-outline" style="text-decoration: none;">
+            📞 <span id="btn-call">Call Kisan Center: 1800-180-1551</span>
+          </a>
+          <a href="https://wa.me/919845012345?text=FarmConnect%20Crop%20Assistance" target="_blank" class="btn btn-success" style="text-decoration: none;">
+            💬 <span id="btn-whatsapp">WhatsApp KVK Specialist</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 3: Live Mandi Rates -->
+      <div class="card">
+        <div class="card-title">
+          <span id="title-mandi">📊 Live Mandi Rates (APMC)</span>
+          <span style="font-size: 0.75rem; color: var(--muted);">Updated 2m ago</span>
+        </div>
+        
+        <div class="mandi-item">
+          <div>
+            <div class="crop-name">Tomato (Hybrid)</div>
+            <div class="crop-market">Kolar APMC Market</div>
+          </div>
+          <div>
+            <div class="crop-price">₹28 / kg</div>
+            <div class="price-trend">▲ +₹3.50</div>
+          </div>
+        </div>
+
+        <div class="mandi-item">
+          <div>
+            <div class="crop-name">Onion (Medium)</div>
+            <div class="crop-market">Yeshwanthpur APMC</div>
+          </div>
+          <div>
+            <div class="crop-price">₹34 / kg</div>
+            <div class="price-trend">▲ +₹1.20</div>
+          </div>
+        </div>
+
+        <div class="mandi-item">
+          <div>
+            <div class="crop-name">Ragi (Finger Millet)</div>
+            <div class="crop-market">Mandya APMC</div>
+          </div>
+          <div>
+            <div class="crop-price">₹42 / kg</div>
+            <div class="price-trend">▲ Stable</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Multi-Process Procurement & Checkout -->
+      <div class="card">
+        <div class="card-title">
+          <span id="title-cart">🛒 Farm Inputs & Checkout</span>
+          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Cart (1)</span>
+        </div>
+
+        <div class="product-card">
+          <div>
+            <div style="font-weight: 700; font-size: 0.95rem;">Rabi Hybrid Wheat Seeds</div>
+            <div style="font-size: 0.8rem; color: var(--muted);">Cauvery Agro Inputs · 50 kg Bag</div>
+          </div>
+          <div style="font-weight: 700; color: var(--primary);">₹1,850</div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <button class="btn btn-primary" onclick="openCheckoutModal()">
+            💳 <span id="btn-checkout">Proceed to Checkout (COD, UPI, Card)</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Checkout Modal -->
+  <div class="modal-backdrop" id="checkoutModal">
+    <div class="modal-content">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 1.25rem;">Multi-Process Checkout</h2>
+        <button onclick="closeCheckoutModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <div style="background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
+          <span>Subtotal:</span>
+          <span>₹1,850.00</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; color: var(--muted);">
+          <span>5% Agricultural GST (CGST+SGST):</span>
+          <span>₹92.50</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; border-top: 1px dashed var(--border); padding-top: 8px;">
+          <span>Total Payable:</span>
+          <span style="color: var(--primary);">₹1,942.50</span>
+        </div>
+      </div>
+
+      <div style="font-weight: 700; margin-bottom: 8px; font-size: 0.9rem;">Select Payment Process:</div>
+      <div class="payment-options">
+        <button class="pay-btn selected" onclick="selectPayMethod('COD', this)">💵 Cash on Delivery (COD)</button>
+        <button class="pay-btn" onclick="selectPayMethod('UPI', this)">📱 UPI / PhonePe</button>
+        <button class="pay-btn" onclick="selectPayMethod('CARD', this)">💳 Debit / Credit Card</button>
+        <button class="pay-btn" onclick="selectPayMethod('NETBANKING', this)">🏦 Net Banking</button>
+      </div>
+
+      <div id="methodDetails" style="background: #f1f5f9; padding: 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px;">
+        <strong>💵 Cash on Delivery (COD) Selected:</strong><br>
+        • Delivery Verification OTP: <strong>4829</strong><br>
+        • Pay in cash or UPI at the farm gate upon delivery.
+      </div>
+
+      <button class="btn btn-primary" onclick="confirmPayment()">
+        ✅ Confirm & Place Order (₹1,942.50)
+      </button>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentRole = 'FARMER';
+    let currentLang = 'en';
+    let selectedMethod = 'COD';
+    let isPumpOn = true;
+
+    const translations = {
+      en: {
+        greeting: "Namaskara, Ramesh Kumar! 🌾",
+        sub: "Welcome to your FarmConnect dashboard. Real-time soil monitoring, APMC mandi arrivals, and 24x7 expert assistance are active.",
+        soil: "🌱 Smart Soil & Telemetry",
+        moisture: "Soil Moisture",
+        temp: "Canopy Temp",
+        humidity: "Air Humidity",
+        pumpBtn: "Toggle Drip Irrigation Pump",
+        kisan: "📞 Kisan 24x7 Assistance",
+        callBtn: "Call Kisan Center: 1800-180-1551",
+        waBtn: "WhatsApp KVK Specialist",
+        mandi: "📊 Live Mandi Rates (APMC)",
+        cart: "🛒 Farm Inputs & Checkout",
+        checkoutBtn: "Proceed to Checkout (COD, UPI, Card)",
+      },
+      kn: {
+        greeting: "ನಮಸ್ಕಾರ, ರಮೇಶ್ ಕುಮಾರ್! 🌾",
+        sub: "ಫಾರ್ಮ್‌ಕನೆಕ್ಟ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಸುಸ್ವಾಗತ. ಲೈವ್ ಮಣ್ಣಿನ ತೇವಾಂಶ ಮತ್ತು 24x7 ಕೃಷಿ ಸಹಾಯವಾಣಿ ಲಭ್ಯವಿದೆ.",
+        soil: "🌱 ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಮತ್ತು ಐಒಟಿ",
+        moisture: "ಮಣ್ಣಿನ ತೇವಾಂಶ",
+        temp: "ತಾಪಮಾನ",
+        humidity: "ಗಾಳಿಯ ಆರ್ದ್ರತೆ",
+        pumpBtn: "ಹನಿ ನೀರಾವರಿ ಪಂಪ್ ಬದಲಿಸಿ",
+        kisan: "📞 ಕಿಸಾನ್ 24x7 ಸಹಾಯವಾಣಿ",
+        callBtn: "ಕಿಸಾನ್ ಕೇಂದ್ರಕ್ಕೆ ಕರೆ: 1800-180-1551",
+        waBtn: "ವಾಟ್ಸಾಪ್ ಕೆವಿಕೆ ತಜ್ಞರು",
+        mandi: "📊 ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು",
+        cart: "🛒 ಕೃಷಿ ಪರಿಕರಗಳ ಖರೀದಿ",
+        checkoutBtn: "ಖರೀದಿ ಪೂರ್ಣಗೊಳಿಸಿ (COD, UPI)",
+      },
+      hi: {
+        greeting: "नमस्ते, रमेश कुमार! 🌾",
+        sub: "फार्मकनेक्ट डैशबोर्ड में आपका स्वागत है। रीयल-टाइम मिट्टी की नमी और किसान हेल्पलाइन सक्रिय है।",
+        soil: "🌱 मिट्टी की सेहत और आईओटी",
+        moisture: "मिट्टी की नमी",
+        temp: "तापमान",
+        humidity: "हवा की नमी",
+        pumpBtn: "ड्रिप सिंचाई पंप टॉगल करें",
+        kisan: "📞 किसान 24x7 सहायता",
+        callBtn: "किसान कॉल सेंटर: 1800-180-1551",
+        waBtn: "व्हाट्सएप विशेषज्ञ सहायता",
+        mandi: "📊 लाइव मंडी भाव (एपीएमसी)",
+        cart: "🛒 कृषि इनपुट व चेकआउट",
+        checkoutBtn: "चेकआउट करें (COD, UPI, कार्ड)",
+      }
+    };
+
+    function switchLanguage(lang) {
+      currentLang = lang;
+      const t = translations[lang] || translations.en;
+      document.getElementById('hero-greeting').innerText = t.greeting;
+      document.getElementById('hero-sub').innerText = t.sub;
+      document.getElementById('title-soil').innerText = t.soil;
+      document.getElementById('lbl-moisture').innerText = t.moisture;
+      document.getElementById('lbl-temp').innerText = t.temp;
+      document.getElementById('lbl-humidity').innerText = t.humidity;
+      document.getElementById('btn-pump').innerText = t.pumpBtn;
+      document.getElementById('title-kisan').innerText = t.kisan;
+      document.getElementById('btn-call').innerText = t.callBtn;
+      document.getElementById('btn-whatsapp').innerText = t.waBtn;
+      document.getElementById('title-mandi').innerText = t.mandi;
+      document.getElementById('title-cart').innerText = t.cart;
+      document.getElementById('btn-checkout').innerText = t.checkoutBtn;
+      showToast('🌐 Language switched to ' + (lang === 'kn' ? 'ಕನ್ನಡ' : lang === 'hi' ? 'हिन्दी' : 'English'));
+    }
+
+    function switchRole(role, btn) {
+      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentRole = role;
+      if (role === 'FARMER') {
+        document.getElementById('hero-greeting').innerText = "Namaskara, Ramesh Kumar! 🌾";
+        document.getElementById('hero-sub').innerText = "Farmer Dashboard: 4.5 Acres (Ragi & Tomato) in Mandya, Karnataka.";
+      } else if (role === 'BUYER') {
+        document.getElementById('hero-greeting').innerText = "Welcome, Kiran (AgroTech Foods) 🛒";
+        document.getElementById('hero-sub').innerText = "Buyer Procurement Portal: Direct farm gate verified produce orders.";
+      } else if (role === 'SELLER') {
+        document.getElementById('hero-greeting').innerText = "Welcome, Cauvery Agro Inputs 🏪";
+        document.getElementById('hero-sub').innerText = "Seller Cockpit: Inventory, seed stock, and fertilizer distribution.";
+      } else {
+        document.getElementById('hero-greeting').innerText = "FarmConnect Governance Admin 🛡️";
+        document.getElementById('hero-sub').innerText = "Platform Operations: APMC Price sync, KYC validations & dispute logs.";
+      }
+      showToast('Switched view to ' + role);
+    }
+
+    function togglePump() {
+      isPumpOn = !isPumpOn;
+      const badge = document.getElementById('pumpStatusBadge');
+      if (isPumpOn) {
+        badge.innerText = 'PUMP ACTIVE';
+        badge.style.background = '#dcfce7';
+        badge.style.color = '#15803d';
+        showToast('⚡ Drip Irrigation Motor Pump Started');
+      } else {
+        badge.innerText = 'PUMP OFF';
+        badge.style.background = '#fee2e2';
+        badge.style.color = '#dc2626';
+        showToast('🛑 Drip Irrigation Motor Pump Stopped');
+      }
+    }
+
+    function openCheckoutModal() {
+      document.getElementById('checkoutModal').style.display = 'flex';
+    }
+
+    function closeCheckoutModal() {
+      document.getElementById('checkoutModal').style.display = 'none';
+    }
+
+    function selectPayMethod(method, btn) {
+      selectedMethod = method;
+      document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      const box = document.getElementById('methodDetails');
+      if (method === 'COD') {
+        box.innerHTML = '<strong>💵 Cash on Delivery (COD) Selected:</strong><br>• Delivery Verification OTP: <strong>4829</strong><br>• Farm-gate weighing verification before cash settlement.';
+      } else if (method === 'UPI') {
+        box.innerHTML = '<strong>📱 UPI Instant Settlement:</strong><br>• Official VPA: <code>farmconnect@icici</code><br>• PhonePe, Google Pay & Paytm enabled with zero transaction fees.';
+      } else if (method === 'CARD') {
+        box.innerHTML = '<strong>💳 Credit / Debit Card:</strong><br>• Accepts RuPay, Visa, Mastercard<br>• 128-bit Bank Grade Encrypted 3D Secure checkout.';
+      } else {
+        box.innerHTML = '<strong>🏦 Net Banking Selected:</strong><br>• Supports SBI, Canara Bank, HDFC, ICICI, Axis Bank, and PNB.';
+      }
+    }
+
+    function confirmPayment() {
+      closeCheckoutModal();
+      showToast('🎉 Order Placed Successfully! Payment Method: ' + selectedMethod + ' (GST Invoice Generated)');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+
+    // Auto-fetch live telemetry from API
+    setInterval(() => {
+      fetch('/api/live/telemetry')
+        .then(r => r.json())
+        .then(res => {
+          if (res.data) {
+            document.getElementById('soilVal').innerText = res.data.soil_moisture_percent + '%';
+            document.getElementById('soilProgress').style.width = res.data.soil_moisture_percent + '%';
+            document.getElementById('tempVal').innerText = res.data.canopy_temperature_c + '°C';
+            document.getElementById('humVal').innerText = res.data.air_humidity_percent + '%';
+          }
+        }).catch(() => {});
+    }, 15000);
+  </script>
+</body>
+</html>`;
+}
+
+module.exports = { renderFarmConnectApp };
