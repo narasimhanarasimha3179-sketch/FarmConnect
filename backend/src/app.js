@@ -65,8 +65,32 @@ app.use((req, res, next) => {
   next();
 });
 
+// Static Web Application Serving (Phases 1 - 32)
+const path = require('path');
+const fs = require('fs');
+
+const staticCandidates = [
+  path.resolve(__dirname, '../public'),
+  path.resolve(__dirname, '../../mobile-android/dist'),
+  path.resolve(__dirname, '../../dist'),
+  path.resolve(__dirname, '../../public'),
+];
+
+const webDistPath = staticCandidates.find(dir => fs.existsSync(path.join(dir, 'index.html')));
+
+if (webDistPath) {
+  console.log(`[Frontend] Serving FarmConnect Web App from: ${webDistPath}`);
+  app.use(express.static(webDistPath));
+}
+
 // Root Status & Health Endpoints
 app.get('/', (req, res) => {
+  // If requested by a web browser, serve the interactive FarmConnect Web App
+  if (webDistPath && req.accepts('html')) {
+    return res.sendFile(path.join(webDistPath, 'index.html'));
+  }
+
+  // Otherwise return JSON status (Render health checks, curl, API consumers)
   res.status(200).json({
     status: 'ONLINE',
     system: 'FarmConnect Smart Agriculture Platform API',
@@ -74,6 +98,7 @@ app.get('/', (req, res) => {
     version: '1.0.0-phase32',
     timestamp: new Date().toISOString(),
     endpoints: {
+      app: '/',
       health: '/api/health',
       docs: '/api/docs',
       telemetry: '/api/live/telemetry',
@@ -118,24 +143,8 @@ app.use('/api/search', searchRoutes);
 app.use('/api/docs', docsRoutes);
 app.use('/api/live', liveRoutes);
 
-// Static Web Application Serving (Phases 1 - 32)
-const path = require('path');
-const fs = require('fs');
-
-const staticCandidates = [
-  path.resolve(__dirname, '../public'),
-  path.resolve(__dirname, '../../mobile-android/dist'),
-  path.resolve(__dirname, '../../dist'),
-  path.resolve(__dirname, '../../public'),
-];
-
-const webDistPath = staticCandidates.find(dir => fs.existsSync(path.join(dir, 'index.html')));
-
+// SPA browser navigation fallback for frontend screens
 if (webDistPath) {
-  console.log(`[Frontend] Serving FarmConnect Web App from: ${webDistPath}`);
-  app.use(express.static(webDistPath));
-
-  // SPA browser navigation fallback for frontend screens
   app.get('*', (req, res, next) => {
     if (req.originalUrl.startsWith('/api')) {
       return next();
