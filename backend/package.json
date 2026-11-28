@@ -2,9 +2,9 @@
   "name": "farmconnect-backend",
   "version": "1.0.0",
   "description": "FarmConnect Smart Agriculture Platform Backend API",
-  "main": "src/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node src/server.js",
+    "start": "node server.js",
     "dev": "node src/server.js",
     "test": "node tests/auth.test.js"
   },

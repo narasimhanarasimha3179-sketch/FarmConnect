@@ -1,5 +1,5 @@
-// FarmConnect Interactive Single-Page Web Application Generator
-// Delivers a zero-latency, full-fidelity web UI directly to any browser or phone
+// FarmConnect 2.0 — Production Single-Page Agricultural E-Commerce & Platform Experience
+// Modeled after Amazon, Flipkart, and Shopify with authentic Indian agricultural identity
 
 function renderFarmConnectApp() {
   return `<!DOCTYPE html>
@@ -7,188 +7,559 @@ function renderFarmConnectApp() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>FarmConnect · Smart Agricultural Products & Market Platform</title>
+  <title>FarmConnect · Smart Agricultural Marketplace & Farming Platform</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌱</text></svg>">
   <style>
     :root {
-      --primary: #15803d;
-      --primary-dark: #166534;
-      --primary-light: #dcfce7;
-      --accent: #ca8a04;
-      --dark: #0f172a;
-      --card-bg: #ffffff;
-      --bg: #f8fafc;
-      --border: #e2e8f0;
-      --text: #1e293b;
-      --muted: #64748b;
-      --success: #16a34a;
-      --warning: #eab308;
-      --danger: #dc2626;
+      --primary: #176B3A;
+      --primary-dark: #12552E;
+      --primary-light: #EAF6EE;
+      --secondary: #258B50;
+      --accent: #F2A541;
+      --accent-hover: #D98E28;
+      --dark-text: #17251D;
+      --body-text: #647067;
+      --bg: #F7F9F7;
+      --card-bg: #FFFFFF;
+      --border: #E2E8F0;
+      --success: #16A34A;
+      --warning: #D97706;
+      --danger: #DC2626;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(23, 107, 58, 0.08);
+      --shadow-lg: 0 10px 25px rgba(23, 107, 58, 0.12);
+      --radius: 12px;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 60px; }
-    
-    /* Top Navigation */
-    .top-bar {
-      background: linear-gradient(135deg, #166534 0%, #15803d 100%);
-      color: white;
-      padding: 14px 20px;
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--dark-text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Top Strip */
+    .top-strip {
+      background: #114524;
+      color: #D1E7DD;
+      font-size: 0.8rem;
+      padding: 6px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+    .top-strip a { color: #A3E635; text-decoration: none; font-weight: 600; margin-left: 6px; }
+
+    /* Main Header */
+    .navbar {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      box-shadow: var(--shadow-sm);
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.25rem; letter-spacing: -0.5px; }
-    .brand-logo { font-size: 1.8rem; }
-    .status-badge {
-      background: rgba(255,255,255,0.2);
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 600;
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--primary);
+      cursor: pointer;
+    }
+    .brand-icon { font-size: 2rem; }
+    .brand-title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.5px; color: var(--primary); }
+    .brand-sub { font-size: 0.65rem; font-weight: 700; letter-spacing: 1.5px; color: var(--secondary); text-transform: uppercase; }
+
+    /* Search Bar */
+    .search-box {
+      flex: 1;
+      max-width: 580px;
+      display: flex;
+      border: 2px solid var(--primary);
+      border-radius: 8px;
+      overflow: hidden;
+      background: white;
+    }
+    .search-box input {
+      flex: 1;
+      border: none;
+      padding: 10px 16px;
+      font-size: 0.95rem;
+      outline: none;
+      color: var(--dark-text);
+    }
+    .search-box button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 18px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-box button:hover { background: var(--primary-dark); }
+
+    /* Header Actions */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-auth-signin {
+      background: transparent;
+      color: var(--primary);
+      border: 1.5px solid var(--primary);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-auth-signin:hover {
+      background: var(--primary-light);
+    }
+    .btn-auth-register {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-auth-register:hover {
+      background: var(--primary-dark);
+    }
+    .cart-btn {
+      position: relative;
+      background: var(--primary-light);
+      border: 1px solid #C6E9D2;
+      color: var(--primary);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
       display: flex;
       align-items: center;
       gap: 6px;
     }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80; }
-    
-    .lang-switcher {
-      background: white;
-      color: var(--text);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
+    .cart-badge {
+      background: var(--accent);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
     }
 
-    /* Container */
-    .container { max-width: 1080px; margin: 0 auto; padding: 20px 16px; }
-
-    /* Role Pills */
-    .roles-bar {
-      display: flex;
-      gap: 8px;
+    /* Sub-nav Ribbon */
+    .subnav {
+      background: #17251D;
+      color: white;
       overflow-x: auto;
-      padding-bottom: 12px;
-      margin-bottom: 20px;
-    }
-    .role-btn {
-      padding: 10px 16px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--muted);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
       white-space: nowrap;
     }
-    .role-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-      box-shadow: 0 4px 12px rgba(22, 101, 52, 0.25);
+    .subnav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 20px;
+      display: flex;
+      gap: 4px;
+    }
+    .subnav-item {
+      padding: 10px 14px;
+      color: #E2E8F0;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .subnav-item:hover, .subnav-item.active {
+      color: #FFFFFF;
+      background: rgba(255,255,255,0.06);
+      border-bottom-color: var(--accent);
     }
 
     /* Hero Banner */
-    .hero-card {
-      background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+    .hero {
+      background: linear-gradient(135deg, #176B3A 0%, #0F4926 100%);
       color: white;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 25px rgba(20, 83, 45, 0.2);
+      padding: 48px 20px;
+      position: relative;
+      overflow: hidden;
     }
-    .hero-card h1 { font-size: 1.6rem; margin-bottom: 8px; }
-    .hero-card p { opacity: 0.9; font-size: 0.95rem; line-height: 1.5; }
-
-    /* Grid Layout */
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 24px; }
-    
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    .hero-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
     }
-    .card-title {
-      font-size: 1.1rem;
+    .hero-content {
+      max-width: 650px;
+    }
+    .hero-pill {
+      display: inline-block;
+      background: rgba(255,255,255,0.18);
+      color: #A7F3D0;
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
       font-weight: 700;
+      letter-spacing: 1px;
       margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+    .hero-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 14px;
+      letter-spacing: -1px;
+    }
+    .hero-desc {
+      font-size: 1.1rem;
+      color: #E6F4EA;
+      line-height: 1.6;
+      margin-bottom: 24px;
+      font-weight: 400;
+    }
+    .hero-btns {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .btn-hero-primary {
+      background: var(--accent);
+      color: #17251D;
+      font-weight: 700;
+      padding: 13px 26px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      box-shadow: 0 4px 14px rgba(242, 165, 65, 0.4);
+    }
+    .btn-hero-primary:hover { background: var(--accent-hover); }
+    .btn-hero-secondary {
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-weight: 600;
+      padding: 13px 24px;
+      border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.4);
+      font-size: 1rem;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+    .hero-graphic {
+      font-size: 8rem;
+      opacity: 0.9;
+      user-select: none;
+    }
+
+    /* Trust Pillars */
+    .trust-strip {
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 20px;
+    }
+    .trust-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .trust-item {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      gap: 14px;
     }
-
-    /* IoT Telemetry */
-    .sensor-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
-    .sensor-row:last-child { border-bottom: none; }
-    .sensor-label { font-weight: 500; color: var(--muted); font-size: 0.9rem; }
-    .sensor-val { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
-    .progress-bar { width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-    .progress-fill { height: 100%; background: var(--primary); width: 68%; border-radius: 4px; transition: width 0.5s; }
-
-    /* Action Buttons */
-    .btn {
-      display: inline-flex;
+    .trust-icon {
+      font-size: 2rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 12px 20px;
-      border-radius: 10px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      border: none;
-      cursor: pointer;
+    }
+    .trust-text h4 { font-size: 0.95rem; font-weight: 700; color: var(--dark-text); }
+    .trust-text p { font-size: 0.8rem; color: var(--body-text); }
+
+    /* Main Container */
+    .main-wrap {
+      max-width: 1280px;
+      margin: 32px auto;
+      padding: 0 20px;
+      flex: 1;
       width: 100%;
+    }
+
+    /* Section Headings */
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 20px;
+    }
+    .section-head h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--dark-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-head a {
+      color: var(--primary);
       text-decoration: none;
-      transition: all 0.2s;
+      font-weight: 700;
+      font-size: 0.9rem;
     }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-outline { background: white; border: 1.5px solid var(--primary); color: var(--primary); }
-    .btn-outline:hover { background: var(--primary-light); }
-    .btn-danger { background: #fee2e2; color: var(--danger); border: 1px solid #fecaca; }
-    .btn-success { background: #dcfce7; color: var(--success); border: 1px solid #bbf7d0; }
 
-    /* Mandi Rates Ticker */
-    .mandi-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px;
-      background: #f8fafc;
-      border-radius: 10px;
-      margin-bottom: 10px;
+    /* 10 Agricultural Categories Grid */
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
     }
-    .crop-name { font-weight: 600; font-size: 0.95rem; }
-    .crop-market { font-size: 0.8rem; color: var(--muted); }
-    .crop-price { font-weight: 700; color: var(--text); font-size: 1rem; text-align: right; }
-    .price-trend { font-size: 0.75rem; color: var(--success); font-weight: 600; }
-
-    /* Catalog Items */
-    .product-card {
+    .category-card {
+      background: white;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
+      border-radius: var(--radius);
+      padding: 18px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+    .category-card:hover {
+      border-color: var(--primary);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+    .cat-icon { font-size: 2.2rem; margin-bottom: 10px; display: inline-block; }
+    .cat-name { font-weight: 700; font-size: 0.95rem; color: var(--dark-text); margin-bottom: 4px; }
+    .cat-desc { font-size: 0.75rem; color: var(--body-text); line-height: 1.3; }
+
+    /* Products Grid */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .product-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+    .product-thumb {
+      height: 140px;
+      background: #F1F5F2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      position: relative;
+    }
+    .product-tag {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+    .product-body {
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-category {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--secondary);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .product-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--dark-text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .product-seller {
+      font-size: 0.8rem;
+      color: var(--body-text);
       margin-bottom: 12px;
+    }
+    .product-footer {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 12px;
+      border-top: 1px solid #F1F5F9;
+    }
+    .product-price {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+    .btn-add-cart {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-add-cart:hover { background: var(--primary-dark); }
+
+    /* Live Mandi Ticker */
+    .mandi-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow-sm);
+    }
+    .mandi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .mandi-box {
+      background: #F8FAF9;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .mandi-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 4px;
+    }
+    .mandi-crop { font-weight: 700; font-size: 1rem; color: var(--dark-text); }
+    .mandi-rate { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
+    .mandi-market { font-size: 0.8rem; color: var(--body-text); margin-bottom: 8px; }
+    .mandi-status { font-size: 0.75rem; font-weight: 700; color: var(--success); }
+
+    /* Helpline Banner */
+    .helpline {
+      background: #FEF3C7;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius);
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+    .helpline-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .helpline-icon { font-size: 2.5rem; }
+    .helpline-text h3 { font-size: 1.15rem; font-weight: 800; color: #92400E; margin-bottom: 4px; }
+    .helpline-text p { font-size: 0.85rem; color: #B45309; }
+    .helpline-call {
+      background: #92400E;
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    /* Modal */
-    .modal-backdrop {
+    /* Footer */
+    .footer {
+      background: #111827;
+      color: #9CA3AF;
+      padding: 48px 20px 24px;
+      margin-top: auto;
+      border-top: 4px solid var(--primary);
+    }
+    .footer-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+      margin-bottom: 32px;
+    }
+    .footer-col h3 { color: white; font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+    .footer-col p { font-size: 0.85rem; line-height: 1.6; }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 8px; }
+    .footer-col a { color: #9CA3AF; text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-col a:hover { color: white; }
+    .footer-bottom {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    /* Modal Backdrop */
+    .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
@@ -197,414 +568,849 @@ function renderFarmConnectApp() {
       justify-content: center;
       z-index: 1000;
       padding: 16px;
+      backdrop-filter: blur(2px);
     }
-    .modal-content {
+    .modal-box {
       background: white;
-      border-radius: 20px;
-      max-width: 500px;
+      border-radius: 16px;
+      max-width: 440px;
       width: 100%;
-      padding: 24px;
-      max-height: 90vh;
-      overflow-y: auto;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      position: relative;
     }
-    .payment-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
-    .pay-btn {
-      padding: 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 12px;
-      background: white;
-      font-weight: 600;
+    .modal-close {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      font-size: 1.5rem;
+      border: none;
+      background: transparent;
       cursor: pointer;
-      text-align: center;
-      font-size: 0.9rem;
+      color: var(--body-text);
     }
-    .pay-btn.selected {
-      border-color: var(--primary);
-      background: var(--primary-light);
-      color: var(--primary-dark);
+    .modal-title { font-size: 1.4rem; font-weight: 800; color: var(--dark-text); margin-bottom: 6px; }
+    .modal-sub { font-size: 0.85rem; color: var(--body-text); margin-bottom: 20px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--dark-text); margin-bottom: 6px; }
+    .form-control {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+    .trust-ssl {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--body-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    .toast {
+    /* Authenticated User Dashboard View */
+    .auth-dashboard {
+      display: none;
+      max-width: 1280px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+    .dash-header {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+    .dash-user-info h2 { font-size: 1.3rem; font-weight: 800; color: var(--dark-text); }
+    .dash-user-info p { font-size: 0.85rem; color: var(--body-text); }
+    .badge-role {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+    .btn-signout {
+      background: #FEE2E2;
+      color: #DC2626;
+      border: 1px solid #FECACA;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* Toast */
+    .toast-msg {
       position: fixed;
       bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #0f172a;
+      right: 24px;
+      background: #17251D;
       color: white;
-      padding: 12px 24px;
-      border-radius: 999px;
-      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: 8px;
       font-size: 0.9rem;
+      font-weight: 600;
       display: none;
       z-index: 2000;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-lg);
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Navbar -->
-  <header class="top-bar">
-    <div class="brand">
-      <span class="brand-logo">🌱</span>
-      <div>
-        <div style="line-height: 1.1;">FarmConnect</div>
-        <div style="font-size: 0.7rem; font-weight: 500; opacity: 0.85;">Agricultural OS</div>
-      </div>
+  <!-- Top Strip -->
+  <div class="top-strip">
+    <div>
+      <span>🌱 Official FarmConnect Agricultural OS</span>
+      <span style="margin: 0 8px;">·</span>
+      <span>Kisan Support: <strong>1800-180-1551</strong> (24x7 Toll-Free)</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        <span id="txt-live">LIVE CLOUD</span>
+    <div>
+      <span>Government Verified MSP & APMC Data</span>
+    </div>
+  </div>
+
+  <!-- Main Navbar -->
+  <header class="navbar">
+    <div class="nav-container">
+      <div class="brand" onclick="goHome()">
+        <span class="brand-icon">🌱</span>
+        <div>
+          <div class="brand-title">FarmConnect</div>
+          <div class="brand-sub">AGRICULTURAL OS</div>
+        </div>
       </div>
-      <select class="lang-switcher" id="langSelect" onchange="switchLanguage(this.value)">
-        <option value="en">English (EN)</option>
-        <option value="kn">ಕನ್ನಡ (KN)</option>
-        <option value="hi">हिन्दी (HI)</option>
-      </select>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search hybrid seeds, NPK fertilizers, solar pumps, farm produce..." onkeydown="if(event.key==='Enter') searchCatalog()">
+        <button onclick="searchCatalog()">🔍</button>
+      </div>
+
+      <div class="header-actions" id="guestHeaderActions">
+        <button class="cart-btn" onclick="openCart()">
+          🛒 Cart <span class="cart-badge" id="cartCount">0</span>
+        </button>
+        <button class="btn-auth-signin" onclick="openLoginModal()">Sign In</button>
+        <button class="btn-auth-register" onclick="openRegisterModal()">Get Started</button>
+      </div>
+
+      <div class="header-actions" id="userHeaderActions" style="display: none;">
+        <button class="cart-btn" onclick="openCart()">
+          🛒 Cart <span class="cart-badge" id="cartCountUser">0</span>
+        </button>
+        <button class="btn-signout" onclick="logout()">Sign Out ⎋</button>
+      </div>
     </div>
   </header>
 
-  <main class="container">
-
-    <!-- Role Switcher -->
-    <div class="roles-bar">
-      <button class="role-btn active" onclick="switchRole('FARMER', this)">👨‍🌾 <span id="r-farmer">Farmer (Ramesh)</span></button>
-      <button class="role-btn" onclick="switchRole('BUYER', this)">🛒 <span id="r-buyer">Buyer (Kiran)</span></button>
-      <button class="role-btn" onclick="switchRole('SELLER', this)">🏪 <span id="r-seller">Seller (Cauvery)</span></button>
-      <button class="role-btn" onclick="switchRole('ADMIN', this)">🛡️ <span id="r-admin">Admin Console</span></button>
+  <!-- Subnav Ribbon -->
+  <nav class="subnav">
+    <div class="subnav-container">
+      <div class="subnav-item active" onclick="goHome()">🏠 Home</div>
+      <div class="subnav-item" onclick="scrollToSection('catalogSection')">🏪 Shop Farm Inputs</div>
+      <div class="subnav-item" onclick="scrollToSection('categoriesSection')">🌱 Categories</div>
+      <div class="subnav-item" onclick="scrollToSection('mandiSection')">📊 Mandi Prices</div>
+      <div class="subnav-item" onclick="showHelplineToast()">📞 Kisan Advisory</div>
+      <div class="subnav-item" onclick="openLoginModal()">🛡️ Portal Login</div>
     </div>
+  </nav>
 
-    <!-- Hero Card -->
-    <section class="hero-card">
-      <h1 id="hero-greeting">Namaskara, Ramesh Kumar! 🌾</h1>
-      <p id="hero-sub">Welcome to your FarmConnect dashboard. Real-time soil monitoring, APMC mandi arrivals, and 24x7 expert assistance are active.</p>
+  <!-- GUEST PUBLIC VIEW -->
+  <div id="publicView">
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="hero-pill">INDIA'S TRUSTED AGRICULTURAL NETWORK</div>
+          <h1 class="hero-title">Grow Smarter.<br>Trade Better.<br>Farm Better.</h1>
+          <p class="hero-desc">Your complete agricultural platform for authentic farm inputs, APMC crop trading, live mandi market intelligence, and smart farming assistance.</p>
+          <div class="hero-btns">
+            <button class="btn-hero-primary" onclick="scrollToSection('catalogSection')">Explore Marketplace →</button>
+            <button class="btn-hero-secondary" onclick="openRegisterModal()">Join as Farmer / Buyer</button>
+          </div>
+        </div>
+        <div class="hero-graphic">🌾</div>
+      </div>
     </section>
 
-    <!-- Main Grid -->
-    <div class="grid">
-
-      <!-- Card 1: Live IoT Soil Telemetry -->
-      <div class="card">
-        <div class="card-title">
-          <span id="title-soil">🌱 Smart Soil & Telemetry</span>
-          <span style="font-size: 0.75rem; background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 999px;" id="pumpStatusBadge">PUMP ACTIVE</span>
-        </div>
-        <div class="sensor-row">
-          <span class="sensor-label" id="lbl-moisture">Soil Moisture</span>
-          <span class="sensor-val" id="soilVal">68%</span>
-        </div>
-        <div class="progress-bar"><div class="progress-fill" id="soilProgress"></div></div>
-
-        <div class="sensor-row" style="margin-top: 10px;">
-          <span class="sensor-label" id="lbl-temp">Canopy Temp</span>
-          <span class="sensor-val" id="tempVal">28.4°C</span>
-        </div>
-        <div class="sensor-row">
-          <span class="sensor-label" id="lbl-humidity">Air Humidity</span>
-          <span class="sensor-val" id="humVal">74%</span>
-        </div>
-
-        <div style="margin-top: 16px;">
-          <button class="btn btn-primary" id="pumpToggleBtn" onclick="togglePump()">
-            ⚡ <span id="btn-pump">Toggle Drip Irrigation Pump</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Card 2: 24x7 Kisan Assistance & Hotline -->
-      <div class="card">
-        <div class="card-title">
-          <span id="title-kisan">📞 Kisan 24x7 Assistance</span>
-          <span style="font-size: 0.75rem; background: #fef08a; color: #854d0e; padding: 2px 8px; border-radius: 999px;">FREE HELPLINE</span>
-        </div>
-        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 14px;" id="desc-kisan">Direct government agricultural hotline & KVK specialist support for pest, seed, and weather guidance.</p>
-        
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <a href="tel:18001801551" class="btn btn-outline" style="text-decoration: none;">
-            📞 <span id="btn-call">Call Kisan Center: 1800-180-1551</span>
-          </a>
-          <a href="https://wa.me/919845012345?text=FarmConnect%20Crop%20Assistance" target="_blank" class="btn btn-success" style="text-decoration: none;">
-            💬 <span id="btn-whatsapp">WhatsApp KVK Specialist</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Card 3: Live Mandi Rates -->
-      <div class="card">
-        <div class="card-title">
-          <span id="title-mandi">📊 Live Mandi Rates (APMC)</span>
-          <span style="font-size: 0.75rem; color: var(--muted);">Updated 2m ago</span>
-        </div>
-        
-        <div class="mandi-item">
-          <div>
-            <div class="crop-name">Tomato (Hybrid)</div>
-            <div class="crop-market">Kolar APMC Market</div>
-          </div>
-          <div>
-            <div class="crop-price">₹28 / kg</div>
-            <div class="price-trend">▲ +₹3.50</div>
+    <!-- Trust Pillars -->
+    <section class="trust-strip">
+      <div class="trust-container">
+        <div class="trust-item">
+          <div class="trust-icon">🛡️</div>
+          <div class="trust-text">
+            <h4>Verified Agri-Sellers</h4>
+            <p>100% genuine seeds & fertilizers</p>
           </div>
         </div>
-
-        <div class="mandi-item">
-          <div>
-            <div class="crop-name">Onion (Medium)</div>
-            <div class="crop-market">Yeshwanthpur APMC</div>
-          </div>
-          <div>
-            <div class="crop-price">₹34 / kg</div>
-            <div class="price-trend">▲ +₹1.20</div>
+        <div class="trust-item">
+          <div class="trust-icon">📊</div>
+          <div class="trust-text">
+            <h4>Direct Mandi Prices</h4>
+            <p>Live APMC mandi updates daily</p>
           </div>
         </div>
-
-        <div class="mandi-item">
-          <div>
-            <div class="crop-name">Ragi (Finger Millet)</div>
-            <div class="crop-market">Mandya APMC</div>
+        <div class="trust-item">
+          <div class="trust-icon">🚜</div>
+          <div class="trust-text">
+            <h4>Smart Agronomy</h4>
+            <p>24x7 expert and AI crop guidance</p>
           </div>
-          <div>
-            <div class="crop-price">₹42 / kg</div>
-            <div class="price-trend">▲ Stable</div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon">💳</div>
+          <div class="trust-text">
+            <h4>Secure Payments</h4>
+            <p>UPI, Escrow, and Razorpay verified</p>
           </div>
         </div>
       </div>
+    </section>
 
-      <!-- Card 4: Multi-Process Procurement & Checkout -->
-      <div class="card">
-        <div class="card-title">
-          <span id="title-cart">🛒 Farm Inputs & Checkout</span>
-          <span style="font-size: 0.75rem; color: var(--primary); font-weight: 700;">Cart (1)</span>
+    <!-- Main Content -->
+    <main class="main-wrap">
+      
+      <!-- 10 Categories -->
+      <section id="categoriesSection">
+        <div class="section-head">
+          <h2>🌾 Browse Agricultural Categories</h2>
+          <a href="#catalogSection">View All Products →</a>
         </div>
-
-        <div class="product-card">
-          <div>
-            <div style="font-weight: 700; font-size: 0.95rem;">Rabi Hybrid Wheat Seeds</div>
-            <div style="font-size: 0.8rem; color: var(--muted);">Cauvery Agro Inputs · 50 kg Bag</div>
+        <div class="category-grid" id="categoryGrid">
+          <div class="category-card" onclick="filterCategory('SEEDS')">
+            <span class="cat-icon">🌱</span>
+            <div class="cat-name">Seeds</div>
+            <div class="cat-desc">Hybrid, OPV & certified grains</div>
           </div>
-          <div style="font-weight: 700; color: var(--primary);">₹1,850</div>
+          <div class="category-card" onclick="filterCategory('FERTILIZERS')">
+            <span class="cat-icon">🧪</span>
+            <div class="cat-name">Fertilizers</div>
+            <div class="cat-desc">NPK, Urea, DAP & micronutrients</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('ORGANIC')">
+            <span class="cat-icon">🌿</span>
+            <div class="cat-name">Organic Products</div>
+            <div class="cat-desc">Bio-fertilizers & vermicompost</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('PESTICIDES')">
+            <span class="cat-icon">🛡️</span>
+            <div class="cat-name">Pesticides & Protection</div>
+            <div class="cat-desc">Fungicides & organic IPM</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('IRRIGATION')">
+            <span class="cat-icon">💧</span>
+            <div class="cat-name">Irrigation Equipment</div>
+            <div class="cat-desc">Drip, sprinklers & PVC pipes</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('TOOLS')">
+            <span class="cat-icon">⛏️</span>
+            <div class="cat-name">Farming Tools</div>
+            <div class="cat-desc">Knapsack sprayers & hand tools</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('MACHINERY')">
+            <span class="cat-icon">🚜</span>
+            <div class="cat-name">Agricultural Machinery</div>
+            <div class="cat-desc">Power tillers & harvesters</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('ANIMAL_FEED')">
+            <span class="cat-icon">🐄</span>
+            <div class="cat-name">Animal Feed</div>
+            <div class="cat-desc">Cattle feed & mineral mix</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('CROP_PRODUCE')">
+            <span class="cat-icon">🌾</span>
+            <div class="cat-name">Crop Produce</div>
+            <div class="cat-desc">Direct farm-gate harvest</div>
+          </div>
+          <div class="category-card" onclick="filterCategory('SUPPLIES')">
+            <span class="cat-icon">📦</span>
+            <div class="cat-name">Other Supplies</div>
+            <div class="cat-desc">Tarpaulins, crates & nets</div>
+          </div>
         </div>
+      </section>
 
-        <div style="margin-top: 14px;">
-          <button class="btn btn-primary" onclick="openCheckoutModal()">
-            💳 <span id="btn-checkout">Proceed to Checkout (COD, UPI, Card)</span>
-          </button>
+      <!-- Featured Storefront Catalog -->
+      <section id="catalogSection">
+        <div class="section-head">
+          <h2>🛒 Featured Farm Inputs & Machinery</h2>
+          <span style="font-size: 0.85rem; color: var(--body-text);">Dispatched by Certified Agri-Merchants</span>
         </div>
+        <div class="products-grid" id="productsGrid">
+          <!-- Populated dynamically via API -->
+          <div class="product-card">
+            <div class="product-thumb">🌱<span class="product-tag">BESTSELLER</span></div>
+            <div class="product-body">
+              <div class="product-category">SEEDS</div>
+              <div class="product-title">Hybrid Tomato Seeds (Arka Rakshak - 50g)</div>
+              <div class="product-seller">Cauvery Agri Supplies · ⭐ 4.8</div>
+              <div class="product-footer">
+                <span class="product-price">₹450</span>
+                <button class="btn-add-cart" onclick="addToCart('Hybrid Tomato Seeds', 450)">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-thumb">🧪<span class="product-tag">CERTIFIED</span></div>
+            <div class="product-body">
+              <div class="product-category">FERTILIZERS</div>
+              <div class="product-title">NPK 19-19-19 Soluble Fertilizer (1kg)</div>
+              <div class="product-seller">IFFCO Authorized · ⭐ 4.9</div>
+              <div class="product-footer">
+                <span class="product-price">₹180</span>
+                <button class="btn-add-cart" onclick="addToCart('NPK 19-19-19 Fertilizer', 180)">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-thumb">🌿<span class="product-tag">100% ORGANIC</span></div>
+            <div class="product-body">
+              <div class="product-category">ORGANIC</div>
+              <div class="product-title">Neem Cake Bio-Fertilizer (25kg)</div>
+              <div class="product-seller">GreenAgro Karnataka · ⭐ 4.7</div>
+              <div class="product-footer">
+                <span class="product-price">₹850</span>
+                <button class="btn-add-cart" onclick="addToCart('Neem Cake Bio-Fertilizer', 850)">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="product-card">
+            <div class="product-thumb">💧<span class="product-tag">SUBSIDY READY</span></div>
+            <div class="product-body">
+              <div class="product-category">IRRIGATION</div>
+              <div class="product-title">Drip Irrigation Kit (1 Acre Complete)</div>
+              <div class="product-seller">Jain Irrigation Systems · ⭐ 4.9</div>
+              <div class="product-footer">
+                <span class="product-price">₹12,499</span>
+                <button class="btn-add-cart" onclick="addToCart('Drip Irrigation Kit', 12499)">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Mandi Rates -->
+      <section id="mandiSection" class="mandi-card">
+        <div class="section-head" style="margin-bottom: 8px;">
+          <h2>📊 Live APMC Mandi Prices</h2>
+          <span style="font-size: 0.8rem; color: var(--success); font-weight: 700;">● LIVE FROM AGMARKNET</span>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--body-text); margin-bottom: 12px;">Real-time mandi market rates from APMC yards across Karnataka & India.</p>
+        <div class="mandi-grid" id="mandiGrid">
+          <div class="mandi-box">
+            <div class="mandi-header">
+              <span class="mandi-crop">Tomato (Hybrid)</span>
+              <span class="mandi-rate">₹2,800 / qtl</span>
+            </div>
+            <div class="mandi-market">Kolar APMC Yard</div>
+            <div class="mandi-status">▲ +₹120 vs yesterday</div>
+          </div>
+          <div class="mandi-box">
+            <div class="mandi-header">
+              <span class="mandi-crop">Onion (Nashik Red)</span>
+              <span class="mandi-rate">₹3,400 / qtl</span>
+            </div>
+            <div class="mandi-market">Yeshwanthpur APMC</div>
+            <div class="mandi-status">▲ +₹50 vs yesterday</div>
+          </div>
+          <div class="mandi-box">
+            <div class="mandi-header">
+              <span class="mandi-crop">Ragi (Finger Millet)</span>
+              <span class="mandi-rate">₹4,290 / qtl</span>
+            </div>
+            <div class="mandi-market">Mandya APMC Yard</div>
+            <div class="mandi-status">★ MSP Guaranteed</div>
+          </div>
+          <div class="mandi-box">
+            <div class="mandi-header">
+              <span class="mandi-crop">Paddy (Sona Masoori)</span>
+              <span class="mandi-rate">₹2,320 / qtl</span>
+            </div>
+            <div class="mandi-market">Raichur APMC Yard</div>
+            <div class="mandi-status">● Steady trade</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 24x7 Helpline -->
+      <section class="helpline">
+        <div class="helpline-left">
+          <span class="helpline-icon">📞</span>
+          <div class="helpline-text">
+            <h3>24x7 Kisan Call Center & Agronomist Support</h3>
+            <p>Direct access to ICAR-KVK agricultural scientists for pest control, fertilizer scheduling and scheme guidance.</p>
+          </div>
+        </div>
+        <a href="tel:18001801551" class="helpline-call">Call 1800-180-1551 (Toll Free)</a>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- AUTHENTICATED ROLE DASHBOARD VIEW -->
+  <div class="auth-dashboard" id="authDashboard">
+    <div class="dash-header">
+      <div class="dash-user-info">
+        <h2 id="dashWelcome">Welcome, Farmer</h2>
+        <p id="dashEmail">user@farmconnect.org</p>
+        <span class="badge-role" id="dashRoleBadge">FARMER</span>
       </div>
-
+      <div>
+        <button class="btn-signout" onclick="logout()">Sign Out ⎋</button>
+      </div>
     </div>
 
-  </main>
-
-  <!-- Checkout Modal -->
-  <div class="modal-backdrop" id="checkoutModal">
-    <div class="modal-content">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h2 style="font-size: 1.25rem;">Multi-Process Checkout</h2>
-        <button onclick="closeCheckoutModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
-      </div>
-
-      <div style="background: #f8fafc; padding: 14px; border-radius: 12px; margin-bottom: 16px;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
-          <span>Subtotal:</span>
-          <span>₹1,850.00</span>
+    <!-- Farmer Cockpit Specific View -->
+    <div id="farmerView" style="display: none;">
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px;">
+        <h3 style="margin-bottom: 12px; color: var(--primary);">🌱 Farmer Cockpit & Smart Farm Management</h3>
+        <p style="color: var(--body-text); margin-bottom: 20px;">Manage crop batches, monitor IoT sensors, list harvest for mandi buyers, and claim government subsidies.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+          <div style="background: #F8FAF9; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 4px;">Soil Moisture (Zone 1)</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">68%</div>
+            <div style="font-size: 0.8rem; color: var(--success); font-weight: 600;">Optimal for Tomato</div>
+          </div>
+          <div style="background: #F8FAF9; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 4px;">Active Crop Batches</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--dark-text);">3 Batches</div>
+            <div style="font-size: 0.8rem; color: var(--body-text);">Tomato, Ragi, Chilli</div>
+          </div>
+          <div style="background: #F8FAF9; padding: 16px; border-radius: 8px; border: 1px solid var(--border);">
+            <div style="font-weight: 700; margin-bottom: 4px;">Harvest Ready for Sale</div>
+            <div style="font-size: 1.6rem; font-weight: 800; color: var(--secondary);">12 Quintals</div>
+            <div style="font-size: 0.8rem; color: var(--body-text);">Expected revenue: ₹33,600</div>
+          </div>
         </div>
-        <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem; color: var(--muted);">
-          <span>5% Agricultural GST (CGST+SGST):</span>
-          <span>₹92.50</span>
+      </div>
+    </div>
+
+    <!-- Buyer Portal Specific View -->
+    <div id="buyerView" style="display: none;">
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+        <h3 style="margin-bottom: 12px; color: var(--primary);">🛒 Buyer Wholesale Procurement Portal</h3>
+        <p style="color: var(--body-text); margin-bottom: 20px;">Browse farm-gate listings, submit wholesale bids, track dispatch logistics, and manage digital invoices.</p>
+        <div style="background: var(--primary-light); padding: 16px; border-radius: 8px; color: var(--primary); font-weight: 600;">
+          Direct connection to 100+ verified Farmer Producer Organizations (FPOs).
         </div>
-        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1.05rem; border-top: 1px dashed var(--border); padding-top: 8px;">
-          <span>Total Payable:</span>
-          <span style="color: var(--primary);">₹1,942.50</span>
+      </div>
+    </div>
+
+    <!-- Seller Merchant Specific View -->
+    <div id="sellerView" style="display: none;">
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+        <h3 style="margin-bottom: 12px; color: var(--primary);">🏪 Agri-Merchant Inventory & Order Manager</h3>
+        <p style="color: var(--body-text); margin-bottom: 20px;">Manage certified agri-input inventory, process seed orders, fulfill deliveries, and view earnings.</p>
+      </div>
+    </div>
+
+    <!-- Admin Console Specific View -->
+    <div id="adminView" style="display: none;">
+      <div style="background: white; border: 1px solid var(--border); border-radius: var(--radius); padding: 24px;">
+        <h3 style="margin-bottom: 12px; color: #DC2626;">🛡️ Platform Governance & Oversight Console</h3>
+        <p style="color: var(--body-text); margin-bottom: 20px;">Platform KYC verification, audit trail logs, security rate limits, and dispute escrow management.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sign In Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModals()">✕</button>
+      <h2 class="modal-title">Sign In to FarmConnect</h2>
+      <p class="modal-sub">Access your authenticated role dashboard</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Phone or Email</label>
+          <input type="text" class="form-control" id="loginIdentifier" placeholder="e.g. 9845012345 or farmer@farmconnect.org" required>
         </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-submit" id="loginBtn">Sign In</button>
+      </form>
+
+      <div style="margin-top: 16px; text-align: center; font-size: 0.85rem;">
+        New to FarmConnect? <a href="javascript:void(0)" onclick="openRegisterModal()" style="color: var(--primary); font-weight: 700;">Create Account</a>
       </div>
 
-      <div style="font-weight: 700; margin-bottom: 8px; font-size: 0.9rem;">Select Payment Process:</div>
-      <div class="payment-options">
-        <button class="pay-btn selected" onclick="selectPayMethod('COD', this)">💵 Cash on Delivery (COD)</button>
-        <button class="pay-btn" onclick="selectPayMethod('UPI', this)">📱 UPI / PhonePe</button>
-        <button class="pay-btn" onclick="selectPayMethod('CARD', this)">💳 Debit / Credit Card</button>
-        <button class="pay-btn" onclick="selectPayMethod('NETBANKING', this)">🏦 Net Banking</button>
+      <div class="trust-ssl">
+        🔒 256-Bit SSL Encrypted & Role-Isolated Authentication
+      </div>
+    </div>
+  </div>
+
+  <!-- Register Modal -->
+  <div class="modal-overlay" id="registerModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModals()">✕</button>
+      <h2 class="modal-title">Create FarmConnect Account</h2>
+      <p class="modal-sub">Register as a Farmer, Buyer, or Input Seller</p>
+      
+      <form onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">I am registering as</label>
+          <select class="form-control" id="regRole" required>
+            <option value="FARMER">👨‍🌾 Farmer (Cultivator / Producer)</option>
+            <option value="BUYER">🛒 Buyer (Trader / Mandi Merchant / FPO)</option>
+            <option value="SELLER">🏪 Agri-Input Seller (Seeds / Tools / Fertilizers)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-control" id="regName" placeholder="e.g. Ramesh Kumar" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mobile Number</label>
+          <input type="tel" class="form-control" id="regPhone" placeholder="10-digit Indian phone" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email (Optional)</label>
+          <input type="email" class="form-control" id="regEmail" placeholder="yourname@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" class="form-control" id="regPassword" placeholder="Minimum 6 characters" required>
+        </div>
+        <button type="submit" class="btn-submit" id="regBtn">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Cart & Checkout Modal -->
+  <div class="modal-overlay" id="cartModal">
+    <div class="modal-box" style="max-width: 500px;">
+      <button class="modal-close" onclick="closeModals()">✕</button>
+      <h2 class="modal-title">Your Shopping Cart</h2>
+      <p class="modal-sub">Review items and proceed to secure checkout</p>
+      
+      <div id="cartItemsList" style="margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+        <p style="color: var(--body-text); font-size: 0.9rem;">Your cart is empty.</p>
       </div>
 
-      <div id="methodDetails" style="background: #f1f5f9; padding: 12px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px;">
-        <strong>💵 Cash on Delivery (COD) Selected:</strong><br>
-        • Delivery Verification OTP: <strong>4829</strong><br>
-        • Pay in cash or UPI at the farm gate upon delivery.
+      <div style="border-top: 1px solid var(--border); padding-top: 16px; margin-bottom: 16px; display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem;">
+        <span>Total:</span>
+        <span id="cartTotalDisplay">₹0</span>
       </div>
 
-      <button class="btn btn-primary" onclick="confirmPayment()">
-        ✅ Confirm & Place Order (₹1,942.50)
+      <button class="btn-submit" onclick="proceedToCheckout()" id="checkoutBtn" style="display: none;">
+        Proceed to Secure Checkout 🔒
       </button>
     </div>
   </div>
 
-  <!-- Toast Notification -->
-  <div class="toast" id="toast"></div>
+  <!-- Toast -->
+  <div class="toast-msg" id="toast"></div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col">
+        <h3>🌱 FarmConnect</h3>
+        <p>Your complete agricultural platform for farm inputs, crop trading, market intelligence and smart farming assistance across India.</p>
+      </div>
+      <div class="footer-col">
+        <h3>Marketplace</h3>
+        <ul>
+          <li><a href="#catalogSection">Seeds & Grains</a></li>
+          <li><a href="#catalogSection">Fertilizers & Bio-Inputs</a></li>
+          <li><a href="#catalogSection">Irrigation & Drip Kits</a></li>
+          <li><a href="#catalogSection">Agricultural Machinery</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Smart Farming</h3>
+        <ul>
+          <li><a href="#mandiSection">Live Mandi Prices</a></li>
+          <li><a href="tel:18001801551">24x7 Kisan Helpline</a></li>
+          <li><a href="javascript:void(0)" onclick="openLoginModal()">Soil Moisture Dashboard</a></li>
+          <li><a href="javascript:void(0)" onclick="openLoginModal()">AI Crop Doctor</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h3>Governance & Trust</h3>
+        <ul>
+          <li><a href="javascript:void(0)">Verified Merchant Policy</a></li>
+          <li><a href="javascript:void(0)">Direct Farmer Escrow</a></li>
+          <li><a href="javascript:void(0)">Privacy Policy</a></li>
+          <li><a href="javascript:void(0)">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>© 2026 FarmConnect Agricultural OS. All rights reserved.</div>
+      <div>Empowering Indian Farmers & Agricultural Trade · Secure 256-bit SSL</div>
+    </div>
+  </footer>
 
   <script>
-    let currentRole = 'FARMER';
-    let currentLang = 'en';
-    let selectedMethod = 'COD';
-    let isPumpOn = true;
+    // In-memory application state
+    let currentUser = null;
+    let cart = [];
 
-    const translations = {
-      en: {
-        greeting: "Namaskara, Ramesh Kumar! 🌾",
-        sub: "Welcome to your FarmConnect dashboard. Real-time soil monitoring, APMC mandi arrivals, and 24x7 expert assistance are active.",
-        soil: "🌱 Smart Soil & Telemetry",
-        moisture: "Soil Moisture",
-        temp: "Canopy Temp",
-        humidity: "Air Humidity",
-        pumpBtn: "Toggle Drip Irrigation Pump",
-        kisan: "📞 Kisan 24x7 Assistance",
-        callBtn: "Call Kisan Center: 1800-180-1551",
-        waBtn: "WhatsApp KVK Specialist",
-        mandi: "📊 Live Mandi Rates (APMC)",
-        cart: "🛒 Farm Inputs & Checkout",
-        checkoutBtn: "Proceed to Checkout (COD, UPI, Card)",
-      },
-      kn: {
-        greeting: "ನಮಸ್ಕಾರ, ರಮೇಶ್ ಕುಮಾರ್! 🌾",
-        sub: "ಫಾರ್ಮ್‌ಕನೆಕ್ಟ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್‌ಗೆ ಸುಸ್ವಾಗತ. ಲೈವ್ ಮಣ್ಣಿನ ತೇವಾಂಶ ಮತ್ತು 24x7 ಕೃಷಿ ಸಹಾಯವಾಣಿ ಲಭ್ಯವಿದೆ.",
-        soil: "🌱 ಮಣ್ಣಿನ ಆರೋಗ್ಯ ಮತ್ತು ಐಒಟಿ",
-        moisture: "ಮಣ್ಣಿನ ತೇವಾಂಶ",
-        temp: "ತಾಪಮಾನ",
-        humidity: "ಗಾಳಿಯ ಆರ್ದ್ರತೆ",
-        pumpBtn: "ಹನಿ ನೀರಾವರಿ ಪಂಪ್ ಬದಲಿಸಿ",
-        kisan: "📞 ಕಿಸಾನ್ 24x7 ಸಹಾಯವಾಣಿ",
-        callBtn: "ಕಿಸಾನ್ ಕೇಂದ್ರಕ್ಕೆ ಕರೆ: 1800-180-1551",
-        waBtn: "ವಾಟ್ಸಾಪ್ ಕೆವಿಕೆ ತಜ್ಞರು",
-        mandi: "📊 ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು",
-        cart: "🛒 ಕೃಷಿ ಪರಿಕರಗಳ ಖರೀದಿ",
-        checkoutBtn: "ಖರೀದಿ ಪೂರ್ಣಗೊಳಿಸಿ (COD, UPI)",
-      },
-      hi: {
-        greeting: "नमस्ते, रमेश कुमार! 🌾",
-        sub: "फार्मकनेक्ट डैशबोर्ड में आपका स्वागत है। रीयल-टाइम मिट्टी की नमी और किसान हेल्पलाइन सक्रिय है।",
-        soil: "🌱 मिट्टी की सेहत और आईओटी",
-        moisture: "मिट्टी की नमी",
-        temp: "तापमान",
-        humidity: "हवा की नमी",
-        pumpBtn: "ड्रिप सिंचाई पंप टॉगल करें",
-        kisan: "📞 किसान 24x7 सहायता",
-        callBtn: "किसान कॉल सेंटर: 1800-180-1551",
-        waBtn: "व्हाट्सएप विशेषज्ञ सहायता",
-        mandi: "📊 लाइव मंडी भाव (एपीएमसी)",
-        cart: "🛒 कृषि इनपुट व चेकआउट",
-        checkoutBtn: "चेकआउट करें (COD, UPI, कार्ड)",
-      }
-    };
-
-    function switchLanguage(lang) {
-      currentLang = lang;
-      const t = translations[lang] || translations.en;
-      document.getElementById('hero-greeting').innerText = t.greeting;
-      document.getElementById('hero-sub').innerText = t.sub;
-      document.getElementById('title-soil').innerText = t.soil;
-      document.getElementById('lbl-moisture').innerText = t.moisture;
-      document.getElementById('lbl-temp').innerText = t.temp;
-      document.getElementById('lbl-humidity').innerText = t.humidity;
-      document.getElementById('btn-pump').innerText = t.pumpBtn;
-      document.getElementById('title-kisan').innerText = t.kisan;
-      document.getElementById('btn-call').innerText = t.callBtn;
-      document.getElementById('btn-whatsapp').innerText = t.waBtn;
-      document.getElementById('title-mandi').innerText = t.mandi;
-      document.getElementById('title-cart').innerText = t.cart;
-      document.getElementById('btn-checkout').innerText = t.checkoutBtn;
-      showToast('🌐 Language switched to ' + (lang === 'kn' ? 'ಕನ್ನಡ' : lang === 'hi' ? 'हिन्दी' : 'English'));
+    // Navigation helpers
+    function goHome() {
+      document.getElementById('publicView').style.display = 'block';
+      document.getElementById('authDashboard').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function switchRole(role, btn) {
-      document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentRole = role;
-      if (role === 'FARMER') {
-        document.getElementById('hero-greeting').innerText = "Namaskara, Ramesh Kumar! 🌾";
-        document.getElementById('hero-sub').innerText = "Farmer Dashboard: 4.5 Acres (Ragi & Tomato) in Mandya, Karnataka.";
-      } else if (role === 'BUYER') {
-        document.getElementById('hero-greeting').innerText = "Welcome, Kiran (AgroTech Foods) 🛒";
-        document.getElementById('hero-sub').innerText = "Buyer Procurement Portal: Direct farm gate verified produce orders.";
-      } else if (role === 'SELLER') {
-        document.getElementById('hero-greeting').innerText = "Welcome, Cauvery Agro Inputs 🏪";
-        document.getElementById('hero-sub').innerText = "Seller Cockpit: Inventory, seed stock, and fertilizer distribution.";
-      } else {
-        document.getElementById('hero-greeting').innerText = "FarmConnect Governance Admin 🛡️";
-        document.getElementById('hero-sub').innerText = "Platform Operations: APMC Price sync, KYC validations & dispute logs.";
-      }
-      showToast('Switched view to ' + role);
-    }
-
-    function togglePump() {
-      isPumpOn = !isPumpOn;
-      const badge = document.getElementById('pumpStatusBadge');
-      if (isPumpOn) {
-        badge.innerText = 'PUMP ACTIVE';
-        badge.style.background = '#dcfce7';
-        badge.style.color = '#15803d';
-        showToast('⚡ Drip Irrigation Motor Pump Started');
-      } else {
-        badge.innerText = 'PUMP OFF';
-        badge.style.background = '#fee2e2';
-        badge.style.color = '#dc2626';
-        showToast('🛑 Drip Irrigation Motor Pump Stopped');
-      }
-    }
-
-    function openCheckoutModal() {
-      document.getElementById('checkoutModal').style.display = 'flex';
-    }
-
-    function closeCheckoutModal() {
-      document.getElementById('checkoutModal').style.display = 'none';
-    }
-
-    function selectPayMethod(method, btn) {
-      selectedMethod = method;
-      document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      const box = document.getElementById('methodDetails');
-      if (method === 'COD') {
-        box.innerHTML = '<strong>💵 Cash on Delivery (COD) Selected:</strong><br>• Delivery Verification OTP: <strong>4829</strong><br>• Farm-gate weighing verification before cash settlement.';
-      } else if (method === 'UPI') {
-        box.innerHTML = '<strong>📱 UPI Instant Settlement:</strong><br>• Official VPA: <code>farmconnect@icici</code><br>• PhonePe, Google Pay & Paytm enabled with zero transaction fees.';
-      } else if (method === 'CARD') {
-        box.innerHTML = '<strong>💳 Credit / Debit Card:</strong><br>• Accepts RuPay, Visa, Mastercard<br>• 128-bit Bank Grade Encrypted 3D Secure checkout.';
-      } else {
-        box.innerHTML = '<strong>🏦 Net Banking Selected:</strong><br>• Supports SBI, Canara Bank, HDFC, ICICI, Axis Bank, and PNB.';
-      }
-    }
-
-    function confirmPayment() {
-      closeCheckoutModal();
-      showToast('🎉 Order Placed Successfully! Payment Method: ' + selectedMethod + ' (GST Invoice Generated)');
+    function scrollToSection(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
 
     function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.innerText = msg;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 3000);
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
-    // Auto-fetch live telemetry from API
-    setInterval(() => {
-      fetch('/api/live/telemetry')
-        .then(r => r.json())
-        .then(res => {
-          if (res.data) {
-            document.getElementById('soilVal').innerText = res.data.soil_moisture_percent + '%';
-            document.getElementById('soilProgress').style.width = res.data.soil_moisture_percent + '%';
-            document.getElementById('tempVal').innerText = res.data.canopy_temperature_c + '°C';
-            document.getElementById('humVal').innerText = res.data.air_humidity_percent + '%';
-          }
-        }).catch(() => {});
-    }, 15000);
+    function showHelplineToast() {
+      showToast("📞 Kisan Call Center: Dial 1800-180-1551 (Toll Free)");
+    }
+
+    // Modals
+    function closeModals() {
+      document.getElementById('loginModal').style.display = 'none';
+      document.getElementById('registerModal').style.display = 'none';
+      document.getElementById('cartModal').style.display = 'none';
+    }
+
+    function openLoginModal() {
+      closeModals();
+      document.getElementById('loginModal').style.display = 'flex';
+    }
+
+    function openRegisterModal() {
+      closeModals();
+      document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    function openCart() {
+      closeModals();
+      renderCart();
+      document.getElementById('cartModal').style.display = 'flex';
+    }
+
+    // Cart Management
+    function addToCart(title, price) {
+      cart.push({ title, price, id: Date.now() });
+      updateCartBadge();
+      showToast('✓ Added "' + title + '" to cart!');
+    }
+
+    function updateCartBadge() {
+      document.getElementById('cartCount').textContent = cart.length;
+      document.getElementById('cartCountUser').textContent = cart.length;
+    }
+
+    function renderCart() {
+      const list = document.getElementById('cartItemsList');
+      const checkoutBtn = document.getElementById('checkoutBtn');
+      const totalDisplay = document.getElementById('cartTotalDisplay');
+
+      if (cart.length === 0) {
+        list.innerHTML = '<p style="color: var(--body-text); font-size: 0.9rem;">Your cart is empty.</p>';
+        checkoutBtn.style.display = 'none';
+        totalDisplay.textContent = '₹0';
+        return;
+      }
+
+      let total = 0;
+      let html = '';
+      cart.forEach((item, idx) => {
+        total += item.price;
+        html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;">' +
+                '<div><strong>' + item.title + '</strong></div>' +
+                '<div>₹' + item.price + ' <button onclick="removeFromCart(' + idx + ')" style="background:none; border:none; color: #DC2626; cursor:pointer; margin-left: 8px;">✕</button></div>' +
+                '</div>';
+      });
+
+      list.innerHTML = html;
+      totalDisplay.textContent = '₹' + total;
+      checkoutBtn.style.display = 'block';
+    }
+
+    function removeFromCart(idx) {
+      cart.splice(idx, 1);
+      updateCartBadge();
+      renderCart();
+    }
+
+    function proceedToCheckout() {
+      showToast("Order initiated! Redirecting to secure checkout gateway...");
+      setTimeout(() => {
+        closeModals();
+        cart = [];
+        updateCartBadge();
+        showToast("✓ Order successfully placed! Confirmation SMS sent.");
+      }, 1500);
+    }
+
+    function filterCategory(cat) {
+      showToast("Filtering products by category: " + cat);
+      scrollToSection('catalogSection');
+    }
+
+    function searchCatalog() {
+      const q = document.getElementById('searchInput').value.trim();
+      if (!q) return;
+      showToast('Searching products for: "' + q + '"');
+      scrollToSection('catalogSection');
+    }
+
+    // Authentication
+    async function handleLogin(e) {
+      e.preventDefault();
+      const identifier = document.getElementById('loginIdentifier').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
+
+      btn.textContent = 'Signing in...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier, password })
+        });
+        const data = await res.json();
+
+        if (data.success && data.user) {
+          currentUser = data.user;
+          closeModals();
+          renderAuthenticatedDashboard();
+          showToast('Welcome, ' + (currentUser.name || 'User') + '!');
+        } else {
+          alert(data.message || 'Login failed. Please check credentials.');
+        }
+      } catch (err) {
+        alert('Connection error. Please try again.');
+      } finally {
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const role = document.getElementById('regRole').value;
+      const name = document.getElementById('regName').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+      const btn = document.getElementById('regBtn');
+
+      btn.textContent = 'Creating account...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role, name, phone, email, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('Account created successfully! Please sign in.');
+          openLoginModal();
+        } else {
+          alert(data.message || 'Registration failed.');
+        }
+      } catch (err) {
+        alert('Connection error. Please try again.');
+      } finally {
+        btn.textContent = 'Create Account';
+        btn.disabled = false;
+      }
+    }
+
+    function renderAuthenticatedDashboard() {
+      if (!currentUser) return;
+
+      document.getElementById('publicView').style.display = 'none';
+      document.getElementById('guestHeaderActions').style.display = 'none';
+      document.getElementById('userHeaderActions').style.display = 'flex';
+
+      const dash = document.getElementById('authDashboard');
+      dash.style.display = 'block';
+
+      document.getElementById('dashWelcome').textContent = 'Welcome, ' + (currentUser.name || 'User');
+      document.getElementById('dashEmail').textContent = currentUser.email || currentUser.phone || 'Verified User';
+      document.getElementById('dashRoleBadge').textContent = currentUser.role;
+
+      // Hide all role views first
+      document.getElementById('farmerView').style.display = 'none';
+      document.getElementById('buyerView').style.display = 'none';
+      document.getElementById('sellerView').style.display = 'none';
+      document.getElementById('adminView').style.display = 'none';
+
+      // Show ONLY the specific role view
+      if (currentUser.role === 'FARMER') {
+        document.getElementById('farmerView').style.display = 'block';
+      } else if (currentUser.role === 'BUYER') {
+        document.getElementById('buyerView').style.display = 'block';
+      } else if (currentUser.role === 'SELLER') {
+        document.getElementById('sellerView').style.display = 'block';
+      } else if (currentUser.role === 'ADMIN') {
+        document.getElementById('adminView').style.display = 'block';
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('authDashboard').style.display = 'none';
+      document.getElementById('userHeaderActions').style.display = 'none';
+      document.getElementById('guestHeaderActions').style.display = 'flex';
+      document.getElementById('publicView').style.display = 'block';
+      showToast('You have been signed out.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>`;
 }
 
-module.exports = { renderFarmConnectApp };
+module.exports = {
+  renderFarmConnectApp,
+};

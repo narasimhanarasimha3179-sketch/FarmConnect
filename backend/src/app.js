@@ -152,14 +152,16 @@ app.use('/api/docs', docsRoutes);
 app.use('/api/live', liveRoutes);
 
 // SPA browser navigation fallback for frontend screens
-if (webDistPath) {
-  app.get('*', (req, res, next) => {
-    if (req.originalUrl.startsWith('/api')) {
-      return next();
-    }
-    res.sendFile(path.join(webDistPath, 'index.html'));
-  });
-}
+app.get('*', (req, res, next) => {
+  if (req.originalUrl.startsWith('/api')) {
+    return next();
+  }
+  if (webDistPath && fs.existsSync(path.join(webDistPath, 'index.html'))) {
+    return res.sendFile(path.join(webDistPath, 'index.html'));
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.status(200).send(renderFarmConnectApp());
+});
 
 // 404 Handler
 app.use((req, res) => {
