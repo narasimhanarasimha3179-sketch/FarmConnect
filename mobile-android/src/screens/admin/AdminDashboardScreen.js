@@ -13,7 +13,7 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import { colors, typography, spacing } from '../../theme';
+import { colors, typography, spacing, borderRadius } from '../../theme';
 import { Card, Badge, Button, Header, LoadingIndicator, EmptyState } from '../../components/common';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
