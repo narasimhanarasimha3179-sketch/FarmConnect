@@ -457,6 +457,24 @@ function renderFarmConnectApp() {
     }
     .btn-add-cart:hover { background: var(--primary-dark); }
 
+    /* Crop Marketplace Section */
+    .crop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .crop-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow-sm);
+    }
+    .crop-title { font-size: 1.05rem; font-weight: 800; color: var(--dark-text); margin-bottom: 4px; }
+    .crop-loc { font-size: 0.8rem; color: var(--body-text); margin-bottom: 8px; }
+    .crop-meta { display: flex; justify-content: space-between; font-weight: 700; color: var(--primary); font-size: 0.95rem; margin-bottom: 12px; }
+
     /* Live Mandi Ticker */
     .mandi-card {
       background: white;
@@ -488,6 +506,26 @@ function renderFarmConnectApp() {
     .mandi-rate { font-weight: 800; font-size: 1.1rem; color: var(--primary); }
     .mandi-market { font-size: 0.8rem; color: var(--body-text); margin-bottom: 8px; }
     .mandi-status { font-size: 0.75rem; font-weight: 700; color: var(--success); }
+
+    /* Smart Farming Grid */
+    .smart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+    .smart-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .smart-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .smart-card h4 { font-size: 1rem; font-weight: 700; margin: 8px 0; color: var(--dark-text); }
+    .smart-card p { font-size: 0.8rem; color: var(--body-text); line-height: 1.4; }
 
     /* Helpline Banner */
     .helpline {
@@ -732,15 +770,16 @@ function renderFarmConnectApp() {
     </div>
   </header>
 
-  <!-- Subnav Ribbon -->
+  <!-- Subnav Ribbon (Header Links from Task 2) -->
   <nav class="subnav">
     <div class="subnav-container">
       <div class="subnav-item active" onclick="goHome()">🏠 Home</div>
-      <div class="subnav-item" onclick="scrollToSection('catalogSection')">🏪 Shop Farm Inputs</div>
-      <div class="subnav-item" onclick="scrollToSection('categoriesSection')">🌱 Categories</div>
-      <div class="subnav-item" onclick="scrollToSection('mandiSection')">📊 Mandi Prices</div>
-      <div class="subnav-item" onclick="showHelplineToast()">📞 Kisan Advisory</div>
-      <div class="subnav-item" onclick="openLoginModal()">🛡️ Portal Login</div>
+      <div class="subnav-item" onclick="scrollToSection('catalogSection')">🏪 Shop</div>
+      <div class="subnav-item" onclick="scrollToSection('cropMarketSection')">🌾 Crop Marketplace</div>
+      <div class="subnav-item" onclick="scrollToSection('mandiSection')">📊 Market Prices</div>
+      <div class="subnav-item" onclick="scrollToSection('smartFarmingSection')">⛅ Weather</div>
+      <div class="subnav-item" onclick="scrollToSection('smartFarmingSection')">🚜 Smart Farming</div>
+      <div class="subnav-item" onclick="openAboutModal()">ℹ️ About</div>
     </div>
   </nav>
 
@@ -752,10 +791,10 @@ function renderFarmConnectApp() {
         <div class="hero-content">
           <div class="hero-pill">INDIA'S TRUSTED AGRICULTURAL NETWORK</div>
           <h1 class="hero-title">Grow Smarter.<br>Trade Better.<br>Farm Better.</h1>
-          <p class="hero-desc">Your complete agricultural platform for authentic farm inputs, APMC crop trading, live mandi market intelligence, and smart farming assistance.</p>
+          <p class="hero-desc">One platform for agricultural shopping, crop trading, market intelligence and smart farming.</p>
           <div class="hero-btns">
             <button class="btn-hero-primary" onclick="scrollToSection('catalogSection')">Explore Marketplace →</button>
-            <button class="btn-hero-secondary" onclick="openRegisterModal()">Join as Farmer / Buyer</button>
+            <button class="btn-hero-secondary" onclick="scrollToSection('smartFarmingSection')">Explore Smart Farming 🚜</button>
           </div>
         </div>
         <div class="hero-graphic">🌾</div>
@@ -862,11 +901,10 @@ function renderFarmConnectApp() {
       <!-- Featured Storefront Catalog -->
       <section id="catalogSection">
         <div class="section-head">
-          <h2>🛒 Featured Farm Inputs & Machinery</h2>
+          <h2>🛒 Featured Products from Database</h2>
           <span style="font-size: 0.85rem; color: var(--body-text);">Dispatched by Certified Agri-Merchants</span>
         </div>
         <div class="products-grid" id="productsGrid">
-          <!-- Populated dynamically via API -->
           <div class="product-card">
             <div class="product-thumb">🌱<span class="product-tag">BESTSELLER</span></div>
             <div class="product-body">
@@ -921,6 +959,43 @@ function renderFarmConnectApp() {
         </div>
       </section>
 
+      <!-- Farmer Crop Marketplace Section -->
+      <section id="cropMarketSection">
+        <div class="section-head">
+          <h2>🌾 Farmer Crop Marketplace</h2>
+          <span style="font-size: 0.85rem; color: var(--body-text);">Direct farm-gate wholesale produce lots</span>
+        </div>
+        <div class="crop-grid">
+          <div class="crop-card">
+            <div class="crop-title">Sugarcane (Co 86032)</div>
+            <div class="crop-loc">📍 Mandya APMC Market Yard · Grade A</div>
+            <div class="crop-meta">
+              <span>Lot: 45 Quintals</span>
+              <span>₹3,200 / qtl</span>
+            </div>
+            <button class="btn-submit" style="margin-top:0; padding: 8px;" onclick="openLoginModal()">Submit Wholesale Bid ➔</button>
+          </div>
+          <div class="crop-card">
+            <div class="crop-title">Tomato Hybrid (Arka Rakshak)</div>
+            <div class="crop-loc">📍 Kolar APMC Yard · Grade A+</div>
+            <div class="crop-meta">
+              <span>Lot: 60 Crates (1500kg)</span>
+              <span>₹2,800 / qtl</span>
+            </div>
+            <button class="btn-submit" style="margin-top:0; padding: 8px;" onclick="openLoginModal()">Submit Wholesale Bid ➔</button>
+          </div>
+          <div class="crop-card">
+            <div class="crop-title">Ragi (Finger Millet - GPU 28)</div>
+            <div class="crop-loc">📍 Hassan APMC Market · Organic Certified</div>
+            <div class="crop-meta">
+              <span>Lot: 25 Quintals</span>
+              <span>₹4,290 / qtl</span>
+            </div>
+            <button class="btn-submit" style="margin-top:0; padding: 8px;" onclick="openLoginModal()">Submit Wholesale Bid ➔</button>
+          </div>
+        </div>
+      </section>
+
       <!-- Live Mandi Rates -->
       <section id="mandiSection" class="mandi-card">
         <div class="section-head" style="margin-bottom: 8px;">
@@ -960,6 +1035,36 @@ function renderFarmConnectApp() {
             </div>
             <div class="mandi-market">Raichur APMC Yard</div>
             <div class="mandi-status">● Steady trade</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Smart Agriculture Services -->
+      <section id="smartFarmingSection">
+        <div class="section-head">
+          <h2>🚜 Smart Agriculture Services</h2>
+          <span style="font-size: 0.85rem; color: var(--body-text);">AI Diagnostics, Soil Health & Schemes</span>
+        </div>
+        <div class="smart-grid">
+          <div class="smart-card" onclick="openLoginModal()">
+            <span style="font-size: 2.2rem;">🤖</span>
+            <h4>AI Crop Doctor & Vision</h4>
+            <p>Scan crop leaves to predict pest/fungal diseases with confidence percentage and certified remedies.</p>
+          </div>
+          <div class="smart-card" onclick="openLoginModal()">
+            <span style="font-size: 2.2rem;">🧪</span>
+            <h4>Soil Health & NPK Dosage</h4>
+            <p>Compute precise 50kg bags of Urea, DAP, and MOP tailored to your soil test results.</p>
+          </div>
+          <div class="smart-card" onclick="openLoginModal()">
+            <span style="font-size: 2.2rem;">⛅</span>
+            <h4>Weather Advisory Sync</h4>
+            <p>Hyper-local 7-day temperature, rain probability, and wind metrics from Open-Meteo.</p>
+          </div>
+          <div class="smart-card" onclick="openLoginModal()">
+            <span style="font-size: 2.2rem;">🏛️</span>
+            <h4>Government Schemes Hub</h4>
+            <p>Explore PM-KISAN, PMFBY crop insurance, and state micro-irrigation subsidies.</p>
           </div>
         </div>
       </section>
@@ -1111,6 +1216,21 @@ function renderFarmConnectApp() {
     </div>
   </div>
 
+  <!-- About Modal -->
+  <div class="modal-overlay" id="aboutModal">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModals()">✕</button>
+      <h2 class="modal-title">About FarmConnect</h2>
+      <p class="modal-sub">Smart Agriculture Products & Market Assistance</p>
+      <p style="font-size: 0.9rem; color: var(--body-text); line-height: 1.6; margin-bottom: 20px;">
+        FarmConnect is an integrated agricultural platform designed to empower Indian farmers, wholesale buyers, and certified agri-merchants.
+        <br><br>
+        Our mission is to eliminate unfair brokerage, provide direct transparent market prices, deliver scientific soil and pest guidance, and streamline farm input procurement across India.
+      </p>
+      <button class="btn-submit" onclick="closeModals()">Close</button>
+    </div>
+  </div>
+
   <!-- Cart & Checkout Modal -->
   <div class="modal-overlay" id="cartModal">
     <div class="modal-box" style="max-width: 500px;">
@@ -1141,7 +1261,7 @@ function renderFarmConnectApp() {
     <div class="footer-container">
       <div class="footer-col">
         <h3>🌱 FarmConnect</h3>
-        <p>Your complete agricultural platform for farm inputs, crop trading, market intelligence and smart farming assistance across India.</p>
+        <p>One platform for agricultural shopping, crop trading, market intelligence and smart farming across India.</p>
       </div>
       <div class="footer-col">
         <h3>Marketplace</h3>
@@ -1162,10 +1282,10 @@ function renderFarmConnectApp() {
         </ul>
       </div>
       <div class="footer-col">
-        <h3>Governance & Trust</h3>
+        <h3>Support & Legal</h3>
         <ul>
-          <li><a href="javascript:void(0)">Verified Merchant Policy</a></li>
-          <li><a href="javascript:void(0)">Direct Farmer Escrow</a></li>
+          <li><a href="tel:18001801551">Kisan Helpline: 1800-180-1551</a></li>
+          <li><a href="javascript:void(0)" onclick="openAboutModal()">About FarmConnect</a></li>
           <li><a href="javascript:void(0)">Privacy Policy</a></li>
           <li><a href="javascript:void(0)">Terms of Service</a></li>
         </ul>
@@ -1201,15 +1321,12 @@ function renderFarmConnectApp() {
       setTimeout(() => { toast.style.display = 'none'; }, 3000);
     }
 
-    function showHelplineToast() {
-      showToast("📞 Kisan Call Center: Dial 1800-180-1551 (Toll Free)");
-    }
-
     // Modals
     function closeModals() {
       document.getElementById('loginModal').style.display = 'none';
       document.getElementById('registerModal').style.display = 'none';
       document.getElementById('cartModal').style.display = 'none';
+      document.getElementById('aboutModal').style.display = 'none';
     }
 
     function openLoginModal() {
@@ -1220,6 +1337,11 @@ function renderFarmConnectApp() {
     function openRegisterModal() {
       closeModals();
       document.getElementById('registerModal').style.display = 'flex';
+    }
+
+    function openAboutModal() {
+      closeModals();
+      document.getElementById('aboutModal').style.display = 'flex';
     }
 
     function openCart() {
@@ -1295,7 +1417,7 @@ function renderFarmConnectApp() {
       scrollToSection('catalogSection');
     }
 
-    // Authentication
+    // Authentication & Role Routing
     async function handleLogin(e) {
       e.preventDefault();
       const identifier = document.getElementById('loginIdentifier').value.trim();
@@ -1383,7 +1505,7 @@ function renderFarmConnectApp() {
       document.getElementById('sellerView').style.display = 'none';
       document.getElementById('adminView').style.display = 'none';
 
-      // Show ONLY the specific role view
+      // Route strictly to the user authenticated role
       if (currentUser.role === 'FARMER') {
         document.getElementById('farmerView').style.display = 'block';
       } else if (currentUser.role === 'BUYER') {
