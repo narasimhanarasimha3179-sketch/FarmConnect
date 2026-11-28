@@ -4,6 +4,8 @@
 import env from '../config/env';
 import logger from './logger';
 
+const CLOUD_FALLBACK_URL = 'https://farmconnect-api-ibr3.onrender.com/api';
+
 class ApiClient {
   constructor() {
     this.baseURL = env.API_BASE_URL;
@@ -21,7 +23,7 @@ class ApiClient {
     logger.debug('ApiClient', 'Auth token cleared');
   }
 
-  async request(endpoint, options = {}) {
+  async request(endpoint, options = {}, isRetry = false) {
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
     const method = options.method || 'GET';
     const headers = {
@@ -58,7 +60,14 @@ class ApiClient {
         data = await response.text();
       }
 
+      // If local server returned HTML 404 (e.g. port conflict), auto-fallback to Cloud API
       if (!response.ok) {
+        if (!isRetry && (this.baseURL.includes('localhost') || this.baseURL.includes('127.0.0.1')) && !endpoint.startsWith('http')) {
+          logger.warn('ApiClient', `Local request ${url} returned ${response.status}. Switching to cloud API fallback.`);
+          this.baseURL = CLOUD_FALLBACK_URL;
+          return this.request(endpoint, options, true);
+        }
+
         const errorPayload = {
           success: false,
           status: response.status,
@@ -78,6 +87,14 @@ class ApiClient {
       };
     } catch (err) {
       clearTimeout(timer);
+
+      // Auto-fallback to Cloud API on connection failure if using localhost
+      if (!isRetry && (this.baseURL.includes('localhost') || this.baseURL.includes('127.0.0.1')) && !endpoint.startsWith('http')) {
+        logger.warn('ApiClient', `Local request ${url} failed. Switching to cloud API fallback.`);
+        this.baseURL = CLOUD_FALLBACK_URL;
+        return this.request(endpoint, options, true);
+      }
+
       const isTimeout = err.name === 'AbortError';
       const normalizedError = {
         success: false,

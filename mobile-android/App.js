@@ -171,12 +171,32 @@ function FoundationShowcase({ onBackToAuth }) {
 
 // Master Application Routing Controller — FarmConnect 2.0
 function MainApp() {
-  const { isAuthenticated, role, user, logout } = useAuth();
+  const { isAuthenticated, role, user, logout, login } = useAuth();
   const { t } = useLanguage();
   const [publicView, setPublicView] = useState('home'); // 'home' | 'shop' | 'cropmarket' | 'mandi' | 'weather' | 'ai' | 'knowledge' | 'schemes' | 'login' | 'register' | 'forgot' | 'showcase'
   const [inProfile, setInProfile] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [cartCount, setCartCount] = useState(1);
+
+  // Instant 1-tap role switching for testing & interactive demo
+  const handleSelectRoleDemo = async (targetRole) => {
+    let id = '';
+    let pw = '';
+    if (targetRole === 'FARMER') {
+      id = 'ramesh.farmer@example.com';
+      pw = 'FarmerPassword123';
+    } else if (targetRole === 'BUYER') {
+      id = 'kiran.buyer@example.com';
+      pw = 'BuyerPassword123';
+    } else if (targetRole === 'SELLER') {
+      id = 'cauvery.seller@example.com';
+      pw = 'SellerPassword123';
+    } else if (targetRole === 'ADMIN') {
+      id = 'admin@farmconnect.org';
+      pw = 'AdminSuperPassword123';
+    }
+    await login(id, pw);
+  };
 
   // EXPERIENCE B: Authenticated Role-Based Application (Isolated by Role)
   if (isAuthenticated && user) {
@@ -211,12 +231,44 @@ function MainApp() {
         <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
         <View style={styles.authTopBar}>
           <View style={styles.authTopLeft}>
+            <TouchableOpacity style={styles.homeReturnBtn} onPress={logout}>
+              <Text style={styles.homeReturnBtnText}>🏠 {t('home')}</Text>
+            </TouchableOpacity>
             <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
             <Badge label={role} variant={role.toLowerCase()} size="sm" />
             <Text style={styles.authUserName} numberOfLines={1}>
               {user.name || 'Verified User'}
             </Text>
           </View>
+
+          {/* Quick Role Switcher Bar for Seamless Multi-Role Experience */}
+          <View style={styles.roleSwitcherRow}>
+            <TouchableOpacity
+              style={[styles.miniRoleBtn, role === 'FARMER' && styles.miniRoleActive]}
+              onPress={() => handleSelectRoleDemo('FARMER')}
+            >
+              <Text style={[styles.miniRoleText, role === 'FARMER' && styles.miniRoleActiveText]}>👨‍🌾 Farmer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.miniRoleBtn, role === 'BUYER' && styles.miniRoleActive]}
+              onPress={() => handleSelectRoleDemo('BUYER')}
+            >
+              <Text style={[styles.miniRoleText, role === 'BUYER' && styles.miniRoleActiveText]}>🛒 Buyer</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.miniRoleBtn, role === 'SELLER' && styles.miniRoleActive]}
+              onPress={() => handleSelectRoleDemo('SELLER')}
+            >
+              <Text style={[styles.miniRoleText, role === 'SELLER' && styles.miniRoleActiveText]}>🏪 Seller</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.miniRoleBtn, role === 'ADMIN' && styles.miniRoleActive]}
+              onPress={() => handleSelectRoleDemo('ADMIN')}
+            >
+              <Text style={[styles.miniRoleText, role === 'ADMIN' && styles.miniRoleActiveText]}>🛡️ Admin</Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.authTopRight}>
             <LanguageSelector compact />
             <TouchableOpacity
@@ -259,6 +311,7 @@ function MainApp() {
           onNavigateRegister={() => setPublicView('register')}
           onOpenCart={() => setShowCart(true)}
           cartCount={cartCount}
+          onSelectRoleDemo={handleSelectRoleDemo}
         />
       )}
 
@@ -516,5 +569,43 @@ const styles = StyleSheet.create({
     color: colors.primary,
     fontSize: 13,
     fontWeight: typography.weights.semiBold,
+  },
+  homeReturnBtn: {
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginRight: 4,
+  },
+  homeReturnBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+  },
+  roleSwitcherRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  miniRoleBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  miniRoleActive: {
+    backgroundColor: colors.accent,
+  },
+  miniRoleText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  miniRoleActiveText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
 });

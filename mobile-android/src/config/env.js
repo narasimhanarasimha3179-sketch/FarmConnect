@@ -8,13 +8,19 @@ const HOST_LAN_IP = '172.16.51.144';
 const CLOUD_API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://farmconnect-api-ibr3.onrender.com/api';
 
 const getDevBaseUrl = () => {
+  // If explicitly overridden via env var, use that
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
   // 1. Web browser environment
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined' && window.location && window.location.hostname) {
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      // If served directly from local backend server (port 5000)
+      if ((window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && window.location.port === '5000') {
         return `${window.location.protocol}//${window.location.hostname}:5000/api`;
       }
-      // Running deployed on cloud (Vercel, Render, Netlify) -> route to cloud API
+      // Running in Expo web dev server (port 8081) or hosted on cloud -> connect to live cloud backend
       return CLOUD_API_URL;
     }
     return CLOUD_API_URL;
@@ -29,7 +35,7 @@ const getDevBaseUrl = () => {
     }
   }
 
-  // 3. Fallback to live cloud backend or physical Wi-Fi IP for direct mobile access
+  // 3. Fallback to live cloud backend for direct mobile access
   return CLOUD_API_URL;
 };
 

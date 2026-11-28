@@ -131,6 +131,27 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
           style={styles.signInBtn}
         />
 
+        {/* Quick Role Access for Seamless Demo & Testing */}
+        <View style={styles.quickRoleBox}>
+          <Text style={styles.quickRoleLabel}>⚡ Quick 1-Tap Demo Role Access:</Text>
+          <View style={styles.quickRoleRow}>
+            <TouchableOpacity style={[styles.quickRoleBtn, { borderColor: colors.primary }]} onPress={() => fillRole('FARMER', true)}>
+              <Text style={styles.quickRoleBtnText}>👨‍🌾 Farmer (Ramesh)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickRoleBtn, { borderColor: '#0284c7' }]} onPress={() => fillRole('BUYER', true)}>
+              <Text style={styles.quickRoleBtnText}>🛒 Buyer (Kiran)</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.quickRoleRow}>
+            <TouchableOpacity style={[styles.quickRoleBtn, { borderColor: '#d97706' }]} onPress={() => fillRole('SELLER', true)}>
+              <Text style={styles.quickRoleBtnText}>🏪 Seller (Cauvery)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.quickRoleBtn, { borderColor: '#dc2626' }]} onPress={() => fillRole('ADMIN', true)}>
+              <Text style={styles.quickRoleBtnText}>🛡️ Super Admin</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {authError ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>⚠ {authError}</Text>
@@ -277,5 +298,39 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.textSecondary,
     fontWeight: typography.weights.medium,
+  },
+  quickRoleBox: {
+    backgroundColor: '#F8FAF9',
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  quickRoleLabel: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 6,
+  },
+  quickRoleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 6,
+  },
+  quickRoleBtn: {
+    flex: 1,
+    paddingVertical: 7,
+    paddingHorizontal: 8,
+    borderRadius: borderRadius.sm,
+    borderWidth: 1,
+    backgroundColor: '#ffffff',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickRoleBtnText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
 });
