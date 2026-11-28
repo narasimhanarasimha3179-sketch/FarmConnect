@@ -147,10 +147,9 @@ export default function RegisterScreen({ onNavigateLogin }) {
         </View>
         <View style={styles.roleTabs}>
           {[
-            { id: 'FARMER', label: '🌾 Farmer', color: colors.primaryLight },
+            { id: 'FARMER', label: '🌾 Farmer', color: colors.primary },
             { id: 'BUYER', label: '🛒 Buyer', color: colors.skyBlue },
             { id: 'SELLER', label: '🏪 Seller', color: colors.amber },
-            { id: 'ADMIN', label: '🛡 Admin', color: '#7e22ce' },
           ].map((item) => (
             <TouchableOpacity
               key={item.id}

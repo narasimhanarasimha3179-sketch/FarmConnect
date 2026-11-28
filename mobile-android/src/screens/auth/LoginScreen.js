@@ -138,61 +138,14 @@ export default function LoginScreen({ onNavigateRegister, onNavigateForgot }) {
         ) : null}
 
         <View style={styles.registerRow}>
-          <Text style={styles.registerPrompt}>Don't have an account? </Text>
+          <Text style={styles.registerPrompt}>New to FarmConnect? </Text>
           <TouchableOpacity onPress={onNavigateRegister} accessibilityRole="button">
-            <Text style={styles.registerLink}>Register here</Text>
+            <Text style={styles.registerLink}>Create your account</Text>
           </TouchableOpacity>
         </View>
-      </Card>
 
-      {/* Quick Role Fill Shortcuts for Instant Access */}
-      <Card style={styles.demoCard}>
-        <View style={styles.demoHeaderRow}>
-          <Text style={styles.demoTitle}>⚡ 1-Tap Quick Access (Verified SQLite Roles)</Text>
-        </View>
-        <Text style={styles.demoSubtitle}>
-          Tap "Enter" to immediately log into any verified account, or tap the chip to prefill credentials:
-        </Text>
-        <View style={styles.roleGrid}>
-          <View style={styles.roleTile}>
-            <TouchableOpacity onPress={() => fillRole('FARMER', false)}>
-              <Badge label="🌾 Farmer" variant="farmer" />
-              <Text style={styles.roleSub}>Ramesh Patil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('FARMER', true)}>
-              <Text style={styles.instantBtnText}>Enter ➔</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.roleTile}>
-            <TouchableOpacity onPress={() => fillRole('BUYER', false)}>
-              <Badge label="🛒 Buyer" variant="buyer" />
-              <Text style={styles.roleSub}>Kiran Wholesales</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('BUYER', true)}>
-              <Text style={styles.instantBtnText}>Enter ➔</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.roleTile}>
-            <TouchableOpacity onPress={() => fillRole('SELLER', false)}>
-              <Badge label="🏪 Seller" variant="seller" />
-              <Text style={styles.roleSub}>Cauvery Agri</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('SELLER', true)}>
-              <Text style={styles.instantBtnText}>Enter ➔</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.roleTile}>
-            <TouchableOpacity onPress={() => fillRole('ADMIN', false)}>
-              <Badge label="🛡 Admin" variant="admin" />
-              <Text style={styles.roleSub}>System Admin</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.instantBtn} onPress={() => fillRole('ADMIN', true)}>
-              <Text style={styles.instantBtnText}>Enter ➔</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.securityTrustRow}>
+          <Text style={styles.securityTrustText}>🔒 256-Bit SSL Encrypted Agricultural Network</Text>
         </View>
       </Card>
     </ScrollView>
@@ -313,9 +266,16 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: typography.weights.bold,
   },
-  demoHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  securityTrustRow: {
+    marginTop: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
     alignItems: 'center',
+  },
+  securityTrustText: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    fontWeight: typography.weights.medium,
   },
 });

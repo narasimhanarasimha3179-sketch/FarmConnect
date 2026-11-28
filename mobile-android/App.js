@@ -47,6 +47,17 @@ import SellerDashboardScreen from './src/screens/seller/SellerDashboardScreen';
 import AdminDashboardScreen from './src/screens/admin/AdminDashboardScreen';
 import ProfileScreen from './src/screens/common/ProfileScreen';
 
+// FarmConnect 2.0 Public Storefront & Discovery Screens
+import PublicHomeScreen from './src/screens/public/PublicHomeScreen';
+import ProductCatalogScreen from './src/screens/ecommerce/ProductCatalogScreen';
+import CropMarketplaceScreen from './src/screens/cropmarket/CropMarketplaceScreen';
+import MandiPriceScreen from './src/screens/mandi/MandiPriceScreen';
+import WeatherScreen from './src/screens/weather/WeatherScreen';
+import AiAssistantScreen from './src/screens/ai/AiAssistantScreen';
+import AgriScienceScreen from './src/screens/knowledge/AgriScienceScreen';
+import GovernmentSchemesScreen from './src/screens/schemes/GovernmentSchemesScreen';
+import CartModal from './src/screens/buyer/CartModal';
+
 // Phase 1 Foundation Showcase Component (Preserved & Accessible)
 function FoundationShowcase({ onBackToAuth }) {
   const { showSuccess, showError, showWarning, showInfo } = useNotification();
@@ -158,14 +169,16 @@ function FoundationShowcase({ onBackToAuth }) {
   );
 }
 
-// Master Application Routing Controller
+// Master Application Routing Controller — FarmConnect 2.0
 function MainApp() {
-  const { isAuthenticated, role, user } = useAuth();
+  const { isAuthenticated, role, user, logout } = useAuth();
   const { t } = useLanguage();
-  const [authView, setAuthView] = useState('login'); // 'login' | 'register' | 'forgot' | 'showcase'
+  const [publicView, setPublicView] = useState('home'); // 'home' | 'shop' | 'cropmarket' | 'mandi' | 'weather' | 'ai' | 'knowledge' | 'schemes' | 'login' | 'register' | 'forgot' | 'showcase'
   const [inProfile, setInProfile] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const [cartCount, setCartCount] = useState(1);
 
-  // If user is authenticated, route to their role dashboard
+  // EXPERIENCE B: Authenticated Role-Based Application (Isolated by Role)
   if (isAuthenticated && user) {
     let dashboardContent = null;
     if (inProfile) {
@@ -200,9 +213,25 @@ function MainApp() {
           <View style={styles.authTopLeft}>
             <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
             <Badge label={role} variant={role.toLowerCase()} size="sm" />
-            <Text style={{ fontSize: 9, color: '#86efac', fontWeight: 'bold', marginLeft: 4 }}>🟢 LIVE</Text>
+            <Text style={styles.authUserName} numberOfLines={1}>
+              {user.name || 'Verified User'}
+            </Text>
           </View>
-          <LanguageSelector compact />
+          <View style={styles.authTopRight}>
+            <LanguageSelector compact />
+            <TouchableOpacity
+              style={styles.profileNavBtn}
+              onPress={() => setInProfile(!inProfile)}
+            >
+              <Text style={styles.profileNavBtnText}>{inProfile ? 'Dashboard' : '👤 Profile'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.signOutBtn}
+              onPress={logout}
+            >
+              <Text style={styles.signOutBtnText}>Sign Out ⎋</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={{ flex: 1 }}>
           {dashboardContent}
@@ -211,39 +240,121 @@ function MainApp() {
     );
   }
 
-  // If user is viewing the Phase 1 Foundation Showcase
-  if (authView === 'showcase') {
-    return <FoundationShowcase onBackToAuth={() => setAuthView('login')} />;
-  }
-
-  // Unauthenticated Navigation Stack
+  // EXPERIENCE A: Public FarmConnect Website & Storefront (Default for all visitors)
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
-      <View style={styles.topBar}>
-        <Text style={styles.topBarTitle}>🌱 {t('app_title')}</Text>
-        <View style={styles.topBarRight}>
-          <LanguageSelector compact />
-          <TouchableOpacity onPress={() => setAuthView('showcase')} style={styles.showcaseBtn}>
-            <Text style={styles.showcaseText}>Design System</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
 
-      {authView === 'login' && (
-        <LoginScreen
-          onNavigateRegister={() => setAuthView('register')}
-          onNavigateForgot={() => setAuthView('forgot')}
+      {/* 1. Public Homepage (Default Landing View) */}
+      {publicView === 'home' && (
+        <PublicHomeScreen
+          onNavigateShop={(catQuery) => setPublicView('shop')}
+          onNavigateCropMarket={() => setPublicView('cropmarket')}
+          onNavigateMandi={() => setPublicView('mandi')}
+          onNavigateWeather={() => setPublicView('weather')}
+          onNavigateAi={() => setPublicView('ai')}
+          onNavigateKnowledge={() => setPublicView('knowledge')}
+          onNavigateSchemes={() => setPublicView('schemes')}
+          onNavigateLogin={() => setPublicView('login')}
+          onNavigateRegister={() => setPublicView('register')}
+          onOpenCart={() => setShowCart(true)}
+          cartCount={cartCount}
         />
       )}
 
-      {authView === 'register' && (
-        <RegisterScreen onNavigateLogin={() => setAuthView('login')} />
+      {/* 2. Public E-Commerce Store */}
+      {publicView === 'shop' && (
+        <ProductCatalogScreen
+          onBack={() => setPublicView('home')}
+          onOpenCart={() => setShowCart(true)}
+        />
       )}
 
-      {authView === 'forgot' && (
-        <ForgotPasswordScreen onNavigateLogin={() => setAuthView('login')} />
+      {/* 3. Public Crop Marketplace */}
+      {publicView === 'cropmarket' && (
+        <CropMarketplaceScreen onBack={() => setPublicView('home')} />
       )}
+
+      {/* 4. Public Live APMC Mandi Rates */}
+      {publicView === 'mandi' && (
+        <MandiPriceScreen onBack={() => setPublicView('home')} />
+      )}
+
+      {/* 5. Public Weather Sync & Alerts */}
+      {publicView === 'weather' && (
+        <WeatherScreen onBack={() => setPublicView('home')} />
+      )}
+
+      {/* 6. Public AI Agricultural Assistance */}
+      {publicView === 'ai' && (
+        <AiAssistantScreen onBack={() => setPublicView('home')} />
+      )}
+
+      {/* 7. Public Knowledge & Soil Science */}
+      {publicView === 'knowledge' && (
+        <AgriScienceScreen onBack={() => setPublicView('home')} />
+      )}
+
+      {/* 8. Public Government Schemes Hub */}
+      {publicView === 'schemes' && (
+        <GovernmentSchemesScreen onBack={() => setPublicView('home')} />
+      )}
+
+      {/* 9. Secure Sign In (No Demo Switchers) */}
+      {publicView === 'login' && (
+        <View style={{ flex: 1 }}>
+          <View style={styles.subPageHeader}>
+            <TouchableOpacity onPress={() => setPublicView('home')} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>← Return to Home</Text>
+            </TouchableOpacity>
+            <LanguageSelector compact />
+          </View>
+          <LoginScreen
+            onNavigateRegister={() => setPublicView('register')}
+            onNavigateForgot={() => setPublicView('forgot')}
+          />
+        </View>
+      )}
+
+      {/* 10. Public Account Registration */}
+      {publicView === 'register' && (
+        <View style={{ flex: 1 }}>
+          <View style={styles.subPageHeader}>
+            <TouchableOpacity onPress={() => setPublicView('home')} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>← Return to Home</Text>
+            </TouchableOpacity>
+            <LanguageSelector compact />
+          </View>
+          <RegisterScreen onNavigateLogin={() => setPublicView('login')} />
+        </View>
+      )}
+
+      {/* 11. Password Recovery */}
+      {publicView === 'forgot' && (
+        <View style={{ flex: 1 }}>
+          <View style={styles.subPageHeader}>
+            <TouchableOpacity onPress={() => setPublicView('home')} style={styles.backBtn}>
+              <Text style={styles.backBtnText}>← Return to Home</Text>
+            </TouchableOpacity>
+          </View>
+          <ForgotPasswordScreen onNavigateLogin={() => setPublicView('login')} />
+        </View>
+      )}
+
+      {/* 12. Foundation Design System Showcase (Preserved) */}
+      {publicView === 'showcase' && (
+        <FoundationShowcase onBackToAuth={() => setPublicView('home')} />
+      )}
+
+      {/* Global Shopping Cart & Multi-Process Checkout Modal */}
+      <CartModal
+        visible={showCart}
+        onClose={() => setShowCart(false)}
+        onOrderPlaced={() => {
+          setShowCart(false);
+          setCartCount(0);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -354,5 +465,56 @@ const styles = StyleSheet.create({
   },
   demoBtn: {
     marginBottom: spacing.md,
+  },
+  authTopRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  authUserName: {
+    color: '#d1fae5',
+    fontSize: 11,
+    fontWeight: typography.weights.medium,
+    maxWidth: 110,
+  },
+  profileNavBtn: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  profileNavBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: typography.weights.medium,
+  },
+  signOutBtn: {
+    backgroundColor: '#b91c1c',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  signOutBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: typography.weights.bold,
+  },
+  subPageHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backBtn: {
+    paddingVertical: 4,
+  },
+  backBtnText: {
+    color: colors.primary,
+    fontSize: 13,
+    fontWeight: typography.weights.semiBold,
   },
 });

@@ -1124,6 +1124,35 @@ function seedInitialData() {
     farmerUser = { id: 'farmer_ramesh' };
   }
 
+  // Ensure Verified Seller Seed Exists
+  let sellerUser = db.prepare("SELECT id FROM users WHERE id = 'seller_cauvery' OR email = 'cauvery.seller@example.com' OR phone = '9845012347'").get();
+  if (!sellerUser) {
+    const bcrypt = require('bcryptjs');
+    const hash = bcrypt.hashSync('SellerPassword123', 8);
+    const nowS = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (id, name, email, phone, password_hash, role, status, created_at, updated_at)
+      VALUES ('seller_cauvery', 'Cauvery Agro Inputs', 'cauvery.seller@example.com', '9845012347', ?, 'SELLER', 'ACTIVE', ?, ?)
+    `).run(hash, nowS, nowS);
+
+    db.prepare(`
+      INSERT OR IGNORE INTO seller_profiles (id, user_id, shop_name, business_name, license_number, is_verified, verification_status, store_address, created_at, updated_at)
+      VALUES ('prof_seller_cauvery', 'seller_cauvery', 'Cauvery Agro Inputs', 'Cauvery Agro Inputs Pvt Ltd', 'KA-AGRI-SEED-4821', 1, 'VERIFIED', 'APMC Commercial Complex, Mandya', ?, ?)
+    `).run(nowS, nowS);
+  }
+
+  // Ensure Secure Backend-Provisioned Administrator Exists
+  let adminUser = db.prepare("SELECT id FROM users WHERE id = 'admin_super' OR email = 'admin@farmconnect.org' OR phone = '9845012348'").get();
+  if (!adminUser) {
+    const bcrypt = require('bcryptjs');
+    const hash = bcrypt.hashSync('AdminSuperPassword123', 8);
+    const nowA = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (id, name, email, phone, password_hash, role, status, created_at, updated_at)
+      VALUES ('admin_super', 'FarmConnect System Overseer', 'admin@farmconnect.org', '9845012348', ?, 'ADMIN', 'ACTIVE', ?, ?)
+    `).run(hash, nowA, nowA);
+  }
+
   // Seed Initial Order & Shipment Tracking Record (Phase 20)
   const existingOrder = db.prepare("SELECT COUNT(*) as count FROM orders WHERE id = 'ord_seed_1'").get();
   if (existingOrder.count === 0) {

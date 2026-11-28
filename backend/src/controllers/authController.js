@@ -51,12 +51,22 @@ exports.register = async (req, res) => {
       });
     }
 
-    const validRoles = ['FARMER', 'BUYER', 'SELLER', 'ADMIN'];
+    const publicRoles = ['FARMER', 'BUYER', 'SELLER'];
     const normalizedRole = String(role).toUpperCase();
-    if (!validRoles.includes(normalizedRole)) {
+
+    // Security: Disallow self-provisioning of ADMIN privileges through public registration
+    if (normalizedRole === 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin accounts cannot be self-provisioned via public registration. Contact platform security.',
+        code: 'ADMIN_REGISTRATION_RESTRICTED',
+      });
+    }
+
+    if (!publicRoles.includes(normalizedRole)) {
       return res.status(400).json({
         success: false,
-        message: `Invalid role. Must be one of: ${validRoles.join(', ')}`,
+        message: `Invalid role. Public registration allows: ${publicRoles.join(', ')}`,
         code: 'INVALID_ROLE',
       });
     }
